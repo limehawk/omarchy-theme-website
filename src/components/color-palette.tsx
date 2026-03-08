@@ -58,9 +58,9 @@ export function ColorPalette({
         >
           <div
             className={cn(
-              "rounded-full border border-white/10",
+              "rounded-sm border border-white/10",
               dotSize[size],
-              name === "accent" && size === "sm" && "size-3.5 ring-1 ring-white/20"
+              name === "accent" && size === "sm" && "size-3.5 ring-1 ring-white/20 rounded-sm"
             )}
             style={{ backgroundColor: hex }}
             title={`${name}: ${hex}`}
