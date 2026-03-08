@@ -114,7 +114,7 @@ export async function getFeaturedThemes(
   limit: number = 6
 ): Promise<Theme[]> {
   const result = await db
-    .prepare("SELECT * FROM themes ORDER BY stars DESC LIMIT ?")
+    .prepare("SELECT * FROM themes WHERE is_builtin = 0 ORDER BY stars DESC LIMIT ?")
     .bind(limit)
     .all<Theme>();
 
