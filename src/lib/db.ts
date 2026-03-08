@@ -1,0 +1,71 @@
+import { COLOR_BUCKETS } from "@/lib/colors";
+import themesData from "@/data/themes-data.json";
+
+export const VALID_SORTS = ["newest", "stars", "name"] as const;
+export type SortOption = (typeof VALID_SORTS)[number];
+
+export const VALID_SOURCES = ["all", "community", "builtin"] as const;
+export type SourceOption = (typeof VALID_SOURCES)[number];
+
+export interface Theme {
+  id: string;
+  name: string;
+  slug: string;
+  github_url: string;
+  github_owner: string;
+  github_repo: string;
+  description: string | null;
+  preview_url: string | null;
+  colors_json: string | null;
+  apps_json: string | null;
+  primary_hue: string | null;
+  is_builtin: number;
+  is_curated: number;
+  stars: number;
+  readme_text: string | null;
+  default_branch: string;
+  last_scraped_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+const allThemes = themesData as Theme[];
+
+export function getAllThemes(): Theme[] {
+  return allThemes;
+}
+
+export function getThemeBySlug(slug: string): Theme | null {
+  return allThemes.find((t) => t.slug === slug) ?? null;
+}
+
+export function getFeaturedThemes(limit: number = 6): Theme[] {
+  return allThemes
+    .filter((t) => t.is_builtin === 0)
+    .sort((a, b) => b.stars - a.stars)
+    .slice(0, limit);
+}
+
+/** Themes list for the browse page — excludes readme_text to keep bundle small */
+export interface ThemeListItem {
+  id: string;
+  name: string;
+  slug: string;
+  github_url: string;
+  github_owner: string;
+  github_repo: string;
+  description: string | null;
+  preview_url: string | null;
+  colors_json: string | null;
+  apps_json: string | null;
+  primary_hue: string | null;
+  is_builtin: number;
+  is_curated: number;
+  stars: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export function getThemeList(): ThemeListItem[] {
+  return allThemes.map(({ readme_text, default_branch, last_scraped_at, ...rest }) => rest);
+}

@@ -1,0 +1,216 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { Star, ExternalLink } from "lucide-react";
+import { getAllThemes, getThemeBySlug } from "@/lib/db";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ColorPalette } from "@/components/color-palette";
+import { InstallCommand } from "@/components/install-command";
+import { ReadmeContent } from "@/components/readme-content";
+import { parseColors } from "@/lib/colors";
+
+interface Props {
+  params: Promise<{ slug: string }>;
+}
+
+export function generateStaticParams() {
+  return getAllThemes().map((t) => ({ slug: t.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const theme = getThemeBySlug(slug);
+
+  if (!theme) {
+    return { title: "Theme Not Found" };
+  }
+
+  return {
+    title: theme.name,
+    description:
+      theme.description ?? `Preview and install the ${theme.name} color scheme for Omarchy.`,
+  };
+}
+
+export default async function ThemeDetailPage({ params }: Props) {
+  const { slug } = await params;
+  const theme = getThemeBySlug(slug);
+
+  if (!theme) notFound();
+
+  const colors = parseColors(theme.colors_json);
+
+  // Derive branch and path prefix for resolving relative README URLs
+  const readmeBranch = theme.default_branch ?? "main";
+  let readmePathPrefix = "";
+  if (theme.is_builtin) {
+    const treeMatch = theme.github_url.match(/\/tree\/[^/]+\/(.+)/);
+    if (treeMatch) readmePathPrefix = treeMatch[1];
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-6 py-10">
+      {/* Breadcrumb */}
+      <nav className="mb-8">
+        <ol className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
+          <li>
+            <Link href="/themes" className="hover:text-foreground transition-colors">
+              themes
+            </Link>
+          </li>
+          <li>/</li>
+          <li className="text-foreground">{theme.name}</li>
+        </ol>
+      </nav>
+
+      <div className="grid gap-10 lg:grid-cols-[1fr_340px]">
+        {/* Main content */}
+        <div className="space-y-8 min-w-0">
+          {/* Color palette (large) */}
+          {colors && (
+            <div className="space-y-3">
+              <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                color palette
+              </h2>
+              <Card>
+                <CardContent>
+                  <ColorPalette colors={colors} size="lg" showLabels />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Terminal preview with colors */}
+          {colors && (
+            <div className="space-y-3">
+              <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                preview
+              </h2>
+              <Card className="overflow-hidden p-0" style={{ backgroundColor: colors.background ?? "#1a1a2e" }}>
+                <div className="flex items-center gap-2 px-4 py-2 border-b border-white/5">
+                  <span className="size-2.5 rounded-full bg-red-500/70" />
+                  <span className="size-2.5 rounded-full bg-yellow-500/70" />
+                  <span className="size-2.5 rounded-full bg-green-500/70" />
+                  <span className="ml-2 font-mono text-[10px]" style={{ color: colors.foreground ?? "#ccc" }}>
+                    ~/{theme.slug}
+                  </span>
+                </div>
+                <div className="p-5 font-mono text-sm leading-relaxed space-y-1">
+                  <div>
+                    <span style={{ color: colors.color2 ?? "#50fa7b" }}>user@omarchy</span>
+                    <span style={{ color: colors.foreground ?? "#ccc" }}>:</span>
+                    <span style={{ color: colors.color4 ?? "#6272a4" }}>~</span>
+                    <span style={{ color: colors.foreground ?? "#ccc" }}> $ </span>
+                    <span style={{ color: colors.accent ?? "#4a9eff" }}>ls</span>
+                    <span style={{ color: colors.foreground ?? "#ccc" }}> --color</span>
+                  </div>
+                  <div className="flex flex-wrap gap-x-6 gap-y-1">
+                    <span style={{ color: colors.color4 ?? "#6272a4" }}>desktop/</span>
+                    <span style={{ color: colors.color2 ?? "#50fa7b" }}>scripts/</span>
+                    <span style={{ color: colors.color1 ?? "#ff5555" }}>.config/</span>
+                    <span style={{ color: colors.color3 ?? "#f1fa8c" }}>notes.md</span>
+                    <span style={{ color: colors.color5 ?? "#ff79c6" }}>Makefile</span>
+                    <span style={{ color: colors.color6 ?? "#8be9fd" }}>README.md</span>
+                  </div>
+                  <div className="pt-1">
+                    <span style={{ color: colors.color2 ?? "#50fa7b" }}>user@omarchy</span>
+                    <span style={{ color: colors.foreground ?? "#ccc" }}>:</span>
+                    <span style={{ color: colors.color4 ?? "#6272a4" }}>~</span>
+                    <span style={{ color: colors.foreground ?? "#ccc" }}> $ </span>
+                    <span
+                      className="inline-block w-2 h-4 align-middle animate-pulse"
+                      style={{ backgroundColor: colors.cursor ?? colors.accent ?? "#4a9eff" }}
+                    />
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {/* README */}
+          {theme.readme_text && (
+            <div className="space-y-3">
+              <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                readme
+              </h2>
+              <Card>
+                <CardContent>
+                  <ReadmeContent
+                    content={theme.readme_text}
+                    owner={theme.github_owner}
+                    repo={theme.github_repo}
+                    branch={readmeBranch}
+                    pathPrefix={readmePathPrefix}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <aside className="space-y-6">
+          <div className="sticky top-20 space-y-6">
+            {/* Theme info */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-mono">{theme.name}</CardTitle>
+                {theme.description && (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {theme.description}
+                  </p>
+                )}
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                {theme.stars > 0 && (
+                  <Badge variant="secondary" className="font-mono gap-1.5">
+                    <Star className="size-3" />
+                    {theme.stars}
+                  </Badge>
+                )}
+
+                <div className="border-t border-border/40 pt-4">
+                  <a
+                    href={theme.github_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ExternalLink className="size-3" />
+                    {theme.github_owner}/{theme.github_repo}
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Install */}
+            <div className="space-y-2">
+              <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                install
+              </h2>
+              <InstallCommand githubUrl={theme.github_url} />
+            </div>
+
+            {/* Mini palette in sidebar */}
+            {colors && (
+              <div className="space-y-2">
+                <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                  colors
+                </h2>
+                <Card>
+                  <CardContent>
+                    <ColorPalette colors={colors} size="md" />
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,30 @@
+name: Submit a Theme
+description: Submit your Omarchy theme to the gallery
+title: "[Theme] "
+labels: ["theme-submission"]
+body:
+  - type: input
+    id: repo_url
+    attributes:
+      label: GitHub Repository URL
+      description: The full URL to your theme's GitHub repository
+      placeholder: https://github.com/username/my-omarchy-theme
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A short description of your theme
+      placeholder: A dark theme inspired by...
+    validations:
+      required: false
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: My repo contains a valid `colors.toml` or `alacritty.toml` with theme colors
+          required: true
+        - label: My repo has a README with a screenshot or preview image
+          required: false

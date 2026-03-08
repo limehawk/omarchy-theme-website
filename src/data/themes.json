@@ -1,0 +1,960 @@
+{
+  "curated": [
+    {
+      "name": "Aamis",
+      "url": "https://github.com/vyrx-dev/omarchy-aamis-theme"
+    },
+    {
+      "name": "Ado",
+      "url": "https://github.com/errantProgrammer/omarchy-ado-theme"
+    },
+    {
+      "name": "Adrift",
+      "url": "https://github.com/jaredb1011/omarchy-adrift-theme"
+    },
+    {
+      "name": "Aetheria",
+      "url": "https://github.com/JJDizz1L/aetheria"
+    },
+    {
+      "name": "Akaito",
+      "url": "https://github.com/stannorbvb-cmd/akaito"
+    },
+    {
+      "name": "All Hallows Eve",
+      "url": "https://github.com/guilhermetk/omarchy-all-hallows-eve-theme"
+    },
+    {
+      "name": "Amberbyte",
+      "dead": true,
+      "url": "https://github.com/tahfiz-habib/omarchy-amberbyte-theme"
+    },
+    {
+      "name": "Amekoji",
+      "url": "https://github.com/atif-1402/omarchy-amekoji-theme"
+    },
+    {
+      "name": "Anonymous",
+      "url": "https://github.com/j4v3l/omarchy-anonymous-theme"
+    },
+    {
+      "name": "Apocalypse",
+      "url": "https://github.com/atif-1402/omarchy-apocalypse-theme"
+    },
+    {
+      "name": "Arc Blueberry",
+      "url": "https://github.com/vale-c/omarchy-arc-blueberry"
+    },
+    {
+      "name": "ArchRiot",
+      "url": "https://github.com/CyphrRiot/omarchy-archriot-theme"
+    },
+    {
+      "name": "Archwave",
+      "url": "https://github.com/davidguttman/archwave"
+    },
+    {
+      "name": "Artzen",
+      "url": "https://github.com/tahfizhabib/omarchy-artzen-theme"
+    },
+    {
+      "name": "Ash",
+      "url": "https://github.com/bjarneo/omarchy-ash-theme"
+    },
+    {
+      "name": "Astrodark",
+      "url": "https://github.com/JamsMendez/omarchy-astrodark-theme"
+    },
+    {
+      "name": "Atari",
+      "url": "https://github.com/atif-1402/omarchy-atari-theme"
+    },
+    {
+      "name": "Atelier",
+      "url": "https://github.com/atif-1402/omarchy-atelier-theme"
+    },
+    {
+      "name": "Aura",
+      "url": "https://github.com/bjarneo/omarchy-aura-theme"
+    },
+    {
+      "name": "Aureth",
+      "url": "https://github.com/atif-1402/omarchy-aureth-theme"
+    },
+    {
+      "name": "Ayaka",
+      "url": "https://github.com/abhijeet-swami/omarchy-ayaka-theme"
+    },
+    {
+      "name": "Ayu Dark",
+      "url": "https://github.com/fdidron/omarchy-ayu-dark-theme"
+    },
+    {
+      "name": "Ayu Light",
+      "url": "https://github.com/fdidron/omarchy-ayu-light-theme"
+    },
+    {
+      "name": "Ayu Mirage",
+      "url": "https://github.com/fdidron/omarchy-ayu-mirage-theme"
+    },
+    {
+      "name": "Azure",
+      "url": "https://github.com/tahfizhabib/omarchy-azure-theme"
+    },
+    {
+      "name": "Azure Glow",
+      "url": "https://github.com/Hydradevx/omarchy-azure-glow-theme"
+    },
+    {
+      "name": "Batman",
+      "url": "https://github.com/OldJobobo/omarchy-batman-theme"
+    },
+    {
+      "name": "Batou",
+      "url": "https://github.com/HANCORE-linux/omarchy-batou-theme"
+    },
+    {
+      "name": "Bauhaus",
+      "url": "https://github.com/somerocketeer/omarchy-bauhaus-theme"
+    },
+    {
+      "name": "BeachVan",
+      "url": "https://github.com/haripako/omarchy-BeachVan-theme"
+    },
+    {
+      "name": "Beta",
+      "url": "https://github.com/jjdizz1l/beta"
+    },
+    {
+      "name": "Black Arch",
+      "url": "https://github.com/ankur311sudo/black_arch"
+    },
+    {
+      "name": "Black Gold",
+      "url": "https://github.com/HANCORE-linux/omarchy-blackgold-theme"
+    },
+    {
+      "name": "Black Money",
+      "url": "https://github.com/HANCORE-linux/omarchy-blackmoney-theme"
+    },
+    {
+      "name": "Blackturq",
+      "url": "https://github.com/HANCORE-linux/omarchy-blackturq-theme"
+    },
+    {
+      "name": "Blackwall",
+      "url": "https://github.com/rlind3r/omarchy-blackwall-theme"
+    },
+    {
+      "name": "Bliss",
+      "dead": true,
+      "url": "https://github.com/mishonki3/omarchy-bliss-theme"
+    },
+    {
+      "name": "BlueDotRB",
+      "url": "https://github.com/dotsilva/omarchy-bluedotrb-theme"
+    },
+    {
+      "name": "BlueRidge",
+      "url": "https://github.com/hipsterusername/omarchy-blueridge-dark-theme"
+    },
+    {
+      "name": "Brutalism",
+      "url": "https://github.com/bjornramberg/omarchy-brutalism-theme"
+    },
+    {
+      "name": "Caroline Skyline",
+      "url": "https://github.com/OldJobobo/omarchy-caroline-skyline-theme"
+    },
+    {
+      "name": "Catppu Mocha",
+      "url": "https://github.com/ankur311sudo/Catppu_Mocha"
+    },
+    {
+      "name": "Catppuccin Dark",
+      "url": "https://github.com/Luquatic/omarchy-catppuccin-dark"
+    },
+    {
+      "name": "Catppuccin Mocha",
+      "url": "https://github.com/KidDogDad/omarchy-catppuccin-mocha-theme"
+    },
+    {
+      "name": "Cattpuccin Glass",
+      "url": "https://github.com/Luquatic/omarchy-catppuccin-glass"
+    },
+    {
+      "name": "Citrus Cynapse",
+      "url": "https://github.com/Grey-007/citrus-cynapse"
+    },
+    {
+      "name": "City-783",
+      "url": "https://github.com/OldJobobo/omarchy-city-783-theme"
+    },
+    {
+      "name": "Cobalt2",
+      "url": "https://github.com/hoblin/omarchy-cobalt2-theme"
+    },
+    {
+      "name": "Corporate",
+      "url": "https://github.com/defer/omarchy-corporate-theme"
+    },
+    {
+      "name": "CpUnk",
+      "url": "https://github.com/stannorbvb-cmd/cpunk"
+    },
+    {
+      "name": "Crimson",
+      "dead": true,
+      "url": "https://github.com/tahfiz-habib/omarchy-crimson-theme"
+    },
+    {
+      "name": "Crimson Gold",
+      "url": "https://github.com/knappkevin/omarchy-crimson-gold-theme"
+    },
+    {
+      "name": "Cyberpunk",
+      "dead": true,
+      "url": "https://github.com/thatmechguy/omarchy-cyberpunk-theme"
+    },
+    {
+      "name": "Darcula",
+      "url": "https://github.com/noahljungberg/omarchy-darcula-theme"
+    },
+    {
+      "name": "Dark XP",
+      "url": "https://github.com/ITSZXY/dark-xp-omarchy"
+    },
+    {
+      "name": "Dayfox",
+      "url": "https://github.com/defer/omarchy-dayfox-theme"
+    },
+    {
+      "name": "Deadspace",
+      "url": "https://github.com/atif-1402/omarchy-deadspace-theme"
+    },
+    {
+      "name": "Deckard",
+      "url": "https://github.com/OldJobobo/omarchy-deckard-theme"
+    },
+    {
+      "name": "Delete",
+      "url": "https://github.com/signaldirective/delete-theme"
+    },
+    {
+      "name": "DeLorean",
+      "url": "https://github.com/jbnunn/omarchy-delorean-theme"
+    },
+    {
+      "name": "Demon",
+      "url": "https://github.com/HANCORE-linux/omarchy-demon-theme"
+    },
+    {
+      "name": "Desert Twilight",
+      "url": "https://github.com/avis3nna/desert-twilight"
+    },
+    {
+      "name": "dotrb",
+      "url": "https://github.com/dotsilva/omarchy-dotrb-theme"
+    },
+    {
+      "name": "Drac",
+      "url": "https://github.com/ShehabShaef/omarchy-drac-theme"
+    },
+    {
+      "name": "Dracula",
+      "url": "https://github.com/catlee/omarchy-dracula-theme"
+    },
+    {
+      "name": "Dragon",
+      "url": "https://github.com/thatmechguy/omarchy-dragon-theme"
+    },
+    {
+      "name": "Dreamwave",
+      "url": "https://github.com/RiO7MAKK3R/omarchy-dreamwave-theme"
+    },
+    {
+      "name": "Dustyfog",
+      "url": "https://github.com/atif-1402/omarchy-dustyfog-theme"
+    },
+    {
+      "name": "Eldritch",
+      "url": "https://github.com/eldritch-theme/omarchy-eldritch-theme"
+    },
+    {
+      "name": "Eldritch",
+      "url": "https://github.com/eldritch-theme/omarchy"
+    },
+    {
+      "name": "Elysian",
+      "url": "https://github.com/bjarneo/omarchy-elysian-theme"
+    },
+    {
+      "name": "Ember n Ash",
+      "url": "https://github.com/Hydradevx/omarchy-ember-n-ash-theme"
+    },
+    {
+      "name": "Event Horizon",
+      "url": "https://github.com/OldJobobo/omarchy-event-horizon-theme"
+    },
+    {
+      "name": "Everblush",
+      "url": "https://github.com/Swarnim114/omarchy-everblush-theme"
+    },
+    {
+      "name": "Evergarden",
+      "url": "https://github.com/celsobenedetti/omarchy-evergarden"
+    },
+    {
+      "name": "Farline",
+      "url": "https://github.com/atif-1402/omarchy-farline-theme"
+    },
+    {
+      "name": "Felix",
+      "url": "https://github.com/TyRichards/omarchy-felix-theme"
+    },
+    {
+      "name": "Fiery Ocean",
+      "url": "https://github.com/bjarneo/omarchy-fiery-ocean-theme"
+    },
+    {
+      "name": "Fireside",
+      "url": "https://github.com/bjarneo/omarchy-fireside-theme"
+    },
+    {
+      "name": "Firesky",
+      "url": "https://github.com/bjarneo/omarchy-firesky-theme"
+    },
+    {
+      "name": "Flat Dracula",
+      "url": "https://github.com/OldJobobo/omarchy-flat-dracula-theme"
+    },
+    {
+      "name": "Flexoki Dark",
+      "url": "https://github.com/euandeas/omarchy-flexoki-dark-theme"
+    },
+    {
+      "name": "Florida Man",
+      "url": "https://github.com/OldJobobo/omarchy-florida-man-theme"
+    },
+    {
+      "name": "Fluid Glass",
+      "url": "https://github.com/ripple0328/omarchy-fluid-glass-theme"
+    },
+    {
+      "name": "Forest Green",
+      "url": "https://github.com/abhijeet-swami/omarchy-forest-green-theme"
+    },
+    {
+      "name": "Frost",
+      "url": "https://github.com/bjarneo/omarchy-frost-theme"
+    },
+    {
+      "name": "Futurism",
+      "url": "https://github.com/bjarneo/omarchy-futurism-theme"
+    },
+    {
+      "name": "Glory Antic",
+      "url": "https://github.com/clement-rtfm/glory-antic"
+    },
+    {
+      "name": "Gold Rush",
+      "url": "https://github.com/tahayvr/omarchy-gold-rush-theme"
+    },
+    {
+      "name": "Gotham City",
+      "url": "https://github.com/JustArmaan/omarchy-gotham-city-theme"
+    },
+    {
+      "name": "Greek Noir",
+      "url": "https://github.com/HANCORE-linux/omarchy-greek-noir-theme"
+    },
+    {
+      "name": "Green City",
+      "url": "https://github.com/zillamtt/omarchy-green-city"
+    },
+    {
+      "name": "Green Garden",
+      "url": "https://github.com/kalk-ak/omarchy-green-garden-theme"
+    },
+    {
+      "name": "Gruber Tsoding",
+      "url": "https://github.com/davide-ferrara/omarchy-gruberdark-tsoding-theme"
+    },
+    {
+      "name": "Grudark",
+      "url": "https://github.com/zillamtt/omarchy-grudark"
+    },
+    {
+      "name": "Gruvu",
+      "url": "https://github.com/ankur311sudo/gruvu"
+    },
+    {
+      "name": "Hakker Green",
+      "dead": true,
+      "url": "https://github.com/joaquinmeza/omarchy-hakker-green-theme"
+    },
+    {
+      "name": "Harbor",
+      "url": "https://github.com/HANCORE-linux/omarchy-harbor-theme"
+    },
+    {
+      "name": "Harbor Dark",
+      "url": "https://github.com/HANCORE-linux/omarchy-harbordark-theme"
+    },
+    {
+      "name": "Hex",
+      "url": "https://github.com/OldJobobo/omarchy-hex-theme"
+    },
+    {
+      "name": "Himalaya",
+      "url": "https://github.com/rondilley/omarchy-himalaya-theme"
+    },
+    {
+      "name": "Hinterlands",
+      "url": "https://github.com/OldJobobo/omarchy-hinterlands-theme"
+    },
+    {
+      "name": "Hollow Knight",
+      "url": "https://github.com/bjarneo/omarchy-hollow-knight-theme"
+    },
+    {
+      "name": "Infernium",
+      "url": "https://github.com/RiO7MAKK3R/omarchy-infernium-theme"
+    },
+    {
+      "name": "Infernium Dark",
+      "url": "https://github.com/RiO7MAKK3R/omarchy-infernium-dark-theme"
+    },
+    {
+      "name": "InkyPinky",
+      "url": "https://github.com/HANCORE-linux/omarchy-inkypinky-theme"
+    },
+    {
+      "name": "Kimiko",
+      "url": "https://github.com/krymzonn/omarchy-kimiko-theme"
+    },
+    {
+      "name": "Koyanagi",
+      "url": "https://github.com/YutaKoyanagi10/omarchy-koyanagi-theme"
+    },
+    {
+      "name": "lain",
+      "url": "https://github.com/ITSZXY/lain-omarchy"
+    },
+    {
+      "name": "Lairetam",
+      "url": "https://github.com/chrisintheshell/omarchy-lairetam-theme"
+    },
+    {
+      "name": "Last Horizon",
+      "url": "https://github.com/HANCORE-linux/omarchy-lasthorizon-theme"
+    },
+    {
+      "name": "Latch",
+      "url": "https://github.com/atif-1402/omarchy-latch-theme"
+    },
+    {
+      "name": "Latchdark",
+      "url": "https://github.com/atif-1402/omarchy-latchdark-theme"
+    },
+    {
+      "name": "Lilly",
+      "url": "https://github.com/JJDizz1L/lilly"
+    },
+    {
+      "name": "Lowlight",
+      "url": "https://github.com/atif-1402/omarchy-lowlight-theme"
+    },
+    {
+      "name": "Lunar",
+      "url": "https://github.com/pdfosborne/omarchy-lunar-theme"
+    },
+    {
+      "name": "Manga",
+      "url": "https://github.com/atif-1402/omarchy-manga-theme"
+    },
+    {
+      "name": "Mapquest",
+      "url": "https://github.com/ItsABigIgloo/omarchy-mapquest-theme"
+    },
+    {
+      "name": "Mars",
+      "url": "https://github.com/steve-lohmeyer/omarchy-mars-theme"
+    },
+    {
+      "name": "Mechanoonna",
+      "url": "https://github.com/HANCORE-linux/omarchy-mechanoonna-theme"
+    },
+    {
+      "name": "Memento Mori",
+      "url": "https://github.com/hipsterusername/omarchy-memento-mori-theme"
+    },
+    {
+      "name": "Midnight",
+      "url": "https://github.com/JaxonWright/omarchy-midnight-theme"
+    },
+    {
+      "name": "Miles Morales",
+      "url": "https://github.com/ahmed-z0/omarchy-miles-morales-theme"
+    },
+    {
+      "name": "MilkMatcha Light",
+      "url": "https://github.com/hipsterusername/omarchy-milkmatcha-light-theme"
+    },
+    {
+      "name": "Monochrome",
+      "url": "https://github.com/Swarnim114/omarchy-monochrome-theme"
+    },
+    {
+      "name": "Monokai",
+      "url": "https://github.com/bjarneo/omarchy-monokai-theme"
+    },
+    {
+      "name": "Monokai Dark",
+      "url": "https://github.com/ericrswanny/omarchy-monokai-dark-theme"
+    },
+    {
+      "name": "Monolith",
+      "url": "https://github.com/OldJobobo/omarchy-monolith-theme"
+    },
+    {
+      "name": "Moodpeak",
+      "url": "https://github.com/HANCORE-linux/omarchy-moodpeak-theme"
+    },
+    {
+      "name": "Moon Orbit",
+      "url": "https://github.com/JJDizz1L/moon-orbit"
+    },
+    {
+      "name": "Nagai Poolside",
+      "url": "https://github.com/somerocketeer/omarchy-nagai-poolside-theme"
+    },
+    {
+      "name": "Nagai Twilight",
+      "url": "https://github.com/somerocketeer/omarchy-nagai-twilight-theme"
+    },
+    {
+      "name": "Nebulite",
+      "url": "https://github.com/atif-1402/omarchy-nebulite-theme"
+    },
+    {
+      "name": "Neo Sploosh",
+      "url": "https://github.com/monoooki/omarchy-neo-sploosh-theme"
+    },
+    {
+      "name": "Neonite",
+      "dead": true,
+      "url": "https://github.com/tahfizhabib/omarchy-neonite-theme"
+    },
+    {
+      "name": "Neonstreet",
+      "url": "https://github.com/atif-1402/omarchy-neonstreet-theme"
+    },
+    {
+      "name": "Neovoid",
+      "url": "https://github.com/RiO7MAKK3R/omarchy-neovoid-theme"
+    },
+    {
+      "name": "NES",
+      "url": "https://github.com/bjarneo/omarchy-nes-theme"
+    },
+    {
+      "name": "Night Owl",
+      "url": "https://github.com/maxberggren/omarchy-night-owl-theme"
+    },
+    {
+      "name": "NYC",
+      "url": "https://github.com/WillyV3/omarchy-nyc-theme"
+    },
+    {
+      "name": "Oasis",
+      "url": "https://github.com/joaofelipegalvao/omarchy-oasis"
+    },
+    {
+      "name": "Omacarchy",
+      "url": "https://github.com/RiO7MAKK3R/omarchy-omacarchy-theme"
+    },
+    {
+      "name": "Omarchy95",
+      "url": "https://github.com/atif-1402/omarchy-omarchy95-theme"
+    },
+    {
+      "name": "One Dark Pro",
+      "url": "https://github.com/sc0ttman/omarchy-one-dark-pro"
+    },
+    {
+      "name": "One Dark Pro",
+      "url": "https://github.com/sc0ttman/omarchy-one-dark-pro-theme"
+    },
+    {
+      "name": "Oxford",
+      "url": "https://github.com/HANCORE-linux/omarchy-oxford-theme"
+    },
+    {
+      "name": "Oxocarbon Dark",
+      "url": "https://github.com/HANCORE-linux/omarchy-oxocarbon-theme"
+    },
+    {
+      "name": "Pandora",
+      "url": "https://github.com/imbypass/omarchy-pandora-theme"
+    },
+    {
+      "name": "Pina",
+      "url": "https://github.com/bjarneo/omarchy-pina-theme"
+    },
+    {
+      "name": "Pink Blood",
+      "url": "https://github.com/ITSZXY/pink-blood-omarchy-theme"
+    },
+    {
+      "name": "pmndrs",
+      "url": "https://github.com/leweyse/omarchy-pmndrs-theme"
+    },
+    {
+      "name": "Pretty CVNT",
+      "dead": true,
+      "url": "https://github.com/WalkerMillgress/omarchy-pretty-cvnt-theme"
+    },
+    {
+      "name": "Pulsar",
+      "url": "https://github.com/bjarneo/omarchy-pulsar-theme"
+    },
+    {
+      "name": "Purple Moon",
+      "url": "https://github.com/Grey-007/purple-moon"
+    },
+    {
+      "name": "Purplewave",
+      "url": "https://github.com/dotsilva/omarchy-purplewave-theme"
+    },
+    {
+      "name": "Rainynight",
+      "url": "https://github.com/atif-1402/omarchy-rainynight-theme"
+    },
+    {
+      "name": "REDDCS",
+      "url": "https://github.com/mohamedredachakir/LINUX-OMARCHY-REDDCS"
+    },
+    {
+      "name": "RetroPC",
+      "url": "https://github.com/rondilley/omarchy-retropc-theme"
+    },
+    {
+      "name": "Reverie",
+      "url": "https://github.com/bjarneo/omarchy-reverie-theme"
+    },
+    {
+      "name": "RobCo",
+      "url": "https://github.com/signaldirective/robco-theme"
+    },
+    {
+      "name": "RobCo Mojave",
+      "url": "https://github.com/signaldirective/robco-mojave"
+    },
+    {
+      "name": "Rose of Dune",
+      "url": "https://github.com/HANCORE-linux/omarchy-roseofdune-theme"
+    },
+    {
+      "name": "Rose Pine Dark",
+      "url": "https://github.com/guilhermetk/omarchy-rose-pine-dark"
+    },
+    {
+      "name": "Royal",
+      "url": "https://github.com/notSagyo/omarchy-royal-theme"
+    },
+    {
+      "name": "Rustleaf",
+      "dead": true,
+      "url": "https://github.com/tahfiz-habib/omarchy-rustleaf-theme"
+    },
+    {
+      "name": "Sakura",
+      "url": "https://github.com/bjarneo/omarchy-sakura-theme"
+    },
+    {
+      "name": "Sapphire",
+      "url": "https://github.com/HANCORE-linux/omarchy-sapphire-theme"
+    },
+    {
+      "name": "SeaShells",
+      "url": "https://github.com/odysseyalive/omarchy-seashells-theme"
+    },
+    {
+      "name": "Serenity",
+      "url": "https://github.com/bjarneo/omarchy-serenity-theme"
+    },
+    {
+      "name": "Shades of Jade",
+      "url": "https://github.com/HANCORE-linux/omarchy-shadesofjade-theme"
+    },
+    {
+      "name": "Snow",
+      "url": "https://github.com/bjarneo/omarchy-snow-theme"
+    },
+    {
+      "name": "Snow Black",
+      "url": "https://github.com/ankur311sudo/snow_black"
+    },
+    {
+      "name": "Softteal",
+      "url": "https://github.com/atif-1402/omarchy-softteal-theme"
+    },
+    {
+      "name": "Solarized",
+      "url": "https://github.com/Gazler/omarchy-solarized-theme"
+    },
+    {
+      "name": "Solarized Light",
+      "url": "https://github.com/dfrico/omarchy-solarized-light-theme"
+    },
+    {
+      "name": "Solarized Osaka",
+      "url": "https://github.com/motorsss/omarchy-solarizedosaka-theme"
+    },
+    {
+      "name": "Solitude",
+      "url": "https://github.com/HANCORE-linux/omarchy-solitude-theme"
+    },
+    {
+      "name": "Space Monkey",
+      "url": "https://github.com/TyRichards/omarchy-space-monkey-theme"
+    },
+    {
+      "name": "Spark",
+      "url": "https://github.com/stefanomainardi/omarchy-sf-theme"
+    },
+    {
+      "name": "Spectra",
+      "url": "https://github.com/abhijeet-swami/omarchy-spectra-theme"
+    },
+    {
+      "name": "Stellar",
+      "url": "https://github.com/cicorias/omarchy-stellar-theme"
+    },
+    {
+      "name": "Stillmoon",
+      "url": "https://github.com/atif-1402/omarchy-stillmoon-theme"
+    },
+    {
+      "name": "Sunkissed",
+      "url": "https://github.com/loeclos/omarchy-sunkissed-theme"
+    },
+    {
+      "name": "Sunset",
+      "url": "https://github.com/rondilley/omarchy-sunset-theme"
+    },
+    {
+      "name": "Sunset Drive",
+      "url": "https://github.com/tahayvr/omarchy-sunset-drive-theme"
+    },
+    {
+      "name": "Super Game Bro",
+      "url": "https://github.com/TyRichards/omarchy-super-game-bro-theme"
+    },
+    {
+      "name": "Synthwave 84",
+      "url": "https://github.com/omacom-io/omarchy-synthwave84-theme"
+    },
+    {
+      "name": "Taikami",
+      "url": "https://github.com/SamuelCam14/taikami"
+    },
+    {
+      "name": "Tarot",
+      "url": "https://github.com/jjdizz1l/base16-tarot"
+    },
+    {
+      "name": "Tekk-o-ween",
+      "dead": true,
+      "url": "https://github.com/joaquinmeza/omarchy-tekk-o-ween-theme"
+    },
+    {
+      "name": "Temerald",
+      "url": "https://github.com/Ahmad-Mtr/omarchy-temerald-theme"
+    },
+    {
+      "name": "Terramour",
+      "url": "https://github.com/atif-1402/omarchy-terramour-theme"
+    },
+    {
+      "name": "TheGreek",
+      "url": "https://github.com/HANCORE-linux/omarchy-thegreek-theme"
+    },
+    {
+      "name": "Tokyoled",
+      "url": "https://github.com/Justin-De-Sio/omarchy-tokyoled-theme"
+    },
+    {
+      "name": "Torrentz Hydra",
+      "dead": true,
+      "url": "https://github.com/monoooki/omarchy-torrentz-hydra-theme"
+    },
+    {
+      "name": "Tycho",
+      "url": "https://github.com/leonardobetti/omarchy-tycho"
+    },
+    {
+      "name": "Type17",
+      "url": "https://github.com/atif-1402/omarchy-type17-theme"
+    },
+    {
+      "name": "Vague",
+      "dead": true,
+      "url": "https://github.com/Rnedlose/omarchy-vague-theme"
+    },
+    {
+      "name": "Vague Light",
+      "dead": true,
+      "url": "https://github.com/Rnedlose/omarchy-vaguelight-theme"
+    },
+    {
+      "name": "Van Gogh",
+      "url": "https://github.com/Nirmal314/omarchy-van-gogh-theme"
+    },
+    {
+      "name": "Velocity",
+      "url": "https://github.com/perfektnacht/omarchy-velocity-theme"
+    },
+    {
+      "name": "Velvet Night",
+      "url": "https://github.com/HANCORE-linux/omarchy-velvetnight-theme"
+    },
+    {
+      "name": "Vercel",
+      "dead": true,
+      "url": "https://github.com/somerocketeer/omarchy-vercel-theme"
+    },
+    {
+      "name": "Vesper",
+      "url": "https://github.com/Zheonatan/omarchy-vesper-theme"
+    },
+    {
+      "name": "Vesper",
+      "url": "https://github.com/thmoee/omarchy-vesper-theme"
+    },
+    {
+      "name": "vhs80",
+      "url": "https://github.com/tahayvr/omarchy-vhs80-theme"
+    },
+    {
+      "name": "Vice City",
+      "url": "https://github.com/lavarinimoreira/omarchy-vice-city-theme"
+    },
+    {
+      "name": "Void",
+      "url": "https://github.com/vyrx-dev/omarchy-void-theme"
+    },
+    {
+      "name": "Vurple",
+      "url": "https://github.com/tahfizhabib/omarchy-vurple-theme"
+    },
+    {
+      "name": "Wasteland",
+      "url": "https://github.com/perfektnacht/omarchy-wasteland-theme"
+    },
+    {
+      "name": "Waveform",
+      "url": "https://github.com/hipsterusername/omarchy-waveform-dark-theme"
+    },
+    {
+      "name": "White Gold",
+      "url": "https://github.com/HANCORE-linux/omarchy-whitegold-theme"
+    },
+    {
+      "name": "X-1632",
+      "url": "https://github.com/OldJobobo/omarchy-x-1632-theme"
+    },
+    {
+      "name": "Yuugure",
+      "url": "https://github.com/ItsABigIgloo/omarchy-yuugure-theme"
+    }
+  ],
+  "builtin": [
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/catppuccin",
+      "name": "Catppuccin"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/catppuccin-latte",
+      "name": "Catppuccin Latte"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/ethereal",
+      "name": "Ethereal"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/everforest",
+      "name": "Everforest"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/flexoki-light",
+      "name": "Flexoki Light"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/gruvbox",
+      "name": "Gruvbox"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/hackerman",
+      "name": "Hackerman"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/kanagawa",
+      "name": "Kanagawa"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/matte-black",
+      "name": "Matte Black"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/miasma",
+      "name": "Miasma"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/nord",
+      "name": "Nord"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/osaka-jade",
+      "name": "Osaka Jade"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/ristretto",
+      "name": "Ristretto"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/rose-pine",
+      "name": "Rose Pine"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/tokyo-night",
+      "name": "Tokyo Night"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/vantablack",
+      "name": "Vantablack"
+    },
+    {
+      "url": "https://github.com/basecamp/omarchy",
+      "path": "themes/white",
+      "name": "White"
+    }
+  ]
+}
