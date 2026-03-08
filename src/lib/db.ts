@@ -89,7 +89,7 @@ export async function getThemes(
 
   const themes = await db
     .prepare(
-      `SELECT * FROM themes ${where} ORDER BY ${orderBy} LIMIT ? OFFSET ?`
+      `SELECT id, name, slug, github_url, github_owner, github_repo, description, preview_url, colors_json, primary_hue, is_builtin, is_curated, stars, created_at, updated_at FROM themes ${where} ORDER BY ${orderBy} LIMIT ? OFFSET ?`
     )
     .bind(...params, limit, offset)
     .all<Theme>();
@@ -114,7 +114,7 @@ export async function getFeaturedThemes(
   limit: number = 6
 ): Promise<Theme[]> {
   const result = await db
-    .prepare("SELECT * FROM themes WHERE is_builtin = 0 ORDER BY stars DESC LIMIT ?")
+    .prepare("SELECT id, name, slug, github_url, github_owner, github_repo, description, preview_url, colors_json, primary_hue, is_builtin, is_curated, stars, created_at, updated_at FROM themes WHERE is_builtin = 0 ORDER BY stars DESC LIMIT ?")
     .bind(limit)
     .all<Theme>();
 
