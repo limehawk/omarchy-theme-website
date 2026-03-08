@@ -32,6 +32,8 @@ export const metadata: Metadata = {
     description:
       "Discover, preview, and install terminal color schemes for the Omarchy Linux desktop environment.",
     siteName: "Omarchy Themes",
+    url: "https://omarchytheme.com",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",
