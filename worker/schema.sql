@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS themes (
   is_curated INTEGER DEFAULT 0,
   stars INTEGER DEFAULT 0,
   readme_html TEXT,
+  github_pushed_at TEXT,
   last_scraped_at TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
@@ -20,3 +21,4 @@ CREATE TABLE IF NOT EXISTS themes (
 
 CREATE INDEX IF NOT EXISTS idx_themes_primary_hue ON themes(primary_hue);
 CREATE INDEX IF NOT EXISTS idx_themes_slug ON themes(slug);
+CREATE INDEX IF NOT EXISTS idx_themes_github_pushed_at ON themes(github_pushed_at);

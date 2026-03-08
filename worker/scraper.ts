@@ -4,6 +4,7 @@ import themes from "../src/data/themes.json";
 interface Env {
   DB: D1Database;
   GITHUB_TOKEN?: string;
+  SCRAPER_AUTH_TOKEN?: string;
 }
 
 interface CuratedTheme {
@@ -583,6 +584,18 @@ export default {
       new Response(JSON.stringify(data, null, 2), {
         headers: { "Content-Type": "application/json" },
       });
+
+    // Authenticate mutating endpoints
+    if (url.pathname === "/run" || url.pathname === "/run-force") {
+      const authHeader = request.headers.get("Authorization");
+      const token = authHeader?.replace("Bearer ", "");
+      if (!env.SCRAPER_AUTH_TOKEN || token !== env.SCRAPER_AUTH_TOKEN) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // POST /run — trigger scrape synchronously, return results
     if (url.pathname === "/run" && request.method === "POST") {
