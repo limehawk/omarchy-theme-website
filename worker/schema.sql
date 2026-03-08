@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS themes (
   is_curated INTEGER DEFAULT 0,
   stars INTEGER DEFAULT 0,
   readme_text TEXT,
+  default_branch TEXT DEFAULT 'main',
   github_pushed_at TEXT,
   last_scraped_at TEXT,
   created_at TEXT DEFAULT (datetime('now')),

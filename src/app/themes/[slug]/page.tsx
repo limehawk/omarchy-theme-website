@@ -2,7 +2,6 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { Star, ExternalLink } from "lucide-react";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
@@ -11,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ColorPalette } from "@/components/color-palette";
 import { InstallCommand } from "@/components/install-command";
+import { ReadmeContent } from "@/components/readme-content";
 import { cssHex } from "@/lib/colors";
 
 interface Props {
@@ -60,6 +60,14 @@ export default async function ThemeDetailPage({ params }: Props) {
 
   const colors = parseColors(theme.colors_json);
 
+  // Derive branch and path prefix for resolving relative README URLs
+  const readmeBranch = theme.default_branch ?? "main";
+  let readmePathPrefix = "";
+  if (theme.is_builtin) {
+    const treeMatch = theme.github_url.match(/\/tree\/[^/]+\/(.+)/);
+    if (treeMatch) readmePathPrefix = treeMatch[1];
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       {/* Breadcrumb */}
@@ -78,22 +86,6 @@ export default async function ThemeDetailPage({ params }: Props) {
       <div className="grid gap-10 lg:grid-cols-[1fr_340px]">
         {/* Main content */}
         <div className="space-y-8 min-w-0">
-          {/* Preview */}
-          {theme.preview_url && (
-            <Card className="overflow-hidden p-0">
-              <div className="relative aspect-[16/10] bg-black/40">
-                <Image
-                  src={theme.preview_url}
-                  alt={`${theme.name} preview`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 60vw"
-                  priority
-                />
-              </div>
-            </Card>
-          )}
-
           {/* Color palette (large) */}
           {colors && (
             <div className="space-y-3">
@@ -163,9 +155,13 @@ export default async function ThemeDetailPage({ params }: Props) {
               </h2>
               <Card>
                 <CardContent>
-                  <pre className="font-mono text-sm text-muted-foreground whitespace-pre-wrap break-words leading-relaxed overflow-x-auto">
-                    {theme.readme_text}
-                  </pre>
+                  <ReadmeContent
+                    content={theme.readme_text}
+                    owner={theme.github_owner}
+                    repo={theme.github_repo}
+                    branch={readmeBranch}
+                    pathPrefix={readmePathPrefix}
+                  />
                 </CardContent>
               </Card>
             </div>

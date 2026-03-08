@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { cssHex } from "@/lib/colors";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -93,10 +92,11 @@ export function ThemeCard({ theme }: ThemeCardProps) {
   return (
     <Link href={`/themes/${theme.slug}`} className="group block">
       <Card
-        className={cn(
-          "overflow-hidden transition-all duration-300 p-0",
-          "hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5"
-        )}
+        className="overflow-hidden transition-shadow duration-300 p-0"
+        style={{
+          // @ts-expect-error CSS custom property for hover glow
+          "--glow-color": colors?.accent ?? "#4a9eff",
+        }}
       >
         {/* Hero: screenshot or terminal fallback */}
         <div className="relative aspect-[16/10] overflow-hidden">
@@ -104,7 +104,7 @@ export function ThemeCard({ theme }: ThemeCardProps) {
             <img
               src={theme.preview_url}
               alt={theme.name}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+              className="w-full h-full object-cover"
             />
           ) : (
             <TerminalPreview colors={colors} slug={theme.slug} />

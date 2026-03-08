@@ -23,6 +23,7 @@ export interface Theme {
   is_curated: number;
   stars: number;
   readme_text: string | null;
+  default_branch: string;
   last_scraped_at: string | null;
   created_at: string;
   updated_at: string;
