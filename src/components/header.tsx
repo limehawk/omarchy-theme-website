@@ -20,7 +20,7 @@ export function Header() {
             browse
           </Link>
           <a
-            href="https://github.com/basecamp/omarchy"
+            href="https://github.com/limehawk/omarchy-theme-website"
             target="_blank"
             rel="noopener noreferrer"
             className="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors"

@@ -1,20 +1,10 @@
 # Contributing a Theme
 
-Want your Omarchy theme listed on [omarchytheme.com](https://omarchytheme.com)? Just open a PR.
+Want your Omarchy theme listed on [omarchytheme.com](https://omarchytheme.com)?
 
-## Steps
+## Submit Your Theme
 
-1. Fork this repo
-2. Edit `src/data/themes.json` — add your theme to the `"curated"` array:
-   ```json
-   {
-     "url": "https://github.com/your-username/your-repo-name",
-     "name": "Your Theme Name"
-   }
-   ```
-3. Open a pull request
-
-That's it. Once merged, the scraper picks up your theme on its next run and it appears on the site.
+[Open a theme submission](https://github.com/limehawk/omarchy-theme-website/issues/new?template=submit-theme.yml) — just provide your GitHub repo URL and theme name. Once approved, the scraper picks it up and your theme appears on the site.
 
 ## Theme Requirements
 
