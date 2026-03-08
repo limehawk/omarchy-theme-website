@@ -409,12 +409,21 @@ function normalizeImageUrl(
   branch: string,
   pathPrefix: string,
 ): string {
-  // Absolute URL — fix GitHub blob/raw URLs
+  // Absolute URL — fix GitHub blob/raw URLs and correct branch for same-repo refs
   if (src.startsWith("http://") || src.startsWith("https://")) {
-    return src.replace(
+    let url = src.replace(
       /^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/(blob|raw)\/(.+)/,
       "https://raw.githubusercontent.com/$1/$2/$4",
     );
+    // Fix wrong branch in raw.githubusercontent.com URLs for the same repo
+    const sameRepoPattern = new RegExp(
+      `^https://raw\\.githubusercontent\\.com/${owner}/${repo}/([^/]+)/(.+)$`
+    );
+    const match = url.match(sameRepoPattern);
+    if (match && match[1] !== branch) {
+      url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${match[2]}`;
+    }
+    return url;
   }
   // Relative path → raw GitHub URL
   src = src.replace(/^\.\//, "");
