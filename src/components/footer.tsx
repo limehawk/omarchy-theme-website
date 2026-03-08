@@ -19,7 +19,7 @@ export function Footer() {
             omarchy
           </a>
           <a
-            href="https://github.com/basecamp/omarchy/blob/main/CONTRIBUTING.md"
+            href="https://github.com/limehawk/omarchy-theme-website/issues/new?template=submit-theme.yml"
             target="_blank"
             rel="noopener noreferrer"
             className="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors"
