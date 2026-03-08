@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
@@ -21,6 +22,18 @@ const BUCKET_COLORS: Record<ColorBucket, string> = {
 
 interface Props {
   params: Promise<{ color: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata> {
+  const { color } = await params;
+  const capitalized = color.charAt(0).toUpperCase() + color.slice(1);
+
+  return {
+    title: `${capitalized} Themes`,
+    description: `Browse Omarchy terminal color schemes with ${color} tones.`,
+  };
 }
 
 export default async function ColorPage({ params }: Props) {

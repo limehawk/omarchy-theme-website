@@ -16,9 +16,22 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Omarchy Themes",
+  metadataBase: new URL("https://omarchytheme.com"),
+  title: {
+    template: "%s | Omarchy Themes",
+    default: "Omarchy Themes — Browse & Install Terminal Color Schemes",
+  },
   description:
-    "Browse, preview, and install themes for the Omarchy Linux desktop environment. Curated terminal color schemes with one-command installation.",
+    "Discover, preview, and install terminal color schemes for the Omarchy Linux desktop environment. One-command installation for curated themes.",
+  openGraph: {
+    title: "Omarchy Themes — Browse & Install Terminal Color Schemes",
+    description:
+      "Discover, preview, and install terminal color schemes for the Omarchy Linux desktop environment.",
+    siteName: "Omarchy Themes",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({

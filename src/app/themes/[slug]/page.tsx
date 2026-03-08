@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,6 +15,25 @@ import { UpvoteButton } from "@/components/upvote-button";
 
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const { env } = await getCloudflareContext({ async: true });
+  const db = env.DB as D1Database;
+  const theme = await getThemeBySlug(db, slug);
+
+  if (!theme) {
+    return { title: "Theme Not Found" };
+  }
+
+  return {
+    title: theme.name,
+    description:
+      theme.description ?? `Preview and install the ${theme.name} color scheme for Omarchy.`,
+  };
 }
 
 function parseColors(colorsJson: string | null): Record<string, string> | null {

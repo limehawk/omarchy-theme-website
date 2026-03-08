@@ -1,6 +1,11 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import { Suspense } from "react";
+
+export const metadata: Metadata = {
+  title: "Browse Themes",
+};
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getThemes } from "@/lib/db";
 import { ThemeGrid } from "@/components/theme-grid";
