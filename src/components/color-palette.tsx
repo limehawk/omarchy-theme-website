@@ -47,36 +47,48 @@ export function ColorPalette({
   const dotSize = {
     sm: "size-3",
     md: "size-5",
-    lg: "size-7",
+    lg: "size-6",
   };
 
-  return (
-    <div className={cn("flex flex-wrap gap-1", showLabels && "gap-2")}>
-      {orderedColors.map(({ name, hex }) => (
-        <div
-          key={name}
-          className={cn("flex flex-col items-center gap-1", showLabels && "min-w-[3.5rem]")}
-        >
-          <div
-            className={cn(
-              "rounded-sm border border-white/10",
-              dotSize[size],
-              name === "accent" && size === "sm" && "size-3.5 ring-1 ring-white/20 rounded-sm"
-            )}
-            style={{ backgroundColor: cssHex(hex) }}
-            title={`${name}: ${hex}`}
-          />
-          {showLabels && (
-            <div className="text-center">
-              <p className="font-mono text-[10px] text-muted-foreground leading-tight">
-                {name.replace("color", "c").replace("_", " ")}
+  // Large size with labels: columnar layout with name to the right
+  if (showLabels) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">
+        {orderedColors.map(({ name, hex }) => (
+          <div key={name} className="flex items-center gap-2.5">
+            <div
+              className={cn("rounded-sm border border-white/10 shrink-0", dotSize[size])}
+              style={{ backgroundColor: cssHex(hex) }}
+              title={`${name}: ${hex}`}
+            />
+            <div className="min-w-0">
+              <p className="font-mono text-xs text-muted-foreground truncate">
+                {name.replace("_", " ")}
               </p>
-              <p className="font-mono text-[10px] text-muted-foreground/60">
+              <p className="font-mono text-[10px] text-muted-foreground/50">
                 {hex}
               </p>
             </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Small/medium: compact dot grid (used on cards and sidebar)
+  return (
+    <div className="flex flex-wrap gap-1">
+      {orderedColors.map(({ name, hex }) => (
+        <div
+          key={name}
+          className={cn(
+            "rounded-sm border border-white/10",
+            dotSize[size],
+            name === "accent" && size === "sm" && "size-3.5 ring-1 ring-white/20 rounded-sm"
           )}
-        </div>
+          style={{ backgroundColor: cssHex(hex) }}
+          title={`${name}: ${hex}`}
+        />
       ))}
     </div>
   );

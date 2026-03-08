@@ -49,6 +49,11 @@ Theme gallery for the Omarchy Linux desktop environment.
 - base-ui Select `onValueChange` signature: `(value: string | null, eventDetails: SelectRootChangeEventDetails) => void`
 - Install command format: `omarchy-theme-install <github-url>.git` (hyphenated, with .git suffix)
 - basecamp/omarchy uses `master` branch (not `main`) for builtin theme raw URLs
+- README rendering uses `rehype-raw` + `rehype-sanitize` — raw HTML in markdown is supported
+- CSP `img-src` is `https:` (any HTTPS) because community READMEs link images from imgur, shields.io, vercel, etc.
+- Scraper `fetchFileContent()` must decode base64 via `Uint8Array` + `TextDecoder` (not bare `atob`) for proper UTF-8
+- `next dev` cannot access D1 — `getCloudflareContext()` needs Cloudflare Workers runtime
+- Scraper uses Cloudflare Queues (batch size 5) — after deploy, re-scrape may need a full queue drain cycle
 
 ## Live URLs
 

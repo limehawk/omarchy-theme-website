@@ -44,6 +44,7 @@ interface ThemeRecord {
   is_curated: number;
   stars: number;
   readme: string | null;
+  default_branch: string;
   github_pushed_at: string | null;
 }
 
@@ -208,7 +209,10 @@ async function fetchFileContent(
   if (!res.ok) return null;
   const data = (await res.json()) as { content?: string; encoding?: string };
   if (!data.content) return null;
-  return atob(data.content.replace(/\n/g, ""));
+  const binary = atob(data.content.replace(/\n/g, ""));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
 }
 
 async function checkFileExists(
@@ -313,6 +317,94 @@ function parseAlacrittyColors(tomlContent: string): Record<string, string> | nul
 }
 
 // ---------------------------------------------------------------------------
+// Find preview image using tree + README
+// ---------------------------------------------------------------------------
+
+const IMAGE_EXTENSIONS = /\.(png|jpg|jpeg|webp)$/i;
+const SCREENSHOT_KEYWORDS = /screenshot|screen|preview|theme/i;
+const SKIP_KEYWORDS = /shields\.io|badge|logo|icon|banner|title|header/i;
+const SKIP_HOSTS = /imgur\.com/i;
+
+function findPreviewImage(
+  files: Set<string>,
+  readme: string | null,
+  owner: string,
+  repo: string,
+  branch: string,
+  pathPrefix: string,
+): string | null {
+  const rawUrl = (path: string) =>
+    `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+
+  const prefix = pathPrefix.replace(/\/$/, "");
+
+  // 1. Explicit preview files in tree (highest confidence)
+  for (const name of ["preview.png", "preview.jpg", "preview.webp", "theme.png", "theme.jpg"]) {
+    const fullPath = prefix ? `${prefix}/${name}` : name;
+    if (files.has(fullPath)) return rawUrl(fullPath);
+  }
+
+  // 2. README images whose path/alt contains screenshot-like keywords
+  if (readme) {
+    const readmeImages = Array.from(readme.matchAll(/!\[(.*?)\]\((.*?)\)/g));
+    for (const [, alt, src] of readmeImages) {
+      const trimmed = src.trim();
+      if (SKIP_KEYWORDS.test(trimmed) || SKIP_KEYWORDS.test(alt)) continue;
+      if (SKIP_HOSTS.test(trimmed)) continue;
+      if (!IMAGE_EXTENSIONS.test(trimmed)) continue;
+      if (SCREENSHOT_KEYWORDS.test(trimmed) || SCREENSHOT_KEYWORDS.test(alt)) {
+        return normalizeImageUrl(trimmed, owner, repo, branch, pathPrefix);
+      }
+    }
+  }
+
+  // 3. Any root-level image in tree (e.g. goldrush.png)
+  for (const file of files) {
+    if (!IMAGE_EXTENSIONS.test(file)) continue;
+    // Must be at the theme root (no subdirectory beyond pathPrefix)
+    const relative = prefix ? file.replace(`${prefix}/`, "") : file;
+    if (relative.includes("/")) continue;
+    if (SKIP_KEYWORDS.test(relative)) continue;
+    return rawUrl(file);
+  }
+
+  // 4. First non-badge README image as last resort
+  if (readme) {
+    const readmeImages = Array.from(readme.matchAll(/!\[(.*?)\]\((.*?)\)/g));
+    for (const [, alt, src] of readmeImages) {
+      const trimmed = src.trim();
+      if (SKIP_KEYWORDS.test(trimmed) || SKIP_KEYWORDS.test(alt)) continue;
+      if (SKIP_HOSTS.test(trimmed)) continue;
+      if (trimmed.endsWith(".svg")) continue;
+      if (!IMAGE_EXTENSIONS.test(trimmed)) continue;
+      return normalizeImageUrl(trimmed, owner, repo, branch, pathPrefix);
+    }
+  }
+
+  return null;
+}
+
+function normalizeImageUrl(
+  src: string,
+  owner: string,
+  repo: string,
+  branch: string,
+  pathPrefix: string,
+): string {
+  // Absolute URL — fix GitHub blob/raw URLs
+  if (src.startsWith("http://") || src.startsWith("https://")) {
+    return src.replace(
+      /^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/(blob|raw)\/(.+)/,
+      "https://raw.githubusercontent.com/$1/$2/$4",
+    );
+  }
+  // Relative path → raw GitHub URL
+  src = src.replace(/^\.\//, "");
+  const fullPath = pathPrefix ? `${pathPrefix}${src}` : src;
+  return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${fullPath}`;
+}
+
+// ---------------------------------------------------------------------------
 // Detect which apps a theme covers
 // ---------------------------------------------------------------------------
 
@@ -337,23 +429,23 @@ const APP_FILE_MAP: Record<string, string> = {
   "eza.yml": "eza",
 };
 
-async function detectApps(
+async function fetchRepoTree(
   owner: string,
   repo: string,
-  pathPrefix: string,
   branch: string,
   token?: string,
-): Promise<string[]> {
-  const apps = new Set<string>();
-
+): Promise<Set<string>> {
   const res = await githubFetch(
     `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`,
     token,
   );
-  if (!res.ok) return [];
-
+  if (!res.ok) return new Set();
   const data = (await res.json()) as { tree: { path: string; type: string }[] };
-  const files = new Set(data.tree.filter(e => e.type === "blob").map(e => e.path));
+  return new Set(data.tree.filter(e => e.type === "blob").map(e => e.path));
+}
+
+function detectApps(files: Set<string>, pathPrefix: string): string[] {
+  const apps = new Set<string>();
 
   for (const [filename, app] of Object.entries(APP_FILE_MAP)) {
     const fullPath = pathPrefix ? `${pathPrefix}/${filename}` : filename;
@@ -426,23 +518,20 @@ async function scrapeTheme(
     primaryHue = computeHueBucket(colors.accent);
   }
 
-  // Check for preview image: try preview.png, then theme.png
   const branch = meta.default_branch;
-  let previewUrl: string | null = null;
-  for (const filename of ["preview.png", "theme.png"]) {
-    const exists = await checkFileExists(owner, repo, `${pathPrefix}${filename}`, token);
-    if (exists) {
-      previewUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${pathPrefix}${filename}`;
-      break;
-    }
-  }
-  result.has_preview = previewUrl !== null;
+
+  // Fetch tree once — used for app detection and image finding
+  const files = await fetchRepoTree(owner, repo, branch, token);
 
   // Detect which apps this theme covers
-  const apps = await detectApps(owner, repo, pathPrefix.replace(/\/$/, ""), meta.default_branch, token);
+  const apps = detectApps(files, pathPrefix.replace(/\/$/, ""));
 
   // Fetch README.md
   const readme = await fetchFileContent(owner, repo, `${pathPrefix}README.md`, token);
+
+  // Find preview image: tree files → README screenshot keywords → root images → README fallback
+  const previewUrl = findPreviewImage(files, readme, owner, repo, branch, pathPrefix);
+  result.has_preview = previewUrl !== null;
 
   const githubUrl = entry.is_builtin
     ? `${entry.url}/tree/${branch}/${entry.path}`
@@ -464,6 +553,7 @@ async function scrapeTheme(
     is_curated: entry.is_curated ? 1 : 0,
     stars: meta.stars,
     readme: readme,
+    default_branch: branch,
     github_pushed_at: meta.pushed_at,
   };
 
@@ -480,9 +570,9 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
       `INSERT INTO themes (
         id, name, slug, github_url, github_owner, github_repo,
         description, preview_url, colors_json, apps_json, primary_hue,
-        is_builtin, is_curated, stars, readme_text,
+        is_builtin, is_curated, stars, readme_text, default_branch,
         github_pushed_at, last_scraped_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         github_url = excluded.github_url,
@@ -497,6 +587,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
         is_curated = excluded.is_curated,
         stars = excluded.stars,
         readme_text = excluded.readme_text,
+        default_branch = excluded.default_branch,
         github_pushed_at = excluded.github_pushed_at,
         last_scraped_at = datetime('now'),
         updated_at = datetime('now')`,
@@ -517,6 +608,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
       theme.is_curated,
       theme.stars,
       theme.readme,
+      theme.default_branch,
       theme.github_pushed_at,
     )
     .run();
