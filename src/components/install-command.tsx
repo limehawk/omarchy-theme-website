@@ -25,9 +25,9 @@ export function InstallCommand({ githubUrl }: InstallCommandProps) {
 
   return (
     <Card className="bg-black/40 p-4 font-mono text-sm">
-      <div className="flex items-center gap-3">
-        <span className="text-green-400/70 select-none">$</span>
-        <code className="text-foreground/90 flex-1 overflow-x-auto">
+      <div className="flex items-start gap-3">
+        <span className="text-green-400/70 select-none shrink-0 leading-relaxed">$</span>
+        <code className="text-foreground/90 flex-1 break-all leading-relaxed">
           {command}
         </code>
         <Button
