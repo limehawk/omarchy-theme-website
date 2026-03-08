@@ -98,13 +98,21 @@ export function ThemeCard({ theme }: ThemeCardProps) {
           "hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5"
         )}
       >
-        {/* Terminal preview */}
+        {/* Hero: screenshot or terminal fallback */}
         <div className="relative aspect-[16/10] overflow-hidden">
-          <TerminalPreview colors={colors} slug={theme.slug} />
+          {theme.preview_url ? (
+            <img
+              src={theme.preview_url}
+              alt={theme.name}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            />
+          ) : (
+            <TerminalPreview colors={colors} slug={theme.slug} />
+          )}
         </div>
 
         {/* Info */}
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-1">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-mono text-sm font-medium text-foreground truncate">
               {theme.name}
@@ -116,11 +124,14 @@ export function ThemeCard({ theme }: ThemeCardProps) {
               </Badge>
             )}
           </div>
+          <p className="font-mono text-[10px] text-muted-foreground truncate">
+            {theme.github_owner}
+          </p>
         </CardContent>
 
         {/* Color bar — flush to bottom edge */}
         {colors && (
-          <div className="flex h-2 overflow-hidden">
+          <div className="flex h-1.5 overflow-hidden">
             {Array.from({ length: 16 }, (_, i) => {
               const hex = colors[`color${i}`];
               return hex ? (

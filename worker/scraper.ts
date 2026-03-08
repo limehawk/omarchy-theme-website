@@ -38,6 +38,7 @@ interface ThemeRecord {
   description: string | null;
   preview_url: string | null;
   colors_json: string | null;
+  apps_json: string | null;
   primary_hue: string | null;
   is_builtin: number;
   is_curated: number;
@@ -312,6 +313,66 @@ function parseAlacrittyColors(tomlContent: string): Record<string, string> | nul
 }
 
 // ---------------------------------------------------------------------------
+// Detect which apps a theme covers
+// ---------------------------------------------------------------------------
+
+const APP_FILE_MAP: Record<string, string> = {
+  "alacritty.toml": "alacritty",
+  "colors.toml": "alacritty",
+  "btop.theme": "btop",
+  "chromium.theme": "chromium",
+  "ghostty.conf": "ghostty",
+  "hyprland.conf": "hyprland",
+  "hyprlock.conf": "hyprlock",
+  "icons.theme": "icons",
+  "kitty.conf": "kitty",
+  "mako.ini": "mako",
+  "neovim.lua": "neovim",
+  "swayosd.css": "swayosd",
+  "vscode.json": "vscode",
+  "walker.css": "walker",
+  "waybar.css": "waybar",
+  "wofi.css": "wofi",
+  "gtk-4.0.css": "gtk",
+  "eza.yml": "eza",
+};
+
+async function detectApps(
+  owner: string,
+  repo: string,
+  pathPrefix: string,
+  branch: string,
+  token?: string,
+): Promise<string[]> {
+  const apps = new Set<string>();
+
+  const res = await githubFetch(
+    `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`,
+    token,
+  );
+  if (!res.ok) return [];
+
+  const data = (await res.json()) as { tree: { path: string; type: string }[] };
+  const files = new Set(data.tree.filter(e => e.type === "blob").map(e => e.path));
+
+  for (const [filename, app] of Object.entries(APP_FILE_MAP)) {
+    const fullPath = pathPrefix ? `${pathPrefix}/${filename}` : filename;
+    if (files.has(fullPath)) {
+      apps.add(app);
+    }
+  }
+
+  // Builtin themes with colors.toml get all the auto-generated apps
+  if (files.has(pathPrefix ? `${pathPrefix}/colors.toml` : "colors.toml")) {
+    for (const app of ["hyprland", "hyprlock", "mako", "swayosd", "walker", "waybar", "ghostty"]) {
+      apps.add(app);
+    }
+  }
+
+  return [...apps].sort();
+}
+
+// ---------------------------------------------------------------------------
 // Scrape a single theme
 // ---------------------------------------------------------------------------
 
@@ -377,6 +438,9 @@ async function scrapeTheme(
   }
   result.has_preview = previewUrl !== null;
 
+  // Detect which apps this theme covers
+  const apps = await detectApps(owner, repo, pathPrefix.replace(/\/$/, ""), meta.default_branch, token);
+
   // Fetch README.md
   const readme = await fetchFileContent(owner, repo, `${pathPrefix}README.md`, token);
 
@@ -394,6 +458,7 @@ async function scrapeTheme(
     description: meta.description,
     preview_url: previewUrl,
     colors_json: colors ? JSON.stringify(colors) : null,
+    apps_json: apps.length > 0 ? JSON.stringify(apps) : null,
     primary_hue: primaryHue,
     is_builtin: entry.is_builtin ? 1 : 0,
     is_curated: entry.is_curated ? 1 : 0,
@@ -414,10 +479,10 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
     .prepare(
       `INSERT INTO themes (
         id, name, slug, github_url, github_owner, github_repo,
-        description, preview_url, colors_json, primary_hue,
+        description, preview_url, colors_json, apps_json, primary_hue,
         is_builtin, is_curated, stars, readme_text,
         github_pushed_at, last_scraped_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         github_url = excluded.github_url,
@@ -426,6 +491,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
         description = excluded.description,
         preview_url = excluded.preview_url,
         colors_json = excluded.colors_json,
+        apps_json = excluded.apps_json,
         primary_hue = excluded.primary_hue,
         is_builtin = excluded.is_builtin,
         is_curated = excluded.is_curated,
@@ -445,6 +511,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
       theme.description,
       theme.preview_url,
       theme.colors_json,
+      theme.apps_json,
       theme.primary_hue,
       theme.is_builtin,
       theme.is_curated,

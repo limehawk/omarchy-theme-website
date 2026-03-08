@@ -17,6 +17,7 @@ export interface Theme {
   description: string | null;
   preview_url: string | null;
   colors_json: string | null;
+  apps_json: string | null;
   primary_hue: string | null;
   is_builtin: number;
   is_curated: number;
@@ -36,7 +37,7 @@ export interface GetThemesOptions {
   limit?: number;
 }
 
-const THEME_LIST_COLUMNS = "id, name, slug, github_url, github_owner, github_repo, description, preview_url, colors_json, primary_hue, is_builtin, is_curated, stars, created_at, updated_at";
+const THEME_LIST_COLUMNS = "id, name, slug, github_url, github_owner, github_repo, description, preview_url, colors_json, apps_json, primary_hue, is_builtin, is_curated, stars, created_at, updated_at";
 
 export function parseThemeFilters(raw: {
   color?: string | null;

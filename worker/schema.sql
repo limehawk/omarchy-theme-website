@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS themes (
   description TEXT,
   preview_url TEXT,
   colors_json TEXT,
+  apps_json TEXT,
   primary_hue TEXT,
   is_builtin INTEGER DEFAULT 0,
   is_curated INTEGER DEFAULT 0,
