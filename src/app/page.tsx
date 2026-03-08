@@ -6,6 +6,8 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getFeaturedThemes } from "@/lib/db";
 import { COLOR_BUCKETS } from "@/lib/colors";
 import { ThemeGrid } from "@/components/theme-grid";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import type { ColorBucket } from "@/lib/colors";
 
 const BUCKET_COLORS: Record<ColorBucket, string> = {
@@ -47,21 +49,23 @@ export default async function Home() {
             One command to transform your terminal.
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-2">
-            <Link
-              href="/themes"
-              className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 font-mono text-sm font-medium text-background hover:bg-foreground/90 transition-colors"
-            >
+            <Button className="font-mono" render={<Link href="/themes" />}>
               browse themes
               <ArrowRight className="size-4" />
-            </Link>
-            <a
-              href="https://github.com/basecamp/omarchy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-border/50 px-4 py-2.5 font-mono text-sm text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+            </Button>
+            <Button
+              variant="outline"
+              className="font-mono"
+              render={
+                <a
+                  href="https://github.com/basecamp/omarchy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                />
+              }
             >
               get omarchy
-            </a>
+            </Button>
           </div>
         </div>
       </section>
@@ -73,17 +77,18 @@ export default async function Home() {
         </h2>
         <div className="flex flex-wrap gap-3">
           {COLOR_BUCKETS.map((bucket) => (
-            <Link
+            <Badge
               key={bucket}
-              href={`/themes?color=${bucket}`}
-              className="group inline-flex items-center gap-2 rounded-full border border-border/40 px-4 py-2 font-mono text-xs text-muted-foreground hover:text-foreground hover:border-border transition-all"
+              variant="outline"
+              className="font-mono text-xs gap-2 py-2 px-4 hover:bg-muted transition-colors"
+              render={<Link href={`/themes?color=${bucket}`} />}
             >
               <span
-                className="size-3 rounded-full transition-transform group-hover:scale-125"
+                className="size-3 rounded-full"
                 style={{ backgroundColor: BUCKET_COLORS[bucket] }}
               />
               {bucket}
-            </Link>
+            </Badge>
           ))}
         </div>
       </section>

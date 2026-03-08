@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface PaginationProps {
   total: number;
@@ -31,25 +31,19 @@ export function Pagination({ total, limit, currentPage }: PaginationProps) {
   return (
     <nav className="flex items-center justify-center gap-2 pt-8">
       {currentPage > 1 && (
-        <Link
-          href={buildHref(currentPage - 1)}
-          className="inline-flex items-center gap-1 rounded-lg border border-border/50 px-3 py-1.5 font-mono text-xs text-muted-foreground hover:text-foreground hover:border-border transition-colors"
-        >
+        <Button variant="outline" size="sm" className="font-mono text-xs" render={<Link href={buildHref(currentPage - 1)} />}>
           <ChevronLeft className="size-3" />
           prev
-        </Link>
+        </Button>
       )}
       <span className="font-mono text-xs text-muted-foreground px-2">
         {currentPage} / {totalPages}
       </span>
       {currentPage < totalPages && (
-        <Link
-          href={buildHref(currentPage + 1)}
-          className="inline-flex items-center gap-1 rounded-lg border border-border/50 px-3 py-1.5 font-mono text-xs text-muted-foreground hover:text-foreground hover:border-border transition-colors"
-        >
+        <Button variant="outline" size="sm" className="font-mono text-xs" render={<Link href={buildHref(currentPage + 1)} />}>
           next
           <ChevronRight className="size-3" />
-        </Link>
+        </Button>
       )}
     </nav>
   );

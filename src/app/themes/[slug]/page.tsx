@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Star, ExternalLink } from "lucide-react";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getThemeBySlug } from "@/lib/db";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { ColorPalette } from "@/components/color-palette";
 import { InstallCommand } from "@/components/install-command";
 import { UpvoteButton } from "@/components/upvote-button";
@@ -53,16 +55,18 @@ export default async function ThemeDetailPage({ params }: Props) {
         <div className="space-y-8 min-w-0">
           {/* Preview */}
           {theme.preview_url && (
-            <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-border/40 bg-black/40">
-              <Image
-                src={theme.preview_url}
-                alt={`${theme.name} preview`}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 60vw"
-                priority
-              />
-            </div>
+            <Card className="overflow-hidden p-0">
+              <div className="relative aspect-[16/10] bg-black/40">
+                <Image
+                  src={theme.preview_url}
+                  alt={`${theme.name} preview`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 60vw"
+                  priority
+                />
+              </div>
+            </Card>
           )}
 
           {/* Color palette (large) */}
@@ -71,9 +75,11 @@ export default async function ThemeDetailPage({ params }: Props) {
               <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
                 color palette
               </h2>
-              <div className="rounded-xl border border-border/40 bg-card p-6">
-                <ColorPalette colors={colors} size="lg" showLabels />
-              </div>
+              <Card>
+                <CardContent>
+                  <ColorPalette colors={colors} size="lg" showLabels />
+                </CardContent>
+              </Card>
             </div>
           )}
 
@@ -83,10 +89,7 @@ export default async function ThemeDetailPage({ params }: Props) {
               <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
                 preview
               </h2>
-              <div
-                className="rounded-xl border border-border/40 overflow-hidden"
-                style={{ backgroundColor: colors.background ?? "#1a1a2e" }}
-              >
+              <Card className="overflow-hidden p-0" style={{ backgroundColor: colors.background ?? "#1a1a2e" }}>
                 <div className="flex items-center gap-2 px-4 py-2 border-b border-white/5">
                   <span className="size-2.5 rounded-full bg-red-500/70" />
                   <span className="size-2.5 rounded-full bg-yellow-500/70" />
@@ -123,7 +126,7 @@ export default async function ThemeDetailPage({ params }: Props) {
                     />
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           )}
 
@@ -133,11 +136,13 @@ export default async function ThemeDetailPage({ params }: Props) {
               <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
                 readme
               </h2>
-              <div className="rounded-xl border border-border/40 bg-card p-6">
-                <pre className="font-mono text-sm text-muted-foreground whitespace-pre-wrap break-words leading-relaxed overflow-x-auto">
-                  {theme.readme_html}
-                </pre>
-              </div>
+              <Card>
+                <CardContent>
+                  <pre className="font-mono text-sm text-muted-foreground whitespace-pre-wrap break-words leading-relaxed overflow-x-auto">
+                    {theme.readme_html}
+                  </pre>
+                </CardContent>
+              </Card>
             </div>
           )}
         </div>
@@ -146,40 +151,40 @@ export default async function ThemeDetailPage({ params }: Props) {
         <aside className="space-y-6">
           <div className="sticky top-20 space-y-6">
             {/* Theme info */}
-            <div className="rounded-xl border border-border/40 bg-card p-5 space-y-4">
-              <div>
-                <h1 className="font-mono text-lg font-bold text-foreground">
-                  {theme.name}
-                </h1>
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-mono">{theme.name}</CardTitle>
                 {theme.description && (
-                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     {theme.description}
                   </p>
                 )}
-              </div>
+              </CardHeader>
 
-              <div className="flex items-center gap-4">
-                <UpvoteButton themeId={theme.id} initialCount={theme.upvote_count} />
-                {theme.stars > 0 && (
-                  <span className="inline-flex items-center gap-1.5 font-mono text-sm text-muted-foreground">
-                    <Star className="size-4" />
-                    {theme.stars}
-                  </span>
-                )}
-              </div>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <UpvoteButton themeId={theme.id} initialCount={theme.upvote_count} />
+                  {theme.stars > 0 && (
+                    <Badge variant="secondary" className="font-mono gap-1.5">
+                      <Star className="size-3" />
+                      {theme.stars}
+                    </Badge>
+                  )}
+                </div>
 
-              <div className="border-t border-border/40 pt-4">
-                <a
-                  href={theme.github_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <ExternalLink className="size-3" />
-                  {theme.github_owner}/{theme.github_repo}
-                </a>
-              </div>
-            </div>
+                <div className="border-t border-border/40 pt-4">
+                  <a
+                    href={theme.github_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ExternalLink className="size-3" />
+                    {theme.github_owner}/{theme.github_repo}
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Install */}
             <div className="space-y-2">
@@ -195,9 +200,11 @@ export default async function ThemeDetailPage({ params }: Props) {
                 <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
                   colors
                 </h2>
-                <div className="rounded-xl border border-border/40 bg-card p-4">
-                  <ColorPalette colors={colors} size="md" />
-                </div>
+                <Card>
+                  <CardContent>
+                    <ColorPalette colors={colors} size="md" />
+                  </CardContent>
+                </Card>
               </div>
             )}
           </div>

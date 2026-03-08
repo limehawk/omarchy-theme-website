@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { ArrowUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { generateFingerprint } from "@/lib/fingerprint";
 
 interface UpvoteButtonProps {
@@ -117,16 +118,16 @@ export function UpvoteButton({ themeId, initialCount }: UpvoteButtonProps) {
 
   return (
     <>
-      <button
+      <Button
+        variant={voted ? "secondary" : "outline"}
+        size="sm"
         onClick={handleUpvote}
         disabled={voted || loading}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 font-mono text-sm transition-all",
-          voted
-            ? "border-green-500/30 bg-green-500/10 text-green-400 cursor-default"
-            : "border-border/50 bg-card hover:border-foreground/30 hover:bg-card/80 text-muted-foreground hover:text-foreground",
+          "font-mono gap-1.5",
+          voted && "border-green-500/30 bg-green-500/10 text-green-400",
           loading && "opacity-50 cursor-wait",
-          animating && "scale-110"
+          animating && "scale-110 transition-transform"
         )}
         aria-label={voted ? "Already upvoted" : "Upvote this theme"}
       >
@@ -137,7 +138,7 @@ export function UpvoteButton({ themeId, initialCount }: UpvoteButtonProps) {
           )}
         />
         <span>{count}</span>
-      </button>
+      </Button>
       <div ref={turnstileRef} className="hidden" />
     </>
   );

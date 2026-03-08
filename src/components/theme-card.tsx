@@ -2,6 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Star, ArrowUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { ColorPalette } from "@/components/color-palette";
 import type { Theme } from "@/lib/db";
 
@@ -58,10 +60,10 @@ export function ThemeCard({ theme }: ThemeCardProps) {
 
   return (
     <Link href={`/themes/${theme.slug}`} className="group block">
-      <div
+      <Card
         className={cn(
-          "rounded-xl border border-border/40 bg-card overflow-hidden transition-all duration-300",
-          "hover:border-border hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5"
+          "overflow-hidden transition-all duration-300 p-0",
+          "hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5"
         )}
       >
         {/* Preview */}
@@ -80,28 +82,28 @@ export function ThemeCard({ theme }: ThemeCardProps) {
         </div>
 
         {/* Info */}
-        <div className="p-4 space-y-3">
+        <CardContent className="space-y-3">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-mono text-sm font-medium text-foreground truncate">
               {theme.name}
             </h3>
-            <div className="flex items-center gap-3 shrink-0">
-              <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 shrink-0">
+              <Badge variant="secondary" className="font-mono text-xs gap-1">
                 <ArrowUp className="size-3" />
                 {theme.upvote_count}
-              </span>
+              </Badge>
               {theme.stars > 0 && (
-                <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground">
+                <Badge variant="secondary" className="font-mono text-xs gap-1">
                   <Star className="size-3" />
                   {theme.stars}
-                </span>
+                </Badge>
               )}
             </div>
           </div>
 
           {colors && <ColorPalette colors={colors} size="sm" />}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </Link>
   );
 }

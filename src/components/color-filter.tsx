@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { COLOR_BUCKETS, type ColorBucket } from "@/lib/colors";
 
 const BUCKET_COLORS: Record<ColorBucket, string> = {
@@ -35,34 +36,26 @@ export function ColorFilter() {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Link
-        href={buildHref("")}
-        className={cn(
-          "rounded-full px-3 py-1 font-mono text-xs transition-colors border",
-          !activeColor
-            ? "border-foreground/30 bg-foreground/10 text-foreground"
-            : "border-border/50 text-muted-foreground hover:text-foreground hover:border-border"
-        )}
+      <Badge
+        variant={!activeColor ? "default" : "outline"}
+        className="font-mono text-xs"
+        render={<Link href={buildHref("")} />}
       >
         all
-      </Link>
+      </Badge>
       {COLOR_BUCKETS.map((bucket) => (
-        <Link
+        <Badge
           key={bucket}
-          href={buildHref(bucket)}
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs transition-all border",
-            activeColor === bucket
-              ? "border-foreground/30 bg-foreground/10 text-foreground"
-              : "border-border/50 text-muted-foreground hover:text-foreground hover:border-border"
-          )}
+          variant={activeColor === bucket ? "default" : "outline"}
+          className={cn("font-mono text-xs gap-1.5")}
+          render={<Link href={buildHref(bucket)} />}
         >
           <span
             className="size-2.5 rounded-full shrink-0"
             style={{ backgroundColor: BUCKET_COLORS[bucket] }}
           />
           {bucket}
-        </Link>
+        </Badge>
       ))}
     </div>
   );

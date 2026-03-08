@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
+import { Input } from "@/components/ui/input";
 
 export function SortSelect() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export function SortSelect() {
     <select
       value={current}
       onChange={handleChange}
-      className="rounded-lg border border-border/50 bg-card px-3 py-2 font-mono text-xs text-foreground outline-none focus:border-foreground/30 transition-colors cursor-pointer"
+      className="h-8 min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 font-mono text-xs text-foreground transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer dark:bg-input/30"
     >
       <option value="popular">popular</option>
       <option value="newest">newest</option>
