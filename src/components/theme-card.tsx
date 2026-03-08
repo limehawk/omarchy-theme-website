@@ -102,13 +102,13 @@ export function ThemeCard({ theme }: ThemeCardProps) {
           </div>
 
           {colors && (
-            <div className="grid grid-cols-8 gap-0.5">
+            <div className="flex h-2 rounded-sm overflow-hidden">
               {Array.from({ length: 16 }, (_, i) => {
                 const hex = colors[`color${i}`];
                 return hex ? (
                   <div
                     key={i}
-                    className="aspect-square rounded-sm border border-white/10"
+                    className="flex-1"
                     style={{ backgroundColor: hex }}
                   />
                 ) : null;
