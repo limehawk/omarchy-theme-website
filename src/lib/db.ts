@@ -80,8 +80,9 @@ export async function getThemes(
   }
 
   if (q) {
-    conditions.push("(name LIKE ? OR description LIKE ?)");
-    const pattern = `%${q}%`;
+    const escaped = q.replace(/[%_\\]/g, "\\$&");
+    conditions.push("(name LIKE ? ESCAPE '\\' OR description LIKE ? ESCAPE '\\')");
+    const pattern = `%${escaped}%`;
     params.push(pattern, pattern);
   }
 

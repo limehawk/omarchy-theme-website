@@ -614,7 +614,7 @@ export default {
     // Authenticate admin endpoints
     if (url.pathname === "/run" || url.pathname === "/run-force" || url.pathname === "/status") {
       const authHeader = request.headers.get("Authorization");
-      const token = authHeader?.replace("Bearer ", "");
+      const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
       if (!env.SCRAPER_AUTH_TOKEN || !token || !(await timingSafeEqual(token, env.SCRAPER_AUTH_TOKEN))) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401,
