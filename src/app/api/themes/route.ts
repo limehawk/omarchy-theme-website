@@ -1,35 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { getThemes } from "@/lib/db";
-import { COLOR_BUCKETS } from "@/lib/colors";
-
-const VALID_SORTS = new Set(["newest", "stars", "name"]);
-const VALID_SOURCES = new Set(["all", "community", "builtin"]);
+import { getThemes, parseThemeFilters } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
 
-  const colorParam = searchParams.get("color");
-  const color = (colorParam && (COLOR_BUCKETS as readonly string[]).includes(colorParam)) ? colorParam : undefined;
-  const q = searchParams.get("q")?.slice(0, 100) ?? undefined;
-  const sortParam = searchParams.get("sort");
-  const sort = (sortParam && VALID_SORTS.has(sortParam) ? sortParam : "stars") as "newest" | "stars" | "name";
-  const sourceParam = searchParams.get("source");
-  const source = (sourceParam && VALID_SOURCES.has(sourceParam) ? sourceParam : "all") as "all" | "community" | "builtin";
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
-  const limit = Math.min(300, Math.max(1, parseInt(searchParams.get("limit") ?? "12", 10) || 12));
+  const options = parseThemeFilters({
+    color: searchParams.get("color"),
+    q: searchParams.get("q"),
+    sort: searchParams.get("sort"),
+    source: searchParams.get("source"),
+    page: searchParams.get("page"),
+    limit: searchParams.get("limit"),
+  });
 
   const { env } = await getCloudflareContext({ async: true });
   const db = env.DB as D1Database;
 
-  const { themes, total } = await getThemes(db, {
-    color,
-    q,
-    sort,
-    source,
-    page,
-    limit,
-  });
+  const { themes, total } = await getThemes(db, options);
 
-  return NextResponse.json({ themes, total, page, limit });
+  return NextResponse.json({ themes, total, page: options.page, limit: options.limit });
 }

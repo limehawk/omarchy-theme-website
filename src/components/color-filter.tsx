@@ -4,19 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { COLOR_BUCKETS, type ColorBucket } from "@/lib/colors";
-
-const BUCKET_COLORS: Record<ColorBucket, string> = {
-  red: "#ef4444",
-  orange: "#f97316",
-  yellow: "#eab308",
-  green: "#22c55e",
-  teal: "#14b8a6",
-  blue: "#3b82f6",
-  purple: "#a855f7",
-  pink: "#ec4899",
-  monochrome: "#a3a3a3",
-};
+import { COLOR_BUCKETS, BUCKET_COLORS } from "@/lib/colors";
 
 export function ColorFilter() {
   const searchParams = useSearchParams();

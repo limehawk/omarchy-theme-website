@@ -5,20 +5,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getThemes } from "@/lib/db";
-import { COLOR_BUCKETS, type ColorBucket } from "@/lib/colors";
+import { COLOR_BUCKETS, BUCKET_COLORS, type ColorBucket } from "@/lib/colors";
 import { ThemeGrid } from "@/components/theme-grid";
-
-const BUCKET_COLORS: Record<ColorBucket, string> = {
-  red: "#ef4444",
-  orange: "#f97316",
-  yellow: "#eab308",
-  green: "#22c55e",
-  teal: "#14b8a6",
-  blue: "#3b82f6",
-  purple: "#a855f7",
-  pink: "#ec4899",
-  monochrome: "#a3a3a3",
-};
 
 interface Props {
   params: Promise<{ color: string }>;

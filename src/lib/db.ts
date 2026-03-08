@@ -1,3 +1,12 @@
+import { cache } from "react";
+import { COLOR_BUCKETS } from "@/lib/colors";
+
+export const VALID_SORTS = ["newest", "stars", "name"] as const;
+export type SortOption = (typeof VALID_SORTS)[number];
+
+export const VALID_SOURCES = ["all", "community", "builtin"] as const;
+export type SourceOption = (typeof VALID_SOURCES)[number];
+
 export interface Theme {
   id: string;
   name: string;
@@ -21,10 +30,32 @@ export interface Theme {
 export interface GetThemesOptions {
   color?: string;
   q?: string;
-  sort?: "newest" | "stars" | "name";
-  source?: "all" | "community" | "builtin";
+  sort?: SortOption;
+  source?: SourceOption;
   page?: number;
   limit?: number;
+}
+
+const THEME_LIST_COLUMNS = "id, name, slug, github_url, github_owner, github_repo, description, preview_url, colors_json, primary_hue, is_builtin, is_curated, stars, created_at, updated_at";
+
+export function parseThemeFilters(raw: {
+  color?: string | null;
+  q?: string | null;
+  sort?: string | null;
+  source?: string | null;
+  page?: string | null;
+  limit?: string | null;
+}): GetThemesOptions {
+  const colorParam = raw.color;
+  const color = (colorParam && (COLOR_BUCKETS as readonly string[]).includes(colorParam)) ? colorParam : undefined;
+  const q = raw.q?.slice(0, 100) ?? undefined;
+  const sortParam = raw.sort;
+  const sort: SortOption = (sortParam && (VALID_SORTS as readonly string[]).includes(sortParam)) ? sortParam as SortOption : "stars";
+  const sourceParam = raw.source;
+  const source: SourceOption = (sourceParam && (VALID_SOURCES as readonly string[]).includes(sourceParam)) ? sourceParam as SourceOption : "all";
+  const page = Math.max(1, parseInt(raw.page ?? "1", 10) || 1);
+  const limit = Math.min(300, Math.max(1, parseInt(raw.limit ?? "12", 10) || 12));
+  return { color, q, sort, source, page, limit };
 }
 
 export async function getThemes(
@@ -80,41 +111,38 @@ export async function getThemes(
 
   const offset = (page - 1) * limit;
 
-  const countResult = await db
-    .prepare(`SELECT COUNT(*) as count FROM themes ${where}`)
-    .bind(...params)
-    .first<{ count: number }>();
-
-  const total = countResult?.count ?? 0;
-
-  const themes = await db
-    .prepare(
-      `SELECT id, name, slug, github_url, github_owner, github_repo, description, preview_url, colors_json, primary_hue, is_builtin, is_curated, stars, created_at, updated_at FROM themes ${where} ORDER BY ${orderBy} LIMIT ? OFFSET ?`
+  const [countResult, themes] = await Promise.all([
+    db.prepare(`SELECT COUNT(*) as count FROM themes ${where}`)
+      .bind(...params)
+      .first<{ count: number }>(),
+    db.prepare(
+      `SELECT ${THEME_LIST_COLUMNS} FROM themes ${where} ORDER BY ${orderBy} LIMIT ? OFFSET ?`
     )
-    .bind(...params, limit, offset)
-    .all<Theme>();
+      .bind(...params, limit, offset)
+      .all<Theme>(),
+  ]);
 
-  return { themes: themes.results, total };
+  return { themes: themes.results, total: countResult?.count ?? 0 };
 }
 
-export async function getThemeBySlug(
+export const getThemeBySlug = cache(async (
   db: D1Database,
   slug: string
-): Promise<Theme | null> {
+): Promise<Theme | null> => {
   const result = await db
     .prepare("SELECT * FROM themes WHERE slug = ?")
     .bind(slug)
     .first<Theme>();
 
   return result ?? null;
-}
+});
 
 export async function getFeaturedThemes(
   db: D1Database,
   limit: number = 6
 ): Promise<Theme[]> {
   const result = await db
-    .prepare("SELECT id, name, slug, github_url, github_owner, github_repo, description, preview_url, colors_json, primary_hue, is_builtin, is_curated, stars, created_at, updated_at FROM themes WHERE is_builtin = 0 ORDER BY stars DESC LIMIT ?")
+    .prepare(`SELECT ${THEME_LIST_COLUMNS} FROM themes WHERE is_builtin = 0 ORDER BY stars DESC LIMIT ?`)
     .bind(limit)
     .all<Theme>();
 

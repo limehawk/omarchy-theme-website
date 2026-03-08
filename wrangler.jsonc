@@ -1,5 +1,6 @@
 {
   "name": "omarchy-theme-website",
+  "account_id": "d76668fb24d463a3cc928e7658690b6d",
   "compatibility_date": "2025-01-01",
   "compatibility_flags": ["nodejs_compat"],
   "main": ".open-next/worker.js",

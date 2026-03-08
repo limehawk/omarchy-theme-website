@@ -48,6 +48,18 @@ export function hexToHsl(hex: string): { h: number; s: number; l: number } {
   return { h: h * 360, s: s * 100, l: l * 100 };
 }
 
+export const BUCKET_COLORS: Record<ColorBucket, string> = {
+  red: "#ef4444",
+  orange: "#f97316",
+  yellow: "#eab308",
+  green: "#22c55e",
+  teal: "#14b8a6",
+  blue: "#3b82f6",
+  purple: "#a855f7",
+  pink: "#ec4899",
+  monochrome: "#a3a3a3",
+};
+
 export function getColorBucket(hex: string): ColorBucket {
   const { h, s, l } = hexToHsl(hex);
 

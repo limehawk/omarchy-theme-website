@@ -4,23 +4,10 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getFeaturedThemes } from "@/lib/db";
-import { COLOR_BUCKETS } from "@/lib/colors";
+import { COLOR_BUCKETS, BUCKET_COLORS } from "@/lib/colors";
 import { ThemeGrid } from "@/components/theme-grid";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { ColorBucket } from "@/lib/colors";
-
-const BUCKET_COLORS: Record<ColorBucket, string> = {
-  red: "#ef4444",
-  orange: "#f97316",
-  yellow: "#eab308",
-  green: "#22c55e",
-  teal: "#14b8a6",
-  blue: "#3b82f6",
-  purple: "#a855f7",
-  pink: "#ec4899",
-  monochrome: "#a3a3a3",
-};
 
 export default async function Home() {
   const { env } = await getCloudflareContext({ async: true });

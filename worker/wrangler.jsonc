@@ -1,5 +1,6 @@
 {
   "name": "omarchy-theme-scraper",
+  "account_id": "d76668fb24d463a3cc928e7658690b6d",
   "main": "scraper.ts",
   "compatibility_date": "2025-01-01",
   "compatibility_flags": ["nodejs_compat"],

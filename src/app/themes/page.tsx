@@ -7,16 +7,12 @@ export const metadata: Metadata = {
   title: "Browse Themes",
 };
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { getThemes } from "@/lib/db";
-import { COLOR_BUCKETS, type ColorBucket } from "@/lib/colors";
+import { getThemes, parseThemeFilters } from "@/lib/db";
 import { ThemeGrid } from "@/components/theme-grid";
 import { ColorFilter } from "@/components/color-filter";
 import { SearchBar } from "@/components/search-bar";
 import { SortSelect } from "@/components/sort-select";
 import { SourceFilter } from "@/components/source-filter";
-
-const VALID_SORTS = new Set(["newest", "stars", "name"]);
-const VALID_SOURCES = new Set(["all", "community", "builtin"]);
 
 interface Props {
   searchParams: Promise<{
@@ -29,14 +25,11 @@ interface Props {
 
 export default async function ThemesPage({ searchParams }: Props) {
   const params = await searchParams;
-  const color = (params.color && (COLOR_BUCKETS as readonly string[]).includes(params.color)) ? params.color as ColorBucket : undefined;
-  const q = params.q?.slice(0, 100) ?? undefined;
-  const sort = (params.sort && VALID_SORTS.has(params.sort) ? params.sort : "stars") as "newest" | "stars" | "name";
-  const source = (params.source && VALID_SOURCES.has(params.source) ? params.source : "all") as "all" | "community" | "builtin";
+  const options = parseThemeFilters({ ...params, limit: "300" });
 
   const { env } = await getCloudflareContext({ async: true });
   const db = env.DB as D1Database;
-  const { themes, total } = await getThemes(db, { color, q, sort, source, limit: 300 });
+  const { themes, total } = await getThemes(db, options);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">

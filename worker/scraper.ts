@@ -51,9 +51,13 @@ interface ScrapeResult {
 // Auth
 // ---------------------------------------------------------------------------
 
+// Compare strings in constant time via HMAC to prevent timing attacks.
+// The HMAC key value is arbitrary — it only needs to be consistent within
+// a single comparison. Equal inputs produce equal MACs; unequal inputs
+// produce unequal MACs, and the XOR loop runs in constant time.
 async function timingSafeEqual(a: string, b: string): Promise<boolean> {
   const encoder = new TextEncoder();
-  const keyData = encoder.encode("hmac-key");
+  const keyData = encoder.encode("timing-safe-compare");
   const key = await crypto.subtle.importKey(
     "raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
   );
