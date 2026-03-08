@@ -1,25 +1,16 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
-import { cssHex } from "@/lib/colors";
+import { parseColors } from "@/lib/colors";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Theme } from "@/lib/db";
 
+const DEFAULT_ACCENT = "#4a9eff";
+
+const COLOR_INDICES = Array.from({ length: 16 }, (_, i) => i);
+
 interface ThemeCardProps {
   theme: Theme;
-}
-
-function parseColors(colorsJson: string | null): Record<string, string> | null {
-  if (!colorsJson) return null;
-  try {
-    const raw = JSON.parse(colorsJson) as Record<string, string>;
-    for (const key of Object.keys(raw)) {
-      raw[key] = cssHex(raw[key]);
-    }
-    return raw;
-  } catch {
-    return null;
-  }
 }
 
 function TerminalPreview({
@@ -31,7 +22,7 @@ function TerminalPreview({
 }) {
   const bg = colors?.background ?? "#1a1a2e";
   const fg = colors?.foreground ?? "#e0e0e0";
-  const accent = colors?.accent ?? "#4a9eff";
+  const accent = colors?.accent ?? DEFAULT_ACCENT;
   const cursor = colors?.cursor ?? accent;
   const c1 = colors?.color1 ?? "#ff5555";
   const c2 = colors?.color2 ?? "#50fa7b";
@@ -92,11 +83,8 @@ export function ThemeCard({ theme }: ThemeCardProps) {
   return (
     <Link href={`/themes/${theme.slug}`} className="group block">
       <Card
-        className="overflow-hidden transition-shadow duration-300 p-0"
-        style={{
-          // @ts-expect-error CSS custom property for hover glow
-          "--glow-color": colors?.accent ?? "#4a9eff",
-        }}
+        className="overflow-hidden p-0"
+        style={{ "--card-accent": colors?.accent ?? DEFAULT_ACCENT } as React.CSSProperties}
       >
         {/* Hero: screenshot or terminal fallback */}
         <div className="relative aspect-[16/10] overflow-hidden">
@@ -104,6 +92,7 @@ export function ThemeCard({ theme }: ThemeCardProps) {
             <img
               src={theme.preview_url}
               alt={theme.name}
+              loading="lazy"
               className="w-full h-full object-cover"
             />
           ) : (
@@ -132,7 +121,7 @@ export function ThemeCard({ theme }: ThemeCardProps) {
         {/* Color bar — flush to bottom edge */}
         {colors && (
           <div className="flex h-1.5 overflow-hidden">
-            {Array.from({ length: 16 }, (_, i) => {
+            {COLOR_INDICES.map((i) => {
               const hex = colors[`color${i}`];
               return hex ? (
                 <div

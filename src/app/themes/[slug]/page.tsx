@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ColorPalette } from "@/components/color-palette";
 import { InstallCommand } from "@/components/install-command";
 import { ReadmeContent } from "@/components/readme-content";
-import { cssHex } from "@/lib/colors";
+import { parseColors } from "@/lib/colors";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -34,20 +34,6 @@ export async function generateMetadata({
     description:
       theme.description ?? `Preview and install the ${theme.name} color scheme for Omarchy.`,
   };
-}
-
-function parseColors(colorsJson: string | null): Record<string, string> | null {
-  if (!colorsJson) return null;
-  try {
-    const raw = JSON.parse(colorsJson) as Record<string, string>;
-    // Normalize 0x prefixed colors to # for CSS
-    for (const key of Object.keys(raw)) {
-      raw[key] = cssHex(raw[key]);
-    }
-    return raw;
-  } catch {
-    return null;
-  }
 }
 
 export default async function ThemeDetailPage({ params }: Props) {

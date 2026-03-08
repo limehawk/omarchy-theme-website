@@ -128,7 +128,7 @@
   }
 }
 
-/* Theme card glow on hover using each card's accent color */
+/* Theme card accent border on hover */
 .group:hover [data-slot="card"] {
-  box-shadow: 0 0 20px 2px color-mix(in srgb, var(--glow-color) 35%, transparent);
+  --tw-ring-color: var(--card-accent);
 }

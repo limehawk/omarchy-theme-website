@@ -17,6 +17,19 @@ export function cssHex(hex: string): string {
   return hex.startsWith("0x") || hex.startsWith("0X") ? "#" + hex.slice(2) : hex;
 }
 
+/** Parse a colors_json string into a CSS-ready color map */
+export function parseColors(colorsJson: string | null): Record<string, string> | null {
+  if (!colorsJson) return null;
+  try {
+    const raw = JSON.parse(colorsJson) as Record<string, string>;
+    return Object.fromEntries(
+      Object.entries(raw).map(([k, v]) => [k, cssHex(v)])
+    );
+  } catch {
+    return null;
+  }
+}
+
 export function hexToHsl(hex: string): { h: number; s: number; l: number } {
   // Strip leading # or 0x
   const raw = hex.replace(/^(#|0x|0X)/, "");
