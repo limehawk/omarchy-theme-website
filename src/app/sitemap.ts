@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { getAllThemes } from "@/lib/db";
 
+export const dynamic = "force-static";
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://omarchytheme.com";
 
