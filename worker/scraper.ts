@@ -3,7 +3,7 @@ import themes from "../src/data/themes.json";
 
 interface Env {
   DB: D1Database;
-  GITHUB_TOKEN: string;
+  GITHUB_TOKEN?: string;
 }
 
 interface CuratedTheme {
@@ -121,21 +121,22 @@ function computeHueBucket(hexColor: string): string {
 
 async function githubFetch(
   url: string,
-  token: string,
+  token?: string,
 ): Promise<Response> {
-  return fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github.v3+json",
-      "User-Agent": "omarchy-theme-scraper",
-    },
-  });
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github.v3+json",
+    "User-Agent": "omarchy-theme-scraper",
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return fetch(url, { headers });
 }
 
 async function fetchRepoMeta(
   owner: string,
   repo: string,
-  token: string,
+  token?: string,
 ): Promise<{ description: string | null; stars: number }> {
   const res = await githubFetch(
     `https://api.github.com/repos/${owner}/${repo}`,
@@ -150,7 +151,7 @@ async function fetchFileContent(
   owner: string,
   repo: string,
   path: string,
-  token: string,
+  token?: string,
 ): Promise<string | null> {
   const res = await githubFetch(
     `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
@@ -166,7 +167,7 @@ async function checkFileExists(
   owner: string,
   repo: string,
   path: string,
-  token: string,
+  token?: string,
 ): Promise<boolean> {
   const res = await githubFetch(
     `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
@@ -207,7 +208,7 @@ function parseColors(tomlContent: string): Record<string, string> | null {
 // ---------------------------------------------------------------------------
 
 async function discoverThemes(
-  token: string,
+  token: string | undefined,
   knownUrls: Set<string>,
 ): Promise<CuratedTheme[]> {
   const discovered: CuratedTheme[] = [];
@@ -258,7 +259,7 @@ async function discoverThemes(
 
 async function scrapeTheme(
   entry: CuratedTheme & { is_builtin?: boolean; is_curated?: boolean; path?: string },
-  token: string,
+  token?: string,
 ): Promise<ThemeRecord | null> {
   const { owner, repo } = parseOwnerRepo(entry.url);
 
@@ -376,8 +377,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
 async function runScraper(env: Env): Promise<void> {
   const token = env.GITHUB_TOKEN;
   if (!token) {
-    console.error("GITHUB_TOKEN is not set");
-    return;
+    console.log("GITHUB_TOKEN not set — running without auth (60 req/hr limit, no auto-discovery)");
   }
 
   const knownUrls = new Set<string>();
@@ -389,7 +389,6 @@ async function runScraper(env: Env): Promise<void> {
   // 1. Builtin themes
   for (const t of themes.builtin as BuiltinTheme[]) {
     const url = t.url.replace(/\/$/, "");
-    // Track both the base repo URL and path-specific URL to avoid rediscovery
     knownUrls.add(url);
     knownUrls.add(`${url}/tree/main/${t.path}`);
     entries.push({
@@ -413,14 +412,16 @@ async function runScraper(env: Env): Promise<void> {
     });
   }
 
-  // 3. Auto-discovered themes
-  const discovered = await discoverThemes(token, knownUrls);
-  for (const t of discovered) {
-    entries.push({
-      ...t,
-      is_builtin: false,
-      is_curated: false,
-    });
+  // 3. Auto-discovered themes (requires token for GitHub Search API)
+  if (token) {
+    const discovered = await discoverThemes(token, knownUrls);
+    for (const t of discovered) {
+      entries.push({
+        ...t,
+        is_builtin: false,
+        is_curated: false,
+      });
+    }
   }
 
   console.log(`Scraping ${entries.length} themes...`);
