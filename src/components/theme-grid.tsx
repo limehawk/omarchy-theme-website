@@ -1,8 +1,8 @@
 import { ThemeCard } from "@/components/theme-card";
-import type { Theme } from "@/lib/db";
+import type { ThemeListItem } from "@/lib/db";
 
 interface ThemeGridProps {
-  themes: Theme[];
+  themes: ThemeListItem[];
 }
 
 export function ThemeGrid({ themes }: ThemeGridProps) {

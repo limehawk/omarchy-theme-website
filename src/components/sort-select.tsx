@@ -1,7 +1,5 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
 import {
   Select,
   SelectContent,
@@ -16,30 +14,29 @@ const SORT_OPTIONS = [
   { value: "newest", label: "newest" },
 ] as const;
 
-export function SortSelect() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const current = searchParams.get("sort") ?? "stars";
+interface SortSelectProps {
+  value: string;
+  onChange: (value: string) => void;
+}
 
-  const handleChange = useCallback(
-    (value: string | null) => {
-      if (!value) return;
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("sort", value);
-      const qs = params.toString();
-      router.push(`/themes${qs ? `?${qs}` : ""}`);
-    },
-    [router, searchParams]
-  );
-
+export function SortSelect({ value, onChange }: SortSelectProps) {
   return (
-    <Select value={current} onValueChange={handleChange}>
+    <Select
+      value={value}
+      onValueChange={(v) => {
+        if (v) onChange(v);
+      }}
+    >
       <SelectTrigger className="font-mono text-xs">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         {SORT_OPTIONS.map((opt) => (
-          <SelectItem key={opt.value} value={opt.value} className="font-mono text-xs">
+          <SelectItem
+            key={opt.value}
+            value={opt.value}
+            className="font-mono text-xs"
+          >
             {opt.label}
           </SelectItem>
         ))}

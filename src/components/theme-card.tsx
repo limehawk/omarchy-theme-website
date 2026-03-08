@@ -3,14 +3,14 @@ import { Star } from "lucide-react";
 import { parseColors } from "@/lib/colors";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { Theme } from "@/lib/db";
+import type { ThemeListItem } from "@/lib/db";
 
 const DEFAULT_ACCENT = "#4a9eff";
 
 const COLOR_INDICES = Array.from({ length: 16 }, (_, i) => i);
 
 interface ThemeCardProps {
-  theme: Theme;
+  theme: ThemeListItem;
 }
 
 function TerminalPreview({
