@@ -101,7 +101,20 @@ export function ThemeCard({ theme }: ThemeCardProps) {
             </div>
           </div>
 
-          {colors && <ColorPalette colors={colors} size="sm" />}
+          {colors && (
+            <div className="grid grid-cols-8 gap-0.5">
+              {Array.from({ length: 16 }, (_, i) => {
+                const hex = colors[`color${i}`];
+                return hex ? (
+                  <div
+                    key={i}
+                    className="aspect-square rounded-sm border border-white/10"
+                    style={{ backgroundColor: hex }}
+                  />
+                ) : null;
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
     </Link>
