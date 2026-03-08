@@ -5,22 +5,18 @@ import { useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 
 const SOURCES = [
-  { value: "", label: "all" },
+  { value: "all", label: "all" },
   { value: "community", label: "community" },
   { value: "builtin", label: "builtin" },
 ] as const;
 
 export function SourceFilter() {
   const searchParams = useSearchParams();
-  const active = searchParams.get("source") ?? "";
+  const active = searchParams.get("source") ?? "community";
 
   function buildHref(source: string) {
     const params = new URLSearchParams(searchParams.toString());
-    if (source) {
-      params.set("source", source);
-    } else {
-      params.delete("source");
-    }
+    params.set("source", source);
     const qs = params.toString();
     return `/themes${qs ? `?${qs}` : ""}`;
   }

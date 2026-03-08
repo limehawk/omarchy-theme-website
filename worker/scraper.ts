@@ -321,9 +321,29 @@ function parseAlacrittyColors(tomlContent: string): Record<string, string> | nul
 // ---------------------------------------------------------------------------
 
 const IMAGE_EXTENSIONS = /\.(png|jpg|jpeg|webp)$/i;
+const GITHUB_USER_ASSETS = /github\.com\/user-attachments\/assets\//;
 const SCREENSHOT_KEYWORDS = /screenshot|screen|preview|theme/i;
 const SKIP_KEYWORDS = /shields\.io|badge|logo|icon|banner|title|header/i;
 const SKIP_HOSTS = /imgur\.com/i;
+
+function isImageUrl(url: string): boolean {
+  return IMAGE_EXTENSIONS.test(url) || GITHUB_USER_ASSETS.test(url);
+}
+
+/** Extract image {alt, src} from both Markdown ![alt](src) and HTML <img> tags */
+function extractReadmeImages(readme: string): Array<{ alt: string; src: string }> {
+  const results: Array<{ alt: string; src: string }> = [];
+  // Markdown images
+  for (const m of readme.matchAll(/!\[(.*?)\]\((.*?)\)/g)) {
+    results.push({ alt: m[1], src: m[2].trim() });
+  }
+  // HTML <img> tags
+  for (const m of readme.matchAll(/<img\s[^>]*?src=["']([^"']+)["'][^>]*?>/gi)) {
+    const alt = m[0].match(/alt=["']([^"']*?)["']/i)?.[1] ?? "";
+    results.push({ alt, src: m[1].trim() });
+  }
+  return results;
+}
 
 function findPreviewImage(
   files: Set<string>,
@@ -346,14 +366,13 @@ function findPreviewImage(
 
   // 2. README images whose path/alt contains screenshot-like keywords
   if (readme) {
-    const readmeImages = Array.from(readme.matchAll(/!\[(.*?)\]\((.*?)\)/g));
-    for (const [, alt, src] of readmeImages) {
-      const trimmed = src.trim();
-      if (SKIP_KEYWORDS.test(trimmed) || SKIP_KEYWORDS.test(alt)) continue;
-      if (SKIP_HOSTS.test(trimmed)) continue;
-      if (!IMAGE_EXTENSIONS.test(trimmed)) continue;
-      if (SCREENSHOT_KEYWORDS.test(trimmed) || SCREENSHOT_KEYWORDS.test(alt)) {
-        return normalizeImageUrl(trimmed, owner, repo, branch, pathPrefix);
+    const readmeImages = extractReadmeImages(readme);
+    for (const { alt, src } of readmeImages) {
+      if (SKIP_KEYWORDS.test(src) || SKIP_KEYWORDS.test(alt)) continue;
+      if (SKIP_HOSTS.test(src)) continue;
+      if (!isImageUrl(src)) continue;
+      if (SCREENSHOT_KEYWORDS.test(src) || SCREENSHOT_KEYWORDS.test(alt)) {
+        return normalizeImageUrl(src, owner, repo, branch, pathPrefix);
       }
     }
   }
@@ -370,14 +389,13 @@ function findPreviewImage(
 
   // 4. First non-badge README image as last resort
   if (readme) {
-    const readmeImages = Array.from(readme.matchAll(/!\[(.*?)\]\((.*?)\)/g));
-    for (const [, alt, src] of readmeImages) {
-      const trimmed = src.trim();
-      if (SKIP_KEYWORDS.test(trimmed) || SKIP_KEYWORDS.test(alt)) continue;
-      if (SKIP_HOSTS.test(trimmed)) continue;
-      if (trimmed.endsWith(".svg")) continue;
-      if (!IMAGE_EXTENSIONS.test(trimmed)) continue;
-      return normalizeImageUrl(trimmed, owner, repo, branch, pathPrefix);
+    const readmeImages = extractReadmeImages(readme);
+    for (const { alt, src } of readmeImages) {
+      if (SKIP_KEYWORDS.test(src) || SKIP_KEYWORDS.test(alt)) continue;
+      if (SKIP_HOSTS.test(src)) continue;
+      if (src.endsWith(".svg")) continue;
+      if (!isImageUrl(src)) continue;
+      return normalizeImageUrl(src, owner, repo, branch, pathPrefix);
     }
   }
 

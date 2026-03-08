@@ -54,7 +54,7 @@ export function parseThemeFilters(raw: {
   const sortParam = raw.sort;
   const sort: SortOption = (sortParam && (VALID_SORTS as readonly string[]).includes(sortParam)) ? sortParam as SortOption : "stars";
   const sourceParam = raw.source;
-  const source: SourceOption = (sourceParam && (VALID_SOURCES as readonly string[]).includes(sourceParam)) ? sourceParam as SourceOption : "all";
+  const source: SourceOption = (sourceParam && (VALID_SOURCES as readonly string[]).includes(sourceParam)) ? sourceParam as SourceOption : "community";
   const page = Math.max(1, parseInt(raw.page ?? "1", 10) || 1);
   const limit = Math.min(300, Math.max(1, parseInt(raw.limit ?? "12", 10) || 12));
   return { color, q, sort, source, page, limit };
