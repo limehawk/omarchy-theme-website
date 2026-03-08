@@ -82,6 +82,10 @@
       "url": "https://github.com/atif-1402/omarchy-aureth-theme"
     },
     {
+      "name": "Ayaka",
+      "url": "https://github.com/abhijeet-swami/omarchy-ayaka-theme"
+    },
+    {
       "name": "Ayu Dark",
       "url": "https://github.com/fdidron/omarchy-ayu-dark-theme"
     },
@@ -147,6 +151,10 @@
       "url": "https://github.com/mishonki3/omarchy-bliss-theme"
     },
     {
+      "name": "BlueDotRB",
+      "url": "https://github.com/dotsilva/omarchy-bluedotrb-theme"
+    },
+    {
       "name": "BlueRidge",
       "url": "https://github.com/hipsterusername/omarchy-blueridge-dark-theme"
     },
@@ -163,6 +171,10 @@
       "url": "https://github.com/ankur311sudo/Catppu_Mocha"
     },
     {
+      "name": "Catppuccin Dark",
+      "url": "https://github.com/Luquatic/omarchy-catppuccin-dark"
+    },
+    {
       "name": "Catppuccin Mocha",
       "url": "https://github.com/KidDogDad/omarchy-catppuccin-mocha-theme"
     },
@@ -171,8 +183,16 @@
       "url": "https://github.com/Luquatic/omarchy-catppuccin-glass"
     },
     {
+      "name": "Citrus Cynapse",
+      "url": "https://github.com/Grey-007/citrus-cynapse"
+    },
+    {
       "name": "City-783",
       "url": "https://github.com/OldJobobo/omarchy-city-783-theme"
+    },
+    {
+      "name": "Cobalt2",
+      "url": "https://github.com/hoblin/omarchy-cobalt2-theme"
     },
     {
       "name": "Corporate",
@@ -195,6 +215,10 @@
       "name": "Cyberpunk",
       "dead": true,
       "url": "https://github.com/thatmechguy/omarchy-cyberpunk-theme"
+    },
+    {
+      "name": "Darcula",
+      "url": "https://github.com/noahljungberg/omarchy-darcula-theme"
     },
     {
       "name": "Dark XP",
@@ -255,6 +279,10 @@
     {
       "name": "Eldritch",
       "url": "https://github.com/eldritch-theme/omarchy-eldritch-theme"
+    },
+    {
+      "name": "Eldritch",
+      "url": "https://github.com/eldritch-theme/omarchy"
     },
     {
       "name": "Elysian",
@@ -346,7 +374,7 @@
     },
     {
       "name": "Green Garden",
-      "url": "https://github.com/kalk-ak/omarchy-Green-Garden-theme"
+      "url": "https://github.com/kalk-ak/omarchy-green-garden-theme"
     },
     {
       "name": "Gruber Tsoding",
@@ -543,12 +571,20 @@
       "url": "https://github.com/joaofelipegalvao/omarchy-oasis"
     },
     {
+      "name": "Omacarchy",
+      "url": "https://github.com/RiO7MAKK3R/omarchy-omacarchy-theme"
+    },
+    {
       "name": "Omarchy95",
       "url": "https://github.com/atif-1402/omarchy-omarchy95-theme"
     },
     {
       "name": "One Dark Pro",
       "url": "https://github.com/sc0ttman/omarchy-one-dark-pro"
+    },
+    {
+      "name": "One Dark Pro",
+      "url": "https://github.com/sc0ttman/omarchy-one-dark-pro-theme"
     },
     {
       "name": "Oxford",
@@ -709,6 +745,14 @@
       "url": "https://github.com/rondilley/omarchy-sunset-theme"
     },
     {
+      "name": "Sunset Drive",
+      "url": "https://github.com/tahayvr/omarchy-sunset-drive-theme"
+    },
+    {
+      "name": "Super Game Bro",
+      "url": "https://github.com/TyRichards/omarchy-super-game-bro-theme"
+    },
+    {
       "name": "Synthwave 84",
       "url": "https://github.com/omacom-io/omarchy-synthwave84-theme"
     },
@@ -736,6 +780,10 @@
     {
       "name": "TheGreek",
       "url": "https://github.com/HANCORE-linux/omarchy-thegreek-theme"
+    },
+    {
+      "name": "Tokyoled",
+      "url": "https://github.com/Justin-De-Sio/omarchy-tokyoled-theme"
     },
     {
       "name": "Torrentz Hydra",
@@ -780,6 +828,10 @@
     {
       "name": "Vesper",
       "url": "https://github.com/Zheonatan/omarchy-vesper-theme"
+    },
+    {
+      "name": "Vesper",
+      "url": "https://github.com/thmoee/omarchy-vesper-theme"
     },
     {
       "name": "vhs80",
