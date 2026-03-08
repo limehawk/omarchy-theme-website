@@ -1,3 +1,0 @@
-fileignoreconfig:
-  - filename: bun.lock
-    checksum: ignore
