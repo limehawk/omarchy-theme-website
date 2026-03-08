@@ -1,10 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Star, ArrowUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ColorPalette } from "@/components/color-palette";
 import type { Theme } from "@/lib/db";
 
 interface ThemeCardProps {
@@ -20,36 +18,65 @@ function parseColors(colorsJson: string | null): Record<string, string> | null {
   }
 }
 
-function GradientPlaceholder({
+function TerminalPreview({
   colors,
+  slug,
 }: {
   colors: Record<string, string> | null;
+  slug: string;
 }) {
   const bg = colors?.background ?? "#1a1a2e";
   const fg = colors?.foreground ?? "#e0e0e0";
   const accent = colors?.accent ?? "#4a9eff";
+  const cursor = colors?.cursor ?? accent;
   const c1 = colors?.color1 ?? "#ff5555";
   const c2 = colors?.color2 ?? "#50fa7b";
+  const c3 = colors?.color3 ?? "#f1fa8c";
   const c4 = colors?.color4 ?? "#6272a4";
+  const c5 = colors?.color5 ?? "#ff79c6";
+  const c6 = colors?.color6 ?? "#8be9fd";
 
   return (
-    <div
-      className="w-full h-full flex flex-col justify-between p-4 font-mono text-[10px] leading-relaxed"
-      style={{ backgroundColor: bg, color: fg }}
-    >
-      <div className="space-y-1">
-        <span style={{ color: c2 }}>~</span>
-        <span style={{ color: fg }}> $ </span>
-        <span style={{ color: accent }}>neofetch</span>
+    <div className="w-full h-full flex flex-col" style={{ backgroundColor: bg }}>
+      {/* Title bar */}
+      <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-white/5">
+        <span className="size-1.5 rounded-full bg-red-500/70" />
+        <span className="size-1.5 rounded-full bg-yellow-500/70" />
+        <span className="size-1.5 rounded-full bg-green-500/70" />
+        <span
+          className="ml-1.5 font-mono text-[8px]"
+          style={{ color: fg, opacity: 0.5 }}
+        >
+          ~/{slug}
+        </span>
       </div>
-      <div className="flex gap-1.5 mt-auto">
-        {[c1, c2, accent, c4, fg].map((color, i) => (
-          <div
-            key={i}
-            className="size-2.5 rounded-full"
-            style={{ backgroundColor: color }}
+      {/* Terminal content */}
+      <div className="flex-1 px-3 py-2 font-mono text-[9px] leading-relaxed space-y-0.5">
+        <div>
+          <span style={{ color: c2 }}>user@omarchy</span>
+          <span style={{ color: fg }}>:</span>
+          <span style={{ color: c4 }}>~</span>
+          <span style={{ color: fg }}> $ </span>
+          <span style={{ color: accent }}>ls</span>
+        </div>
+        <div className="flex flex-wrap gap-x-4">
+          <span style={{ color: c4 }}>desktop/</span>
+          <span style={{ color: c2 }}>scripts/</span>
+          <span style={{ color: c1 }}>.config/</span>
+          <span style={{ color: c3 }}>notes.md</span>
+          <span style={{ color: c5 }}>Makefile</span>
+          <span style={{ color: c6 }}>README</span>
+        </div>
+        <div className="pt-0.5">
+          <span style={{ color: c2 }}>user@omarchy</span>
+          <span style={{ color: fg }}>:</span>
+          <span style={{ color: c4 }}>~</span>
+          <span style={{ color: fg }}> $ </span>
+          <span
+            className="inline-block w-1.5 h-3 align-middle"
+            style={{ backgroundColor: cursor }}
           />
-        ))}
+        </div>
       </div>
     </div>
   );
@@ -66,19 +93,9 @@ export function ThemeCard({ theme }: ThemeCardProps) {
           "hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5"
         )}
       >
-        {/* Preview */}
-        <div className="relative aspect-[16/10] overflow-hidden bg-black/40">
-          {theme.preview_url ? (
-            <Image
-              src={theme.preview_url}
-              alt={`${theme.name} preview`}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            />
-          ) : (
-            <GradientPlaceholder colors={colors} />
-          )}
+        {/* Terminal preview */}
+        <div className="relative aspect-[16/10] overflow-hidden">
+          <TerminalPreview colors={colors} slug={theme.slug} />
         </div>
 
         {/* Info */}
@@ -100,22 +117,23 @@ export function ThemeCard({ theme }: ThemeCardProps) {
               )}
             </div>
           </div>
-
-          {colors && (
-            <div className="flex h-2 rounded-sm overflow-hidden">
-              {Array.from({ length: 16 }, (_, i) => {
-                const hex = colors[`color${i}`];
-                return hex ? (
-                  <div
-                    key={i}
-                    className="flex-1"
-                    style={{ backgroundColor: hex }}
-                  />
-                ) : null;
-              })}
-            </div>
-          )}
         </CardContent>
+
+        {/* Color bar — flush to bottom edge */}
+        {colors && (
+          <div className="flex h-2 overflow-hidden">
+            {Array.from({ length: 16 }, (_, i) => {
+              const hex = colors[`color${i}`];
+              return hex ? (
+                <div
+                  key={i}
+                  className="flex-1"
+                  style={{ backgroundColor: hex }}
+                />
+              ) : null;
+            })}
+          </div>
+        )}
       </Card>
     </Link>
   );

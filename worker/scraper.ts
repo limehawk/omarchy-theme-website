@@ -34,6 +34,16 @@ interface ThemeRecord {
   readme: string | null;
 }
 
+interface ScrapeResult {
+  slug: string;
+  name: string;
+  status: "ok" | "skipped" | "error";
+  colors_source?: "colors.toml" | "alacritty.toml" | "none";
+  has_preview?: boolean;
+  has_colors?: boolean;
+  error?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -53,7 +63,6 @@ function deriveSlugFromRepo(repoName: string): string {
 }
 
 function deriveSlugFromPath(path: string): string {
-  // path like "themes/tokyo-night" -> "tokyo-night"
   const parts = path.split("/");
   return slugify(parts[parts.length - 1]);
 }
@@ -142,7 +151,7 @@ async function fetchRepoMeta(
     `https://api.github.com/repos/${owner}/${repo}`,
     token,
   );
-  if (!res.ok) throw new Error(`Failed to fetch repo ${owner}/${repo}: ${res.status}`);
+  if (!res.ok) throw new Error(`GitHub API ${res.status}: repos/${owner}/${repo}`);
   const data = (await res.json()) as { description: string | null; stargazers_count: number; default_branch: string };
   return { description: data.description, stars: data.stargazers_count, default_branch: data.default_branch };
 }
@@ -195,7 +204,60 @@ function parseColors(tomlContent: string): Record<string, string> | null {
         colors[key] = parsed[key] as string;
       }
     }
-    // Must have at least the accent color to be useful
+    if (!colors.accent) return null;
+    return colors;
+  } catch {
+    return null;
+  }
+}
+
+// Map alacritty.toml color names to color0-15
+const ALACRITTY_NORMAL_MAP: Record<string, string> = {
+  black: "color0", red: "color1", green: "color2", yellow: "color3",
+  blue: "color4", magenta: "color5", cyan: "color6", white: "color7",
+};
+const ALACRITTY_BRIGHT_MAP: Record<string, string> = {
+  black: "color8", red: "color9", green: "color10", yellow: "color11",
+  blue: "color12", magenta: "color13", cyan: "color14", white: "color15",
+};
+
+function parseAlacrittyColors(tomlContent: string): Record<string, string> | null {
+  try {
+    const parsed = parseTOML(tomlContent) as Record<string, unknown>;
+    const colorsSection = parsed.colors as Record<string, unknown> | undefined;
+    if (!colorsSection) return null;
+
+    const colors: Record<string, string> = {};
+
+    const primary = colorsSection.primary as Record<string, string> | undefined;
+    if (primary?.background) colors.background = primary.background;
+    if (primary?.foreground) colors.foreground = primary.foreground;
+
+    const cursor = colorsSection.cursor as Record<string, string> | undefined;
+    if (cursor?.cursor) colors.cursor = cursor.cursor;
+
+    const selection = colorsSection.selection as Record<string, string> | undefined;
+    if (selection?.background) colors.selection_background = selection.background;
+    if (selection?.text && selection.text !== "CellForeground") colors.selection_foreground = selection.text;
+
+    const normal = colorsSection.normal as Record<string, string> | undefined;
+    if (normal) {
+      for (const [name, key] of Object.entries(ALACRITTY_NORMAL_MAP)) {
+        if (normal[name]) colors[key] = normal[name];
+      }
+    }
+
+    const bright = colorsSection.bright as Record<string, string> | undefined;
+    if (bright) {
+      for (const [name, key] of Object.entries(ALACRITTY_BRIGHT_MAP)) {
+        if (bright[name]) colors[key] = bright[name];
+      }
+    }
+
+    if (!colors.accent) {
+      colors.accent = colors.color4 ?? colors.color5 ?? colors.foreground ?? "";
+    }
+
     if (!colors.accent) return null;
     return colors;
   } catch {
@@ -213,7 +275,6 @@ async function discoverThemes(
 ): Promise<CuratedTheme[]> {
   const discovered: CuratedTheme[] = [];
 
-  // Search by repo name
   const queries = [
     "omarchy-theme in:name",
     "omarchy-theme topic:omarchy-theme",
@@ -235,7 +296,6 @@ async function discoverThemes(
       for (const item of data.items) {
         const normalizedUrl = item.html_url.replace(/\/$/, "");
         if (!knownUrls.has(normalizedUrl)) {
-          // Derive a display name from the repo name
           const name = item.name
             .replace(/^omarchy-/, "")
             .replace(/-theme$/, "")
@@ -262,10 +322,9 @@ const repoMetaCache = new Map<string, { description: string | null; stars: numbe
 async function scrapeTheme(
   entry: CuratedTheme & { is_builtin?: boolean; is_curated?: boolean; path?: string },
   token?: string,
-): Promise<ThemeRecord | null> {
+): Promise<{ record: ThemeRecord; result: ScrapeResult }> {
   const { owner, repo } = parseOwnerRepo(entry.url);
 
-  // Determine slug/id
   let slug: string;
   if (entry.is_builtin && entry.path) {
     slug = deriveSlugFromPath(entry.path);
@@ -273,7 +332,16 @@ async function scrapeTheme(
     slug = deriveSlugFromRepo(repo);
   }
 
-  // Fetch repo metadata (cached per repo to avoid redundant API calls)
+  const result: ScrapeResult = {
+    slug,
+    name: entry.name,
+    status: "ok",
+    colors_source: "none",
+    has_preview: false,
+    has_colors: false,
+  };
+
+  // Fetch repo metadata (cached per repo)
   const repoKey = `${owner}/${repo}`;
   let meta = repoMetaCache.get(repoKey);
   if (!meta) {
@@ -281,37 +349,52 @@ async function scrapeTheme(
     repoMetaCache.set(repoKey, meta);
   }
 
-  // Determine the path prefix for file lookups
   const pathPrefix = entry.path ? `${entry.path}/` : "";
 
-  // Fetch colors.toml
-  const colorsToml = await fetchFileContent(owner, repo, `${pathPrefix}colors.toml`, token);
+  // Fetch colors: try colors.toml first, fall back to alacritty.toml
   let colors: Record<string, string> | null = null;
   let primaryHue: string | null = null;
+
+  const colorsToml = await fetchFileContent(owner, repo, `${pathPrefix}colors.toml`, token);
   if (colorsToml) {
     colors = parseColors(colorsToml);
-    if (colors?.accent) {
-      primaryHue = computeHueBucket(colors.accent);
+    if (colors) result.colors_source = "colors.toml";
+  }
+
+  if (!colors) {
+    const alacrittyToml = await fetchFileContent(owner, repo, `${pathPrefix}alacritty.toml`, token);
+    if (alacrittyToml) {
+      colors = parseAlacrittyColors(alacrittyToml);
+      if (colors) result.colors_source = "alacritty.toml";
     }
   }
 
-  // Check for preview.png
-  const branch = meta.default_branch;
-  let previewUrl: string | null = null;
-  const previewExists = await checkFileExists(owner, repo, `${pathPrefix}preview.png`, token);
-  if (previewExists) {
-    previewUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${pathPrefix}preview.png`;
+  result.has_colors = colors !== null;
+
+  if (colors?.accent) {
+    primaryHue = computeHueBucket(colors.accent);
   }
 
-  // Fetch README.md (store raw markdown)
+  // Check for preview image: try preview.png, then theme.png
+  const branch = meta.default_branch;
+  let previewUrl: string | null = null;
+  for (const filename of ["preview.png", "theme.png"]) {
+    const exists = await checkFileExists(owner, repo, `${pathPrefix}${filename}`, token);
+    if (exists) {
+      previewUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${pathPrefix}${filename}`;
+      break;
+    }
+  }
+  result.has_preview = previewUrl !== null;
+
+  // Fetch README.md
   const readme = await fetchFileContent(owner, repo, `${pathPrefix}README.md`, token);
 
-  // For builtin themes, the github_url should point to the specific path
   const githubUrl = entry.is_builtin
     ? `${entry.url}/tree/${branch}/${entry.path}`
     : entry.url;
 
-  return {
+  const record: ThemeRecord = {
     id: slug,
     name: entry.name,
     slug,
@@ -327,6 +410,8 @@ async function scrapeTheme(
     stars: meta.stars,
     readme: readme,
   };
+
+  return { record, result };
 }
 
 // ---------------------------------------------------------------------------
@@ -381,15 +466,15 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
 // Main scrape orchestration
 // ---------------------------------------------------------------------------
 
-async function runScraper(env: Env): Promise<void> {
+async function runScraper(env: Env): Promise<ScrapeResult[]> {
   const token = env.GITHUB_TOKEN;
   if (!token) {
     console.log("GITHUB_TOKEN not set — running without auth (60 req/hr limit, no auto-discovery)");
   }
 
   const knownUrls = new Set<string>();
+  const results: ScrapeResult[] = [];
 
-  // Build the list of all themes to scrape
   type ScrapeEntry = CuratedTheme & { is_builtin?: boolean; is_curated?: boolean; path?: string };
   const entries: ScrapeEntry[] = [];
 
@@ -398,40 +483,25 @@ async function runScraper(env: Env): Promise<void> {
     const url = t.url.replace(/\/$/, "");
     knownUrls.add(url);
     knownUrls.add(`${url}/tree/main/${t.path}`);
-    entries.push({
-      url,
-      name: t.name,
-      path: t.path,
-      is_builtin: true,
-      is_curated: false,
-    });
+    entries.push({ url, name: t.name, path: t.path, is_builtin: true, is_curated: false });
   }
 
   // 2. Curated themes
   for (const t of themes.curated as CuratedTheme[]) {
     const url = t.url.replace(/\/$/, "");
     knownUrls.add(url);
-    entries.push({
-      url,
-      name: t.name,
-      is_builtin: false,
-      is_curated: true,
-    });
+    entries.push({ url, name: t.name, is_builtin: false, is_curated: true });
   }
 
-  // 3. Auto-discovered themes (requires token for GitHub Search API)
+  // 3. Auto-discovered themes
   if (token) {
     const discovered = await discoverThemes(token, knownUrls);
     for (const t of discovered) {
-      entries.push({
-        ...t,
-        is_builtin: false,
-        is_curated: false,
-      });
+      entries.push({ ...t, is_builtin: false, is_curated: false });
     }
   }
 
-  // Get already-scraped theme IDs to skip recent ones
+  // Skip recently scraped
   const recentlyScraped = new Set<string>();
   const existing = await env.DB
     .prepare("SELECT id FROM themes WHERE last_scraped_at > datetime('now', '-12 hours')")
@@ -440,7 +510,7 @@ async function runScraper(env: Env): Promise<void> {
     recentlyScraped.add(row.id);
   }
 
-  console.log(`Scraping ${entries.length} themes (${recentlyScraped.size} already fresh, will skip)...`);
+  console.log(`Scraping ${entries.length} themes (${recentlyScraped.size} already fresh)...`);
 
   let success = 0;
   let skipped = 0;
@@ -448,27 +518,100 @@ async function runScraper(env: Env): Promise<void> {
 
   for (const entry of entries) {
     try {
-      // Compute the expected slug to check if already fresh
       const { repo } = parseOwnerRepo(entry.url);
       const expectedSlug = entry.path ? deriveSlugFromPath(entry.path) : deriveSlugFromRepo(repo);
       if (recentlyScraped.has(expectedSlug)) {
         skipped++;
+        results.push({ slug: expectedSlug, name: entry.name, status: "skipped" });
         continue;
       }
 
-      const record = await scrapeTheme(entry, token);
-      if (record) {
-        await upsertTheme(env.DB, record);
-        console.log(`OK: ${record.slug}`);
-        success++;
-      }
+      const { record, result } = await scrapeTheme(entry, token);
+      await upsertTheme(env.DB, record);
+      results.push(result);
+      console.log(`OK: ${record.slug} [colors: ${result.colors_source}, preview: ${result.has_preview}]`);
+      success++;
     } catch (err) {
-      console.error(`FAIL: ${entry.name} (${entry.url})`, err);
+      const { repo } = parseOwnerRepo(entry.url);
+      const expectedSlug = entry.path ? deriveSlugFromPath(entry.path) : deriveSlugFromRepo(repo);
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      results.push({ slug: expectedSlug, name: entry.name, status: "error", error: errorMsg });
+      console.error(`FAIL: ${entry.name} (${entry.url}): ${errorMsg}`);
       failed++;
     }
   }
 
-  console.log(`Scrape complete: ${success} new, ${skipped} skipped, ${failed} failed out of ${entries.length} total`);
+  console.log(`Done: ${success} scraped, ${skipped} skipped, ${failed} failed / ${entries.length} total`);
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Status endpoint: query D1 for themes with issues
+// ---------------------------------------------------------------------------
+
+interface ThemeStatus {
+  slug: string;
+  name: string;
+  has_colors: boolean;
+  has_preview: boolean;
+  primary_hue: string | null;
+  last_scraped_at: string | null;
+  stale: boolean;
+}
+
+async function getStatus(db: D1Database): Promise<{
+  total: number;
+  missing_colors: ThemeStatus[];
+  missing_preview: ThemeStatus[];
+  stale: ThemeStatus[];
+  never_scraped: ThemeStatus[];
+}> {
+  const all = await db
+    .prepare(`SELECT slug, name, colors_json, preview_url, primary_hue, last_scraped_at FROM themes ORDER BY name`)
+    .all<{
+      slug: string;
+      name: string;
+      colors_json: string | null;
+      preview_url: string | null;
+      primary_hue: string | null;
+      last_scraped_at: string | null;
+    }>();
+
+  const now = Date.now();
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+
+  const missing_colors: ThemeStatus[] = [];
+  const missing_preview: ThemeStatus[] = [];
+  const stale: ThemeStatus[] = [];
+  const never_scraped: ThemeStatus[] = [];
+
+  for (const t of all.results) {
+    const lastScraped = t.last_scraped_at ? new Date(t.last_scraped_at + "Z").getTime() : 0;
+    const isStale = !t.last_scraped_at || (now - lastScraped > 3 * ONE_DAY);
+
+    const status: ThemeStatus = {
+      slug: t.slug,
+      name: t.name,
+      has_colors: t.colors_json !== null,
+      has_preview: t.preview_url !== null,
+      primary_hue: t.primary_hue,
+      last_scraped_at: t.last_scraped_at,
+      stale: isStale,
+    };
+
+    if (!t.colors_json) missing_colors.push(status);
+    if (!t.preview_url) missing_preview.push(status);
+    if (!t.last_scraped_at) never_scraped.push(status);
+    else if (isStale) stale.push(status);
+  }
+
+  return {
+    total: all.results.length,
+    missing_colors,
+    missing_preview,
+    stale,
+    never_scraped,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -484,15 +627,57 @@ export default {
     ctx.waitUntil(runScraper(env));
   },
 
-  // Also allow manual trigger via HTTP for testing
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
-    if (url.pathname === "/run") {
-      ctx.waitUntil(runScraper(env));
-      return new Response("Scraper triggered", { status: 200 });
+    const json = (data: unknown) =>
+      new Response(JSON.stringify(data, null, 2), {
+        headers: { "Content-Type": "application/json" },
+      });
+
+    // POST /run — trigger scrape synchronously, return results
+    if (url.pathname === "/run" && request.method === "POST") {
+      const results = await runScraper(env);
+      const summary = {
+        scraped: results.filter((r) => r.status === "ok").length,
+        skipped: results.filter((r) => r.status === "skipped").length,
+        failed: results.filter((r) => r.status === "error").length,
+        total: results.length,
+        errors: results.filter((r) => r.status === "error"),
+        missing_colors: results.filter((r) => r.status === "ok" && !r.has_colors),
+        results,
+      };
+      return json(summary);
     }
-    return new Response("Omarchy Theme Scraper. POST /run to trigger manually.", {
-      status: 200,
+
+    // GET /status — show current DB health
+    if (url.pathname === "/status") {
+      const status = await getStatus(env.DB);
+      return json(status);
+    }
+
+    // POST /run-force — scrape ignoring 12hr cache
+    if (url.pathname === "/run-force" && request.method === "POST") {
+      // Clear last_scraped_at to force full re-scrape
+      await env.DB.prepare("UPDATE themes SET last_scraped_at = NULL").run();
+      const results = await runScraper(env);
+      const summary = {
+        scraped: results.filter((r) => r.status === "ok").length,
+        failed: results.filter((r) => r.status === "error").length,
+        total: results.length,
+        errors: results.filter((r) => r.status === "error"),
+        missing_colors: results.filter((r) => r.status === "ok" && !r.has_colors),
+        results,
+      };
+      return json(summary);
+    }
+
+    return json({
+      name: "Omarchy Theme Scraper",
+      endpoints: {
+        "POST /run": "Trigger scrape, returns detailed results",
+        "POST /run-force": "Force full re-scrape (ignores 12hr cache)",
+        "GET /status": "Show DB health — missing colors, stale themes, etc.",
+      },
     });
   },
 };

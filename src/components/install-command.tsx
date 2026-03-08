@@ -11,7 +11,8 @@ interface InstallCommandProps {
 
 export function InstallCommand({ githubUrl }: InstallCommandProps) {
   const [copied, setCopied] = useState(false);
-  const command = `omarchy theme install ${githubUrl}`;
+  const gitUrl = githubUrl.endsWith(".git") ? githubUrl : `${githubUrl}.git`;
+  const command = `omarchy-theme-install ${gitUrl}`;
 
   async function handleCopy() {
     try {
