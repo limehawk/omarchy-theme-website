@@ -46,3 +46,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .worktrees/
+
+# Build-time generated theme data
+src/data/themes-data.json
