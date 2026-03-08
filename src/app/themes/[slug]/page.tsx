@@ -1,11 +1,8 @@
-export const dynamic = "force-dynamic";
-
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Star, ExternalLink } from "lucide-react";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { getThemeBySlug } from "@/lib/db";
+import { getAllThemes, getThemeBySlug } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ColorPalette } from "@/components/color-palette";
@@ -17,13 +14,15 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+export function generateStaticParams() {
+  return getAllThemes().map((t) => ({ slug: t.slug }));
+}
+
 export async function generateMetadata({
   params,
 }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const { env } = await getCloudflareContext({ async: true });
-  const db = env.DB as D1Database;
-  const theme = await getThemeBySlug(db, slug);
+  const theme = getThemeBySlug(slug);
 
   if (!theme) {
     return { title: "Theme Not Found" };
@@ -38,9 +37,7 @@ export async function generateMetadata({
 
 export default async function ThemeDetailPage({ params }: Props) {
   const { slug } = await params;
-  const { env } = await getCloudflareContext({ async: true });
-  const db = env.DB as D1Database;
-  const theme = await getThemeBySlug(db, slug);
+  const theme = getThemeBySlug(slug);
 
   if (!theme) notFound();
 
