@@ -1,0 +1,35 @@
+name: Build and Deploy
+
+on:
+  schedule:
+    # Daily at 6:30 AM UTC (30min after scraper cron)
+    - cron: "30 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Dump theme data from D1
+        run: bash scripts/dump-themes.sh
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Build static site
+        run: bun run build
+
+      - name: Deploy to Cloudflare Pages
+        run: bunx wrangler pages deploy out/ --project-name=omarchy-theme-website
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
