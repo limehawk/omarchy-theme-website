@@ -80,7 +80,8 @@ export function ThemeBrowser({ themes }: ThemeBrowserProps) {
       case "newest":
         result = [...result].sort(
           (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            new Date(b.github_pushed_at ?? b.created_at).getTime() -
+            new Date(a.github_pushed_at ?? a.created_at).getTime()
         );
         break;
       case "stars":

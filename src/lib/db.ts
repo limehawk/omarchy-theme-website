@@ -27,6 +27,7 @@ export interface Theme {
   last_scraped_at: string | null;
   created_at: string;
   updated_at: string;
+  github_pushed_at: string | null;
 }
 
 const allThemes = themesData as Theme[];
@@ -64,6 +65,7 @@ export interface ThemeListItem {
   stars: number;
   created_at: string;
   updated_at: string;
+  github_pushed_at: string | null;
 }
 
 export function getThemeList(): ThemeListItem[] {
