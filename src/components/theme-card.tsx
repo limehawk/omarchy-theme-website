@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { cssHex } from "@/lib/colors";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Theme } from "@/lib/db";
@@ -12,7 +13,11 @@ interface ThemeCardProps {
 function parseColors(colorsJson: string | null): Record<string, string> | null {
   if (!colorsJson) return null;
   try {
-    return JSON.parse(colorsJson);
+    const raw = JSON.parse(colorsJson) as Record<string, string>;
+    for (const key of Object.keys(raw)) {
+      raw[key] = cssHex(raw[key]);
+    }
+    return raw;
   } catch {
     return null;
   }

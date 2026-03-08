@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { cssHex } from "@/lib/colors";
 
 interface ColorPaletteProps {
   colors: Record<string, string>;
@@ -62,7 +63,7 @@ export function ColorPalette({
               dotSize[size],
               name === "accent" && size === "sm" && "size-3.5 ring-1 ring-white/20 rounded-sm"
             )}
-            style={{ backgroundColor: hex }}
+            style={{ backgroundColor: cssHex(hex) }}
             title={`${name}: ${hex}`}
           />
           {showLabels && (

@@ -3,8 +3,17 @@ import themes from "../src/data/themes.json";
 
 interface Env {
   DB: D1Database;
+  SCRAPE_QUEUE: Queue<ScrapeMessage>;
   GITHUB_TOKEN?: string;
   SCRAPER_AUTH_TOKEN?: string;
+}
+
+interface ScrapeMessage {
+  url: string;
+  name: string;
+  path?: string;
+  is_builtin: boolean;
+  is_curated: boolean;
 }
 
 interface CuratedTheme {
@@ -107,7 +116,7 @@ function parseOwnerRepo(url: string): { owner: string; repo: string } {
 // ---------------------------------------------------------------------------
 
 function hexToHSL(hex: string): { h: number; s: number; l: number } {
-  hex = hex.replace("#", "");
+  hex = hex.replace(/^(#|0x|0X)/, "");
   const r = parseInt(hex.substring(0, 2), 16) / 255;
   const g = parseInt(hex.substring(2, 4), 16) / 255;
   const b = parseInt(hex.substring(4, 6), 16) / 255;
@@ -224,13 +233,21 @@ const EXPECTED_COLOR_KEYS = [
   ...Array.from({ length: 16 }, (_, i) => `color${i}`),
 ];
 
+/** Normalize color values: convert 0x prefix to # for CSS compatibility */
+function normalizeHex(value: string): string {
+  if (value.startsWith("0x") || value.startsWith("0X")) {
+    return "#" + value.slice(2);
+  }
+  return value;
+}
+
 function parseColors(tomlContent: string): Record<string, string> | null {
   try {
     const parsed = parseTOML(tomlContent) as Record<string, unknown>;
     const colors: Record<string, string> = {};
     for (const key of EXPECTED_COLOR_KEYS) {
       if (typeof parsed[key] === "string") {
-        colors[key] = parsed[key] as string;
+        colors[key] = normalizeHex(parsed[key] as string);
       }
     }
     if (!colors.accent) return null;
@@ -259,27 +276,27 @@ function parseAlacrittyColors(tomlContent: string): Record<string, string> | nul
     const colors: Record<string, string> = {};
 
     const primary = colorsSection.primary as Record<string, string> | undefined;
-    if (primary?.background) colors.background = primary.background;
-    if (primary?.foreground) colors.foreground = primary.foreground;
+    if (primary?.background) colors.background = normalizeHex(primary.background);
+    if (primary?.foreground) colors.foreground = normalizeHex(primary.foreground);
 
     const cursor = colorsSection.cursor as Record<string, string> | undefined;
-    if (cursor?.cursor) colors.cursor = cursor.cursor;
+    if (cursor?.cursor) colors.cursor = normalizeHex(cursor.cursor);
 
     const selection = colorsSection.selection as Record<string, string> | undefined;
-    if (selection?.background) colors.selection_background = selection.background;
-    if (selection?.text && selection.text !== "CellForeground") colors.selection_foreground = selection.text;
+    if (selection?.background) colors.selection_background = normalizeHex(selection.background);
+    if (selection?.text && selection.text !== "CellForeground") colors.selection_foreground = normalizeHex(selection.text);
 
     const normal = colorsSection.normal as Record<string, string> | undefined;
     if (normal) {
       for (const [name, key] of Object.entries(ALACRITTY_NORMAL_MAP)) {
-        if (normal[name]) colors[key] = normal[name];
+        if (normal[name]) colors[key] = normalizeHex(normal[name]);
       }
     }
 
     const bright = colorsSection.bright as Record<string, string> | undefined;
     if (bright) {
       for (const [name, key] of Object.entries(ALACRITTY_BRIGHT_MAP)) {
-        if (bright[name]) colors[key] = bright[name];
+        if (bright[name]) colors[key] = normalizeHex(bright[name]);
       }
     }
 
@@ -298,10 +315,8 @@ function parseAlacrittyColors(tomlContent: string): Record<string, string> | nul
 // Scrape a single theme
 // ---------------------------------------------------------------------------
 
-const repoMetaCache = new Map<string, { description: string | null; stars: number; default_branch: string; pushed_at: string | null }>();
-
 async function scrapeTheme(
-  entry: CuratedTheme & { is_builtin?: boolean; is_curated?: boolean; path?: string },
+  entry: ScrapeMessage,
   token?: string,
 ): Promise<{ record: ThemeRecord; result: ScrapeResult }> {
   const { owner, repo } = parseOwnerRepo(entry.url);
@@ -322,13 +337,7 @@ async function scrapeTheme(
     has_colors: false,
   };
 
-  // Fetch repo metadata (cached per repo)
-  const repoKey = `${owner}/${repo}`;
-  let meta = repoMetaCache.get(repoKey);
-  if (!meta) {
-    meta = await fetchRepoMeta(owner, repo, token);
-    repoMetaCache.set(repoKey, meta);
-  }
+  const meta = await fetchRepoMeta(owner, repo, token);
 
   const pathPrefix = entry.path ? `${entry.path}/` : "";
 
@@ -447,21 +456,11 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Main scrape orchestration
+// Enqueue themes for scraping (producer)
 // ---------------------------------------------------------------------------
 
-async function runScraper(env: Env): Promise<ScrapeResult[]> {
-  repoMetaCache.clear();
-
-  const token = env.GITHUB_TOKEN;
-  if (!token) {
-    console.log("GITHUB_TOKEN not set — running without auth (60 req/hr limit)");
-  }
-
-  const results: ScrapeResult[] = [];
-
-  type ScrapeEntry = CuratedTheme & { is_builtin?: boolean; is_curated?: boolean; path?: string };
-  const entries: ScrapeEntry[] = [];
+async function enqueueThemes(env: Env, force: boolean): Promise<{ enqueued: number; skipped: number; total: number }> {
+  const entries: ScrapeMessage[] = [];
 
   for (const t of themes.builtin as BuiltinTheme[]) {
     const url = t.url.replace(/\/$/, "");
@@ -474,52 +473,62 @@ async function runScraper(env: Env): Promise<ScrapeResult[]> {
     entries.push({ url, name: t.name, is_builtin: false, is_curated: true });
   }
 
-  // Skip recently scraped
+  // Skip recently scraped (unless force)
   const recentlyScraped = new Set<string>();
-  const existing = await env.DB
-    .prepare("SELECT id FROM themes WHERE last_scraped_at > datetime('now', '-12 hours')")
-    .all<{ id: string }>();
-  for (const row of existing.results) {
-    recentlyScraped.add(row.id);
-  }
-
-  let success = 0;
-  let skipped = 0;
-  let failed = 0;
-
-  console.log(`Scraping ${entries.length} themes (${recentlyScraped.size} fresh)...`);
-
-  for (const entry of entries) {
-    try {
-      const { repo } = parseOwnerRepo(entry.url);
-      const expectedSlug = entry.path ? deriveSlugFromPath(entry.path) : deriveSlugFromRepo(repo);
-      if (recentlyScraped.has(expectedSlug)) {
-        skipped++;
-        results.push({ slug: expectedSlug, name: entry.name, status: "skipped" });
-        continue;
-      }
-
-      const { record, result } = await scrapeTheme(entry, token);
-      await upsertTheme(env.DB, record);
-      results.push(result);
-      console.log(`OK: ${record.slug} [colors: ${result.colors_source}, preview: ${result.has_preview}]`);
-      success++;
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      try {
-        const { repo } = parseOwnerRepo(entry.url);
-        const expectedSlug = entry.path ? deriveSlugFromPath(entry.path) : deriveSlugFromRepo(repo);
-        results.push({ slug: expectedSlug, name: entry.name, status: "error", error: errorMsg });
-      } catch {
-        results.push({ slug: entry.name, name: entry.name, status: "error", error: errorMsg });
-      }
-      console.error(`FAIL: ${entry.name}: ${errorMsg}`);
-      failed++;
+  if (!force) {
+    const existing = await env.DB
+      .prepare("SELECT id FROM themes WHERE last_scraped_at > datetime('now', '-12 hours')")
+      .all<{ id: string }>();
+    for (const row of existing.results) {
+      recentlyScraped.add(row.id);
     }
   }
 
-  console.log(`Done: ${success} scraped, ${skipped} cached, ${failed} failed / ${entries.length} total`);
-  return results;
+  const messages: { body: ScrapeMessage }[] = [];
+  let skipped = 0;
+
+  for (const entry of entries) {
+    const { repo } = parseOwnerRepo(entry.url);
+    const expectedSlug = entry.path ? deriveSlugFromPath(entry.path) : deriveSlugFromRepo(repo);
+    if (recentlyScraped.has(expectedSlug)) {
+      skipped++;
+      continue;
+    }
+    messages.push({ body: entry });
+  }
+
+  // Queue.sendBatch accepts up to 100 messages at a time
+  for (let i = 0; i < messages.length; i += 100) {
+    await env.SCRAPE_QUEUE.sendBatch(messages.slice(i, i + 100));
+  }
+
+  console.log(`Enqueued ${messages.length} themes (${skipped} skipped, ${entries.length} total)`);
+  return { enqueued: messages.length, skipped, total: entries.length };
+}
+
+// ---------------------------------------------------------------------------
+// Process a batch of themes (queue consumer)
+// ---------------------------------------------------------------------------
+
+async function processBatch(
+  batch: MessageBatch<ScrapeMessage>,
+  env: Env,
+): Promise<void> {
+  const token = env.GITHUB_TOKEN;
+
+  for (const msg of batch.messages) {
+    const entry = msg.body;
+    try {
+      const { record, result } = await scrapeTheme(entry, token);
+      await upsertTheme(env.DB, record);
+      console.log(`OK: ${record.slug} [colors: ${result.colors_source}, preview: ${result.has_preview}]`);
+      msg.ack();
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.error(`FAIL: ${entry.name}: ${errorMsg}`);
+      msg.retry();
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -596,18 +605,28 @@ async function getStatus(db: D1Database): Promise<{
 // ---------------------------------------------------------------------------
 
 export default {
+  // Cron trigger: enqueue all themes for scraping
   async scheduled(
     _controller: ScheduledController,
     env: Env,
     ctx: ExecutionContext,
   ): Promise<void> {
-    ctx.waitUntil(runScraper(env));
+    ctx.waitUntil(enqueueThemes(env, false));
   },
 
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  // Queue consumer: scrape themes in batches
+  async queue(
+    batch: MessageBatch<ScrapeMessage>,
+    env: Env,
+  ): Promise<void> {
+    await processBatch(batch, env);
+  },
+
+  async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    const json = (data: unknown) =>
+    const json = (data: unknown, status = 200) =>
       new Response(JSON.stringify(data, null, 2), {
+        status,
         headers: { "Content-Type": "application/json" },
       });
 
@@ -616,25 +635,19 @@ export default {
       const authHeader = request.headers.get("Authorization");
       const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
       if (!env.SCRAPER_AUTH_TOKEN || !token || !(await timingSafeEqual(token, env.SCRAPER_AUTH_TOKEN))) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        });
+        return json({ error: "Unauthorized" }, 401);
       }
     }
 
-    // POST /run — trigger scrape synchronously, return results
+    // POST /run — enqueue themes for scraping (skips recently scraped)
     if (url.pathname === "/run" && request.method === "POST") {
-      const results = await runScraper(env);
-      const summary = {
-        scraped: results.filter((r) => r.status === "ok").length,
-        skipped: results.filter((r) => r.status === "skipped").length,
-        failed: results.filter((r) => r.status === "error").length,
-        total: results.length,
-        errors: results.filter((r) => r.status === "error"),
-        missing_colors: results.filter((r) => r.status === "ok" && !r.has_colors),
-        results,
-      };
+      const summary = await enqueueThemes(env, false);
+      return json(summary);
+    }
+
+    // POST /run-force — enqueue all themes (ignores 12hr cache)
+    if (url.pathname === "/run-force" && request.method === "POST") {
+      const summary = await enqueueThemes(env, true);
       return json(summary);
     }
 
@@ -644,27 +657,11 @@ export default {
       return json(status);
     }
 
-    // POST /run-force — scrape ignoring 12hr cache
-    if (url.pathname === "/run-force" && request.method === "POST") {
-      // Clear last_scraped_at to force full re-scrape
-      await env.DB.prepare("UPDATE themes SET last_scraped_at = NULL").run();
-      const results = await runScraper(env);
-      const summary = {
-        scraped: results.filter((r) => r.status === "ok").length,
-        failed: results.filter((r) => r.status === "error").length,
-        total: results.length,
-        errors: results.filter((r) => r.status === "error"),
-        missing_colors: results.filter((r) => r.status === "ok" && !r.has_colors),
-        results,
-      };
-      return json(summary);
-    }
-
     return json({
       name: "Omarchy Theme Scraper",
       endpoints: {
-        "POST /run": "Trigger scrape, returns detailed results",
-        "POST /run-force": "Force full re-scrape (ignores 12hr cache)",
+        "POST /run": "Enqueue themes for scraping (skips recently scraped)",
+        "POST /run-force": "Enqueue all themes (ignores 12hr cache)",
         "GET /status": "Show DB health — missing colors, stale themes, etc.",
       },
     });

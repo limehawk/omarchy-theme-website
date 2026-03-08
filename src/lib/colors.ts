@@ -12,9 +12,14 @@ export const COLOR_BUCKETS = [
 
 export type ColorBucket = (typeof COLOR_BUCKETS)[number];
 
+/** Normalize 0x color prefix to # for CSS compatibility */
+export function cssHex(hex: string): string {
+  return hex.startsWith("0x") || hex.startsWith("0X") ? "#" + hex.slice(2) : hex;
+}
+
 export function hexToHsl(hex: string): { h: number; s: number; l: number } {
-  // Strip leading #
-  const raw = hex.replace(/^#/, "");
+  // Strip leading # or 0x
+  const raw = hex.replace(/^(#|0x|0X)/, "");
 
   const r = parseInt(raw.slice(0, 2), 16) / 255;
   const g = parseInt(raw.slice(2, 4), 16) / 255;

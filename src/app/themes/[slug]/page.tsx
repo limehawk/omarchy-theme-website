@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ColorPalette } from "@/components/color-palette";
 import { InstallCommand } from "@/components/install-command";
+import { cssHex } from "@/lib/colors";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -38,7 +39,12 @@ export async function generateMetadata({
 function parseColors(colorsJson: string | null): Record<string, string> | null {
   if (!colorsJson) return null;
   try {
-    return JSON.parse(colorsJson);
+    const raw = JSON.parse(colorsJson) as Record<string, string>;
+    // Normalize 0x prefixed colors to # for CSS
+    for (const key of Object.keys(raw)) {
+      raw[key] = cssHex(raw[key]);
+    }
+    return raw;
   } catch {
     return null;
   }
