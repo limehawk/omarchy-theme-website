@@ -32,8 +32,8 @@ Theme gallery for the Omarchy Linux desktop environment.
 - `bun run dev` — local dev server
 - `bun run build` — production build
 - `bunx opennextjs-cloudflare build` — build for Cloudflare
-- Deploy main app: `CLOUDFLARE_API_TOKEN=$(op read "op://Dev/omarchytheme-cloudflare-api-token/credential") bunx wrangler deploy`
-- Deploy scraper: `cd worker && CLOUDFLARE_API_TOKEN=$(op read "op://Dev/omarchytheme-cloudflare-api-token/credential") bunx wrangler deploy`
+- Deploy main app: `CLOUDFLARE_ACCOUNT_ID=$(op read "op://Dev/omarchytheme/cloudflare-account-id") CLOUDFLARE_API_TOKEN=$(op read "op://Dev/omarchytheme/cloudflare-api-token") bunx wrangler deploy`
+- Deploy scraper: `cd worker && CLOUDFLARE_ACCOUNT_ID=$(op read "op://Dev/omarchytheme/cloudflare-account-id") CLOUDFLARE_API_TOKEN=$(op read "op://Dev/omarchytheme/cloudflare-api-token") bunx wrangler deploy`
 
 ## Scraper Operations
 

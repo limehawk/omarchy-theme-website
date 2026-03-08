@@ -1,6 +1,6 @@
 {
   "name": "omarchy-theme-scraper",
-  "account_id": "d76668fb24d463a3cc928e7658690b6d",
+  // account_id read from CLOUDFLARE_ACCOUNT_ID env var at deploy time
   "main": "scraper.ts",
   "compatibility_date": "2025-01-01",
   "compatibility_flags": ["nodejs_compat"],
