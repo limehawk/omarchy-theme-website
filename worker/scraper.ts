@@ -137,14 +137,14 @@ async function fetchRepoMeta(
   owner: string,
   repo: string,
   token?: string,
-): Promise<{ description: string | null; stars: number }> {
+): Promise<{ description: string | null; stars: number; default_branch: string }> {
   const res = await githubFetch(
     `https://api.github.com/repos/${owner}/${repo}`,
     token,
   );
   if (!res.ok) throw new Error(`Failed to fetch repo ${owner}/${repo}: ${res.status}`);
-  const data = (await res.json()) as { description: string | null; stargazers_count: number };
-  return { description: data.description, stars: data.stargazers_count };
+  const data = (await res.json()) as { description: string | null; stargazers_count: number; default_branch: string };
+  return { description: data.description, stars: data.stargazers_count, default_branch: data.default_branch };
 }
 
 async function fetchFileContent(
@@ -257,6 +257,8 @@ async function discoverThemes(
 // Scrape a single theme
 // ---------------------------------------------------------------------------
 
+const repoMetaCache = new Map<string, { description: string | null; stars: number; default_branch: string }>();
+
 async function scrapeTheme(
   entry: CuratedTheme & { is_builtin?: boolean; is_curated?: boolean; path?: string },
   token?: string,
@@ -271,8 +273,13 @@ async function scrapeTheme(
     slug = deriveSlugFromRepo(repo);
   }
 
-  // Fetch repo metadata
-  const meta = await fetchRepoMeta(owner, repo, token);
+  // Fetch repo metadata (cached per repo to avoid redundant API calls)
+  const repoKey = `${owner}/${repo}`;
+  let meta = repoMetaCache.get(repoKey);
+  if (!meta) {
+    meta = await fetchRepoMeta(owner, repo, token);
+    repoMetaCache.set(repoKey, meta);
+  }
 
   // Determine the path prefix for file lookups
   const pathPrefix = entry.path ? `${entry.path}/` : "";
@@ -289,10 +296,10 @@ async function scrapeTheme(
   }
 
   // Check for preview.png
+  const branch = meta.default_branch;
   let previewUrl: string | null = null;
   const previewExists = await checkFileExists(owner, repo, `${pathPrefix}preview.png`, token);
   if (previewExists) {
-    const branch = "main"; // default branch assumption
     previewUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${pathPrefix}preview.png`;
   }
 
@@ -301,7 +308,7 @@ async function scrapeTheme(
 
   // For builtin themes, the github_url should point to the specific path
   const githubUrl = entry.is_builtin
-    ? `${entry.url}/tree/main/${entry.path}`
+    ? `${entry.url}/tree/${branch}/${entry.path}`
     : entry.url;
 
   return {
@@ -424,13 +431,31 @@ async function runScraper(env: Env): Promise<void> {
     }
   }
 
-  console.log(`Scraping ${entries.length} themes...`);
+  // Get already-scraped theme IDs to skip recent ones
+  const recentlyScraped = new Set<string>();
+  const existing = await env.DB
+    .prepare("SELECT id FROM themes WHERE last_scraped_at > datetime('now', '-12 hours')")
+    .all<{ id: string }>();
+  for (const row of existing.results) {
+    recentlyScraped.add(row.id);
+  }
+
+  console.log(`Scraping ${entries.length} themes (${recentlyScraped.size} already fresh, will skip)...`);
 
   let success = 0;
+  let skipped = 0;
   let failed = 0;
 
   for (const entry of entries) {
     try {
+      // Compute the expected slug to check if already fresh
+      const { repo } = parseOwnerRepo(entry.url);
+      const expectedSlug = entry.path ? deriveSlugFromPath(entry.path) : deriveSlugFromRepo(repo);
+      if (recentlyScraped.has(expectedSlug)) {
+        skipped++;
+        continue;
+      }
+
       const record = await scrapeTheme(entry, token);
       if (record) {
         await upsertTheme(env.DB, record);
@@ -443,7 +468,7 @@ async function runScraper(env: Env): Promise<void> {
     }
   }
 
-  console.log(`Scrape complete: ${success} succeeded, ${failed} failed out of ${entries.length} total`);
+  console.log(`Scrape complete: ${success} new, ${skipped} skipped, ${failed} failed out of ${entries.length} total`);
 }
 
 // ---------------------------------------------------------------------------
