@@ -20,10 +20,18 @@ function resolveUrl(
   pathPrefix: string,
 ): string {
   if (src.startsWith("http://") || src.startsWith("https://")) {
-    return src.replace(
+    let url = src.replace(
       /^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/(blob|raw)\/(.+)/,
       "https://raw.githubusercontent.com/$1/$2/$4",
     );
+    // Fix wrong branch in raw.githubusercontent.com URLs for the same repo
+    const match = url.match(
+      new RegExp(`^https://raw\\.githubusercontent\\.com/${owner}/${repo}/([^/]+)/(.+)$`)
+    );
+    if (match && match[1] !== branch) {
+      url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${match[2]}`;
+    }
+    return url;
   }
   const clean = src.replace(/^\.\//, "");
   const fullPath = pathPrefix ? `${pathPrefix}/${clean}` : clean;
