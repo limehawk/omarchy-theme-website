@@ -1,0 +1,17 @@
+{
+  "name": "omarchy-theme-scraper",
+  "main": "scraper.ts",
+  "compatibility_date": "2025-01-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "omarchytheme",
+      "database_id": ""
+    }
+  ],
+  "triggers": {
+    "crons": ["0 6 * * *"]
+  }
+  // GITHUB_TOKEN is a secret set via `wrangler secret put`
+}

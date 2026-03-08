@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:worker": "opennextjs-cloudflare build",
+    "deploy": "bun run build:worker && wrangler deploy",
+    "deploy:scraper": "cd worker && wrangler deploy",
     "start": "next start",
     "lint": "eslint"
   },

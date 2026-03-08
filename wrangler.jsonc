@@ -1,0 +1,21 @@
+{
+  "name": "omarchy-theme-website",
+  "compatibility_date": "2025-01-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": ".open-next/worker.js",
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "omarchytheme",
+      "database_id": ""
+    }
+  ],
+  "vars": {
+    "TURNSTILE_SITE_KEY": ""
+  }
+  // TURNSTILE_SECRET_KEY and GITHUB_TOKEN are secrets set via `wrangler secret put`
+}
