@@ -11,7 +11,7 @@ export function Footer() {
         </p>
         <div className="flex items-center gap-6">
           <a
-            href="https://github.com/basecamp/omarchy"
+            href="https://omarchy.org/"
             target="_blank"
             rel="noopener noreferrer"
             className="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors"

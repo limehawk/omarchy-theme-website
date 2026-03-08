@@ -2,18 +2,30 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const SORT_OPTIONS = [
+  { value: "stars", label: "stars" },
+  { value: "name", label: "name" },
+  { value: "newest", label: "newest" },
+] as const;
 
 export function SortSelect() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const current = searchParams.get("sort") ?? "popular";
+  const current = searchParams.get("sort") ?? "stars";
 
   const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
+    (value: string | null) => {
+      if (!value) return;
       const params = new URLSearchParams(searchParams.toString());
-      params.set("sort", e.target.value);
-      params.delete("page");
+      params.set("sort", value);
       const qs = params.toString();
       router.push(`/themes${qs ? `?${qs}` : ""}`);
     },
@@ -21,14 +33,17 @@ export function SortSelect() {
   );
 
   return (
-    <select
-      value={current}
-      onChange={handleChange}
-      className="h-8 min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 font-mono text-xs text-foreground transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer dark:bg-input/30"
-    >
-      <option value="popular">popular</option>
-      <option value="newest">newest</option>
-      <option value="stars">stars</option>
-    </select>
+    <Select value={current} onValueChange={handleChange}>
+      <SelectTrigger className="font-mono text-xs">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {SORT_OPTIONS.map((opt) => (
+          <SelectItem key={opt.value} value={opt.value} className="font-mono text-xs">
+            {opt.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

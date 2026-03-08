@@ -12,7 +12,6 @@ export interface Theme {
   is_builtin: number;
   is_curated: number;
   stars: number;
-  upvote_count: number;
   readme_html: string | null;
   last_scraped_at: string | null;
   created_at: string;
@@ -22,7 +21,8 @@ export interface Theme {
 export interface GetThemesOptions {
   color?: string;
   q?: string;
-  sort?: "popular" | "newest" | "stars";
+  sort?: "newest" | "stars" | "name";
+  source?: "all" | "community" | "builtin";
   page?: number;
   limit?: number;
 }
@@ -34,7 +34,8 @@ export async function getThemes(
   const {
     color,
     q,
-    sort = "popular",
+    sort = "stars",
+    source = "all",
     page = 1,
     limit = 12,
   } = options;
@@ -53,19 +54,27 @@ export async function getThemes(
     params.push(pattern, pattern);
   }
 
+  if (source === "community") {
+    conditions.push("is_builtin = 0");
+  } else if (source === "builtin") {
+    conditions.push("is_builtin = 1");
+  }
+
   const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
   let orderBy: string;
   switch (sort) {
     case "newest":
-      orderBy = "created_at DESC";
+      orderBy = "github_pushed_at DESC";
       break;
     case "stars":
       orderBy = "stars DESC";
       break;
-    case "popular":
+    case "name":
+      orderBy = "name ASC";
+      break;
     default:
-      orderBy = "upvote_count DESC";
+      orderBy = "stars DESC";
       break;
   }
 
@@ -105,50 +114,10 @@ export async function getFeaturedThemes(
   limit: number = 6
 ): Promise<Theme[]> {
   const result = await db
-    .prepare("SELECT * FROM themes ORDER BY upvote_count DESC LIMIT ?")
+    .prepare("SELECT * FROM themes ORDER BY stars DESC LIMIT ?")
     .bind(limit)
     .all<Theme>();
 
   return result.results;
 }
 
-export async function recordUpvote(
-  db: D1Database,
-  themeId: string,
-  fingerprintHash: string,
-  ipHash: string | null
-): Promise<number> {
-  await db
-    .prepare(
-      "INSERT INTO upvotes (theme_id, fingerprint_hash, ip_hash) VALUES (?, ?, ?)"
-    )
-    .bind(themeId, fingerprintHash, ipHash)
-    .run();
-
-  await db
-    .prepare("UPDATE themes SET upvote_count = upvote_count + 1 WHERE id = ?")
-    .bind(themeId)
-    .run();
-
-  const result = await db
-    .prepare("SELECT upvote_count FROM themes WHERE id = ?")
-    .bind(themeId)
-    .first<{ upvote_count: number }>();
-
-  return result?.upvote_count ?? 0;
-}
-
-export async function checkIpRateLimit(
-  db: D1Database,
-  ipHash: string,
-  maxPerDay: number
-): Promise<boolean> {
-  const result = await db
-    .prepare(
-      "SELECT COUNT(*) as count FROM upvotes WHERE ip_hash = ? AND created_at > datetime('now', '-1 day')"
-    )
-    .bind(ipHash)
-    .first<{ count: number }>();
-
-  return (result?.count ?? 0) >= maxPerDay;
-}

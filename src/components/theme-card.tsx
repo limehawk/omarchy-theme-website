@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Star, ArrowUp } from "lucide-react";
+import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -104,18 +104,12 @@ export function ThemeCard({ theme }: ThemeCardProps) {
             <h3 className="font-mono text-sm font-medium text-foreground truncate">
               {theme.name}
             </h3>
-            <div className="flex items-center gap-2 shrink-0">
-              <Badge variant="secondary" className="font-mono text-xs gap-1">
-                <ArrowUp className="size-3" />
-                {theme.upvote_count}
+            {theme.stars > 0 && (
+              <Badge variant="secondary" className="font-mono text-xs gap-1 shrink-0">
+                <Star className="size-3" />
+                {theme.stars}
               </Badge>
-              {theme.stars > 0 && (
-                <Badge variant="secondary" className="font-mono text-xs gap-1">
-                  <Star className="size-3" />
-                  {theme.stars}
-                </Badge>
-              )}
-            </div>
+            )}
           </div>
         </CardContent>
 

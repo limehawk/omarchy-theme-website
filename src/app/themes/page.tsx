@@ -12,12 +12,14 @@ import { ThemeGrid } from "@/components/theme-grid";
 import { ColorFilter } from "@/components/color-filter";
 import { SearchBar } from "@/components/search-bar";
 import { SortSelect } from "@/components/sort-select";
+import { SourceFilter } from "@/components/source-filter";
 
 interface Props {
   searchParams: Promise<{
     color?: string;
     q?: string;
     sort?: string;
+    source?: string;
   }>;
 }
 
@@ -25,11 +27,12 @@ export default async function ThemesPage({ searchParams }: Props) {
   const params = await searchParams;
   const color = params.color ?? undefined;
   const q = params.q ?? undefined;
-  const sort = (params.sort as "popular" | "newest" | "stars") ?? "popular";
+  const sort = (params.sort as "newest" | "stars" | "name") ?? "stars";
+  const source = (params.source as "all" | "community" | "builtin") ?? "all";
 
   const { env } = await getCloudflareContext({ async: true });
   const db = env.DB as D1Database;
-  const { themes, total } = await getThemes(db, { color, q, sort, limit: 200 });
+  const { themes, total } = await getThemes(db, { color, q, sort, source, limit: 300 });
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -56,9 +59,14 @@ export default async function ThemesPage({ searchParams }: Props) {
               <SortSelect />
             </Suspense>
           </div>
-          <Suspense>
-            <ColorFilter />
-          </Suspense>
+          <div className="flex flex-wrap items-center gap-4">
+            <Suspense>
+              <SourceFilter />
+            </Suspense>
+            <Suspense>
+              <ColorFilter />
+            </Suspense>
+          </div>
         </div>
 
         {/* Grid */}

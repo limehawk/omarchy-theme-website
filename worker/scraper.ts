@@ -9,6 +9,7 @@ interface Env {
 interface CuratedTheme {
   url: string;
   name: string;
+  dead?: boolean;
 }
 
 interface BuiltinTheme {
@@ -32,6 +33,7 @@ interface ThemeRecord {
   is_curated: number;
   stars: number;
   readme: string | null;
+  github_pushed_at: string | null;
 }
 
 interface ScrapeResult {
@@ -146,14 +148,14 @@ async function fetchRepoMeta(
   owner: string,
   repo: string,
   token?: string,
-): Promise<{ description: string | null; stars: number; default_branch: string }> {
+): Promise<{ description: string | null; stars: number; default_branch: string; pushed_at: string | null }> {
   const res = await githubFetch(
     `https://api.github.com/repos/${owner}/${repo}`,
     token,
   );
   if (!res.ok) throw new Error(`GitHub API ${res.status}: repos/${owner}/${repo}`);
-  const data = (await res.json()) as { description: string | null; stargazers_count: number; default_branch: string };
-  return { description: data.description, stars: data.stargazers_count, default_branch: data.default_branch };
+  const data = (await res.json()) as { description: string | null; stargazers_count: number; default_branch: string; pushed_at: string | null };
+  return { description: data.description, stars: data.stargazers_count, default_branch: data.default_branch, pushed_at: data.pushed_at };
 }
 
 async function fetchFileContent(
@@ -266,58 +268,10 @@ function parseAlacrittyColors(tomlContent: string): Record<string, string> | nul
 }
 
 // ---------------------------------------------------------------------------
-// Discovery: search GitHub for omarchy-theme repos not already in the registry
-// ---------------------------------------------------------------------------
-
-async function discoverThemes(
-  token: string | undefined,
-  knownUrls: Set<string>,
-): Promise<CuratedTheme[]> {
-  const discovered: CuratedTheme[] = [];
-
-  const queries = [
-    "omarchy-theme in:name",
-    "omarchy-theme topic:omarchy-theme",
-  ];
-
-  for (const q of queries) {
-    try {
-      const res = await githubFetch(
-        `https://api.github.com/search/repositories?q=${encodeURIComponent(q)}&per_page=100`,
-        token,
-      );
-      if (!res.ok) {
-        console.error(`GitHub search failed for "${q}": ${res.status}`);
-        continue;
-      }
-      const data = (await res.json()) as {
-        items: Array<{ html_url: string; name: string; full_name: string }>;
-      };
-      for (const item of data.items) {
-        const normalizedUrl = item.html_url.replace(/\/$/, "");
-        if (!knownUrls.has(normalizedUrl)) {
-          const name = item.name
-            .replace(/^omarchy-/, "")
-            .replace(/-theme$/, "")
-            .replace(/-/g, " ")
-            .replace(/\b\w/g, (c) => c.toUpperCase());
-          discovered.push({ url: normalizedUrl, name });
-          knownUrls.add(normalizedUrl);
-        }
-      }
-    } catch (err) {
-      console.error(`Discovery search error for "${q}":`, err);
-    }
-  }
-
-  return discovered;
-}
-
-// ---------------------------------------------------------------------------
 // Scrape a single theme
 // ---------------------------------------------------------------------------
 
-const repoMetaCache = new Map<string, { description: string | null; stars: number; default_branch: string }>();
+const repoMetaCache = new Map<string, { description: string | null; stars: number; default_branch: string; pushed_at: string | null }>();
 
 async function scrapeTheme(
   entry: CuratedTheme & { is_builtin?: boolean; is_curated?: boolean; path?: string },
@@ -409,13 +363,14 @@ async function scrapeTheme(
     is_curated: entry.is_curated ? 1 : 0,
     stars: meta.stars,
     readme: readme,
+    github_pushed_at: meta.pushed_at,
   };
 
   return { record, result };
 }
 
 // ---------------------------------------------------------------------------
-// Upsert into D1 (preserving upvote_count)
+// Upsert into D1
 // ---------------------------------------------------------------------------
 
 async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
@@ -425,8 +380,8 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
         id, name, slug, github_url, github_owner, github_repo,
         description, preview_url, colors_json, primary_hue,
         is_builtin, is_curated, stars, readme_html,
-        last_scraped_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+        github_pushed_at, last_scraped_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         github_url = excluded.github_url,
@@ -440,6 +395,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
         is_curated = excluded.is_curated,
         stars = excluded.stars,
         readme_html = excluded.readme_html,
+        github_pushed_at = excluded.github_pushed_at,
         last_scraped_at = datetime('now'),
         updated_at = datetime('now')`,
     )
@@ -458,6 +414,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
       theme.is_curated,
       theme.stars,
       theme.readme,
+      theme.github_pushed_at,
     )
     .run();
 }
@@ -467,38 +424,27 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
 // ---------------------------------------------------------------------------
 
 async function runScraper(env: Env): Promise<ScrapeResult[]> {
+  repoMetaCache.clear();
+
   const token = env.GITHUB_TOKEN;
   if (!token) {
-    console.log("GITHUB_TOKEN not set — running without auth (60 req/hr limit, no auto-discovery)");
+    console.log("GITHUB_TOKEN not set — running without auth (60 req/hr limit)");
   }
 
-  const knownUrls = new Set<string>();
   const results: ScrapeResult[] = [];
 
   type ScrapeEntry = CuratedTheme & { is_builtin?: boolean; is_curated?: boolean; path?: string };
   const entries: ScrapeEntry[] = [];
 
-  // 1. Builtin themes
   for (const t of themes.builtin as BuiltinTheme[]) {
     const url = t.url.replace(/\/$/, "");
-    knownUrls.add(url);
-    knownUrls.add(`${url}/tree/main/${t.path}`);
     entries.push({ url, name: t.name, path: t.path, is_builtin: true, is_curated: false });
   }
 
-  // 2. Curated themes
   for (const t of themes.curated as CuratedTheme[]) {
+    if (t.dead) continue;
     const url = t.url.replace(/\/$/, "");
-    knownUrls.add(url);
     entries.push({ url, name: t.name, is_builtin: false, is_curated: true });
-  }
-
-  // 3. Auto-discovered themes
-  if (token) {
-    const discovered = await discoverThemes(token, knownUrls);
-    for (const t of discovered) {
-      entries.push({ ...t, is_builtin: false, is_curated: false });
-    }
   }
 
   // Skip recently scraped
@@ -510,11 +456,11 @@ async function runScraper(env: Env): Promise<ScrapeResult[]> {
     recentlyScraped.add(row.id);
   }
 
-  console.log(`Scraping ${entries.length} themes (${recentlyScraped.size} already fresh)...`);
-
   let success = 0;
   let skipped = 0;
   let failed = 0;
+
+  console.log(`Scraping ${entries.length} themes (${recentlyScraped.size} fresh)...`);
 
   for (const entry of entries) {
     try {
@@ -532,16 +478,20 @@ async function runScraper(env: Env): Promise<ScrapeResult[]> {
       console.log(`OK: ${record.slug} [colors: ${result.colors_source}, preview: ${result.has_preview}]`);
       success++;
     } catch (err) {
-      const { repo } = parseOwnerRepo(entry.url);
-      const expectedSlug = entry.path ? deriveSlugFromPath(entry.path) : deriveSlugFromRepo(repo);
       const errorMsg = err instanceof Error ? err.message : String(err);
-      results.push({ slug: expectedSlug, name: entry.name, status: "error", error: errorMsg });
-      console.error(`FAIL: ${entry.name} (${entry.url}): ${errorMsg}`);
+      try {
+        const { repo } = parseOwnerRepo(entry.url);
+        const expectedSlug = entry.path ? deriveSlugFromPath(entry.path) : deriveSlugFromRepo(repo);
+        results.push({ slug: expectedSlug, name: entry.name, status: "error", error: errorMsg });
+      } catch {
+        results.push({ slug: entry.name, name: entry.name, status: "error", error: errorMsg });
+      }
+      console.error(`FAIL: ${entry.name}: ${errorMsg}`);
       failed++;
     }
   }
 
-  console.log(`Done: ${success} scraped, ${skipped} skipped, ${failed} failed / ${entries.length} total`);
+  console.log(`Done: ${success} scraped, ${skipped} cached, ${failed} failed / ${entries.length} total`);
   return results;
 }
 

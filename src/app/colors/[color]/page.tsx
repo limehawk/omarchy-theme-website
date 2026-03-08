@@ -48,7 +48,7 @@ export default async function ColorPage({ params }: Props) {
   const db = env.DB as D1Database;
   const { themes, total } = await getThemes(db, {
     color: bucket,
-    sort: "popular",
+    sort: "stars",
     limit: 50,
   });
 

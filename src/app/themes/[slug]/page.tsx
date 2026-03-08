@@ -11,7 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ColorPalette } from "@/components/color-palette";
 import { InstallCommand } from "@/components/install-command";
-import { UpvoteButton } from "@/components/upvote-button";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -182,15 +181,12 @@ export default async function ThemeDetailPage({ params }: Props) {
               </CardHeader>
 
               <CardContent className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <UpvoteButton themeId={theme.id} initialCount={theme.upvote_count} />
-                  {theme.stars > 0 && (
-                    <Badge variant="secondary" className="font-mono gap-1.5">
-                      <Star className="size-3" />
-                      {theme.stars}
-                    </Badge>
-                  )}
-                </div>
+                {theme.stars > 0 && (
+                  <Badge variant="secondary" className="font-mono gap-1.5">
+                    <Star className="size-3" />
+                    {theme.stars}
+                  </Badge>
+                )}
 
                 <div className="border-t border-border/40 pt-4">
                   <a

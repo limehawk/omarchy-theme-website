@@ -38,7 +38,7 @@ export default async function Home() {
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
             Browse and install terminal color schemes for{" "}
             <a
-              href="https://github.com/basecamp/omarchy"
+              href="https://omarchy.org/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-foreground underline underline-offset-4 decoration-foreground/30 hover:decoration-foreground/60 transition-colors"
@@ -58,7 +58,7 @@ export default async function Home() {
               className="font-mono"
               render={
                 <a
-                  href="https://github.com/basecamp/omarchy"
+                  href="https://omarchy.org/"
                   target="_blank"
                   rel="noopener noreferrer"
                 />
