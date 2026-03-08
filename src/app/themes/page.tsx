@@ -12,14 +12,12 @@ import { ThemeGrid } from "@/components/theme-grid";
 import { ColorFilter } from "@/components/color-filter";
 import { SearchBar } from "@/components/search-bar";
 import { SortSelect } from "@/components/sort-select";
-import { Pagination } from "@/components/pagination";
 
 interface Props {
   searchParams: Promise<{
     color?: string;
     q?: string;
     sort?: string;
-    page?: string;
   }>;
 }
 
@@ -28,12 +26,10 @@ export default async function ThemesPage({ searchParams }: Props) {
   const color = params.color ?? undefined;
   const q = params.q ?? undefined;
   const sort = (params.sort as "popular" | "newest" | "stars") ?? "popular";
-  const page = parseInt(params.page ?? "1", 10);
-  const limit = 12;
 
   const { env } = await getCloudflareContext({ async: true });
   const db = env.DB as D1Database;
-  const { themes, total } = await getThemes(db, { color, q, sort, page, limit });
+  const { themes, total } = await getThemes(db, { color, q, sort, limit: 200 });
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -67,11 +63,6 @@ export default async function ThemesPage({ searchParams }: Props) {
 
         {/* Grid */}
         <ThemeGrid themes={themes} />
-
-        {/* Pagination */}
-        <Suspense>
-          <Pagination total={total} limit={limit} currentPage={page} />
-        </Suspense>
       </div>
     </div>
   );
