@@ -195,19 +195,6 @@ export default async function ThemeDetailPage({ params }: Props) {
               <InstallCommand githubUrl={theme.github_url} />
             </div>
 
-            {/* Mini palette in sidebar */}
-            {colors && (
-              <div className="space-y-2">
-                <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
-                  colors
-                </h2>
-                <Card>
-                  <CardContent>
-                    <ColorPalette colors={colors} size="md" />
-                  </CardContent>
-                </Card>
-              </div>
-            )}
           </div>
         </aside>
       </div>
