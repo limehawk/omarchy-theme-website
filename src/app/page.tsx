@@ -1,18 +1,13 @@
-export const dynamic = "force-dynamic";
-
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getFeaturedThemes } from "@/lib/db";
 import { COLOR_BUCKETS, BUCKET_COLORS } from "@/lib/colors";
 import { ThemeGrid } from "@/components/theme-grid";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export default async function Home() {
-  const { env } = await getCloudflareContext({ async: true });
-  const db = env.DB as D1Database;
-  const featured = await getFeaturedThemes(db, 6);
+export default function Home() {
+  const featured = getFeaturedThemes(6);
 
   return (
     <div className="mx-auto max-w-6xl px-6">
