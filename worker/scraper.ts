@@ -48,6 +48,28 @@ interface ScrapeResult {
 }
 
 // ---------------------------------------------------------------------------
+// Auth
+// ---------------------------------------------------------------------------
+
+async function timingSafeEqual(a: string, b: string): Promise<boolean> {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode("hmac-key");
+  const key = await crypto.subtle.importKey(
+    "raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+  );
+  const [sigA, sigB] = await Promise.all([
+    crypto.subtle.sign("HMAC", key, encoder.encode(a)),
+    crypto.subtle.sign("HMAC", key, encoder.encode(b)),
+  ]);
+  const bufA = new Uint8Array(sigA);
+  const bufB = new Uint8Array(sigB);
+  if (bufA.length !== bufB.length) return false;
+  let result = 0;
+  for (let i = 0; i < bufA.length; i++) result |= bufA[i] ^ bufB[i];
+  return result === 0;
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -380,7 +402,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
       `INSERT INTO themes (
         id, name, slug, github_url, github_owner, github_repo,
         description, preview_url, colors_json, primary_hue,
-        is_builtin, is_curated, stars, readme_html,
+        is_builtin, is_curated, stars, readme_text,
         github_pushed_at, last_scraped_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       ON CONFLICT(id) DO UPDATE SET
@@ -395,7 +417,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
         is_builtin = excluded.is_builtin,
         is_curated = excluded.is_curated,
         stars = excluded.stars,
-        readme_html = excluded.readme_html,
+        readme_text = excluded.readme_text,
         github_pushed_at = excluded.github_pushed_at,
         last_scraped_at = datetime('now'),
         updated_at = datetime('now')`,
@@ -585,11 +607,11 @@ export default {
         headers: { "Content-Type": "application/json" },
       });
 
-    // Authenticate mutating endpoints
-    if (url.pathname === "/run" || url.pathname === "/run-force") {
+    // Authenticate admin endpoints
+    if (url.pathname === "/run" || url.pathname === "/run-force" || url.pathname === "/status") {
       const authHeader = request.headers.get("Authorization");
       const token = authHeader?.replace("Bearer ", "");
-      if (!env.SCRAPER_AUTH_TOKEN || token !== env.SCRAPER_AUTH_TOKEN) {
+      if (!env.SCRAPER_AUTH_TOKEN || !token || !(await timingSafeEqual(token, env.SCRAPER_AUTH_TOKEN))) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401,
           headers: { "Content-Type": "application/json" },

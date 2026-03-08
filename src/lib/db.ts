@@ -12,7 +12,7 @@ export interface Theme {
   is_builtin: number;
   is_curated: number;
   stars: number;
-  readme_html: string | null;
+  readme_text: string | null;
   last_scraped_at: string | null;
   created_at: string;
   updated_at: string;

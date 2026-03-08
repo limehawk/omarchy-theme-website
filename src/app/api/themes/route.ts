@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getThemes } from "@/lib/db";
+import { COLOR_BUCKETS } from "@/lib/colors";
 
 const VALID_SORTS = new Set(["newest", "stars", "name"]);
 const VALID_SOURCES = new Set(["all", "community", "builtin"]);
@@ -8,7 +9,8 @@ const VALID_SOURCES = new Set(["all", "community", "builtin"]);
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
 
-  const color = searchParams.get("color") ?? undefined;
+  const colorParam = searchParams.get("color");
+  const color = (colorParam && (COLOR_BUCKETS as readonly string[]).includes(colorParam)) ? colorParam : undefined;
   const q = searchParams.get("q")?.slice(0, 100) ?? undefined;
   const sortParam = searchParams.get("sort");
   const sort = (sortParam && VALID_SORTS.has(sortParam) ? sortParam : "stars") as "newest" | "stars" | "name";

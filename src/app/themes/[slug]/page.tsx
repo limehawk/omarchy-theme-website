@@ -150,7 +150,7 @@ export default async function ThemeDetailPage({ params }: Props) {
           )}
 
           {/* README */}
-          {theme.readme_html && (
+          {theme.readme_text && (
             <div className="space-y-3">
               <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
                 readme
@@ -158,7 +158,7 @@ export default async function ThemeDetailPage({ params }: Props) {
               <Card>
                 <CardContent>
                   <pre className="font-mono text-sm text-muted-foreground whitespace-pre-wrap break-words leading-relaxed overflow-x-auto">
-                    {theme.readme_html}
+                    {theme.readme_text}
                   </pre>
                 </CardContent>
               </Card>
