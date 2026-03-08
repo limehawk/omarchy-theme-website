@@ -1,5 +1,16 @@
 import Link from "next/link";
-import { Terminal } from "lucide-react";
+
+function PaletteIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <rect width="32" height="32" rx="6" fill="currentColor" opacity="0.15" />
+      <rect x="4" y="6" width="10" height="10" rx="2" fill="#22c55e" />
+      <rect x="18" y="6" width="10" height="10" rx="2" fill="#a855f7" />
+      <rect x="4" y="18" width="10" height="10" rx="2" fill="#3b82f6" />
+      <rect x="18" y="18" width="10" height="10" rx="2" fill="#f97316" />
+    </svg>
+  );
+}
 
 export function Header() {
   return (
@@ -9,7 +20,7 @@ export function Header() {
           href="/"
           className="flex items-center gap-2 font-mono text-sm tracking-tight text-foreground hover:text-foreground/80 transition-colors"
         >
-          <Terminal className="size-4" />
+          <PaletteIcon className="size-5" />
           <span className="font-semibold">omarchy themes</span>
         </Link>
         <nav className="flex items-center gap-6">
