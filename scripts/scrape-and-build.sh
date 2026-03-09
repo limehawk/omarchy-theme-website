@@ -11,7 +11,32 @@ echo "Deploying scraper worker..."
 cd worker && npx wrangler deploy && cd ..
 
 # ---------------------------------------------------------------------------
-# 2. Count expected themes from themes.json
+# 2. Check for slug collisions in themes.json
+# ---------------------------------------------------------------------------
+node -e "
+const t = require('./src/data/themes.json');
+const slugs = new Map();
+let collisions = 0;
+for (const b of t.builtin) {
+  const slug = b.path.split('/').pop().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'').replace(/^-+/,'');
+  slugs.set(slug, 'builtin: ' + b.name);
+}
+for (const c of t.curated) {
+  if (c.dead) continue;
+  const repo = c.url.match(/github\.com\/[^/]+\/([^/]+)/)[1];
+  const slug = repo.toLowerCase().replace(/^omarchy-/,'').replace(/-theme$/,'').replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'').replace(/^-+/,'');
+  if (slugs.has(slug)) {
+    console.error('SLUG COLLISION: ' + slug + ' -> ' + slugs.get(slug) + ' vs curated: ' + c.name);
+    collisions++;
+  }
+  slugs.set(slug, 'curated: ' + c.name);
+}
+if (collisions > 0) { console.error(collisions + ' slug collision(s) found. Fix themes.json before deploying.'); process.exit(1); }
+console.log('No slug collisions detected.');
+"
+
+# ---------------------------------------------------------------------------
+# 3. Count expected themes from themes.json
 # ---------------------------------------------------------------------------
 EXPECTED=$(node -e "
 const t = require('./src/data/themes.json');
@@ -22,7 +47,7 @@ console.log(count);
 echo "Expected themes: $EXPECTED"
 
 # ---------------------------------------------------------------------------
-# 3. Trigger scraper (force mode to ensure fresh data)
+# 4. Trigger scraper (force mode to ensure fresh data)
 # ---------------------------------------------------------------------------
 if [ -z "${SCRAPER_AUTH_TOKEN:-}" ]; then
   echo "SCRAPER_AUTH_TOKEN not set, skipping scrape — using existing D1 data"
@@ -66,11 +91,11 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 4. Dump D1 to JSON
+# 5. Dump D1 to JSON
 # ---------------------------------------------------------------------------
 bash scripts/dump-themes.sh
 
 # ---------------------------------------------------------------------------
-# 5. Build
+# 6. Build
 # ---------------------------------------------------------------------------
 npm run build
