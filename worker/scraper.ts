@@ -568,8 +568,9 @@ async function scrapeTheme(
   // Detect which apps this theme covers
   const apps = detectApps(files, pathPrefix.replace(/\/$/, ""));
 
-  // Fetch README.md
-  const readme = await fetchFileContent(owner, repo, `${pathPrefix}README.md`, token);
+  // Fetch README.md (try uppercase first, then lowercase)
+  const readme = await fetchFileContent(owner, repo, `${pathPrefix}README.md`, token)
+    ?? await fetchFileContent(owner, repo, `${pathPrefix}readme.md`, token);
 
   // Find preview image: tree files → README screenshot keywords → root images → README fallback
   const previewUrl = findPreviewImage(files, readme, owner, repo, branch, pathPrefix);
