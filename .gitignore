@@ -50,9 +50,6 @@ next-env.d.ts
 # Build-time generated theme data
 src/data/themes-data.json
 
-# Worker source (deployed separately, never commit)
-worker/
-
 # Local-only files
 CLAUDE.md
 .mcp.json
