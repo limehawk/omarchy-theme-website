@@ -17,6 +17,10 @@
       "url": "https://github.com/JJDizz1L/aetheria"
     },
     {
+      "name": "Akane",
+      "url": "https://github.com/Grenish/omarchy-akane-theme"
+    },
+    {
       "name": "Akaito",
       "url": "https://github.com/stannorbvb-cmd/akaito"
     },
@@ -167,6 +171,10 @@
       "url": "https://github.com/OldJobobo/omarchy-caroline-skyline-theme"
     },
     {
+      "name": "C64",
+      "url": "https://github.com/scar45/omarchy-c64-theme"
+    },
+    {
       "name": "Catppu Mocha",
       "url": "https://github.com/ankur311sudo/Catppu_Mocha"
     },
@@ -195,6 +203,10 @@
       "url": "https://github.com/hoblin/omarchy-cobalt2-theme"
     },
     {
+      "name": "Copper Night",
+      "url": "https://github.com/hembramnishant50-glitch/omarchy-coppernight-theme"
+    },
+    {
       "name": "Corporate",
       "url": "https://github.com/defer/omarchy-corporate-theme"
     },
@@ -215,6 +227,10 @@
       "name": "Cyberpunk",
       "dead": true,
       "url": "https://github.com/thatmechguy/omarchy-cyberpunk-theme"
+    },
+    {
+      "name": "Cyberpunk Cyan",
+      "url": "https://github.com/Matcraft94/cyberpunk-cyan"
     },
     {
       "name": "Darcula",
@@ -365,6 +381,10 @@
       "url": "https://github.com/JustArmaan/omarchy-gotham-city-theme"
     },
     {
+      "name": "GTA",
+      "url": "https://github.com/jordan-ops/omarchy-GTA-theme"
+    },
+    {
       "name": "Greek Noir",
       "url": "https://github.com/HANCORE-linux/omarchy-greek-noir-theme"
     },
@@ -389,9 +409,8 @@
       "url": "https://github.com/ankur311sudo/gruvu"
     },
     {
-      "name": "Hakker Green",
-      "dead": true,
-      "url": "https://github.com/joaquinmeza/omarchy-hakker-green-theme"
+      "name": "Hakkar Green",
+      "url": "https://github.com/JonasAllenCodes/omarchy-hakkar-green-better-contrast-theme"
     },
     {
       "name": "Harbor",
@@ -430,8 +449,16 @@
       "url": "https://github.com/HANCORE-linux/omarchy-inkypinky-theme"
     },
     {
+      "name": "Kawasaki Foundry",
+      "url": "https://github.com/komagata/omarchy-kawasaki-foundry-theme"
+    },
+    {
       "name": "Kimiko",
       "url": "https://github.com/krymzonn/omarchy-kimiko-theme"
+    },
+    {
+      "name": "Krishna",
+      "url": "https://github.com/tanishenigma/omarchy-krishna-theme"
     },
     {
       "name": "Koyanagi",
@@ -735,6 +762,10 @@
     {
       "name": "Stillmoon",
       "url": "https://github.com/atif-1402/omarchy-stillmoon-theme"
+    },
+    {
+      "name": "Stillwood",
+      "url": "https://github.com/shresth-dwivedi/omarchy-stillwood-theme"
     },
     {
       "name": "Sunkissed",
