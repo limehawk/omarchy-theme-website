@@ -48,6 +48,19 @@ export default function Home() {
             >
               get omarchy
             </Button>
+            <Button
+              variant="outline"
+              className="font-mono"
+              render={
+                <a
+                  href="https://github.com/limehawk/omarchy-theme-website/issues/new?template=submit-theme.yml"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                />
+              }
+            >
+              contribute a theme
+            </Button>
           </div>
         </div>
       </section>
