@@ -5,7 +5,13 @@ SCRAPER_URL="https://omarchy-theme-scraper.limehawk.workers.dev"
 MAX_WAIT=180  # 3 minutes max
 
 # ---------------------------------------------------------------------------
-# 1. Count expected themes from themes.json
+# 1. Deploy scraper worker (ensures code changes go live before scraping)
+# ---------------------------------------------------------------------------
+echo "Deploying scraper worker..."
+cd worker && npx wrangler deploy && cd ..
+
+# ---------------------------------------------------------------------------
+# 2. Count expected themes from themes.json
 # ---------------------------------------------------------------------------
 EXPECTED=$(node -e "
 const t = require('./src/data/themes.json');
@@ -16,7 +22,7 @@ console.log(count);
 echo "Expected themes: $EXPECTED"
 
 # ---------------------------------------------------------------------------
-# 2. Trigger scraper (force mode to ensure fresh data)
+# 3. Trigger scraper (force mode to ensure fresh data)
 # ---------------------------------------------------------------------------
 if [ -z "${SCRAPER_AUTH_TOKEN:-}" ]; then
   echo "SCRAPER_AUTH_TOKEN not set, skipping scrape — using existing D1 data"
@@ -60,11 +66,11 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 3. Dump D1 to JSON
+# 4. Dump D1 to JSON
 # ---------------------------------------------------------------------------
 bash scripts/dump-themes.sh
 
 # ---------------------------------------------------------------------------
-# 4. Build
+# 5. Build
 # ---------------------------------------------------------------------------
 npm run build
