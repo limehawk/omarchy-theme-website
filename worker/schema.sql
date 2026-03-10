@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS themes (
   readme_text TEXT,
   default_branch TEXT DEFAULT 'main',
   github_pushed_at TEXT,
+  canonical_github_url TEXT,
   last_scraped_at TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
