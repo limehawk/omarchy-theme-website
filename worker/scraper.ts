@@ -61,6 +61,7 @@ interface ThemeRecord {
   readme: string | null;
   default_branch: string;
   github_pushed_at: string | null;
+  canonical_github_url: string | null;
 }
 
 interface ScrapeResult {
@@ -201,14 +202,14 @@ async function fetchRepoMeta(
   owner: string,
   repo: string,
   token?: string,
-): Promise<{ description: string | null; stars: number; default_branch: string; pushed_at: string | null }> {
+): Promise<{ description: string | null; stars: number; default_branch: string; pushed_at: string | null; full_name: string }> {
   const res = await githubFetch(
     `https://api.github.com/repos/${owner}/${repo}`,
     token,
   );
   if (!res.ok) throw new Error(`GitHub API ${res.status}: repos/${owner}/${repo}`);
-  const data = (await res.json()) as { description: string | null; stargazers_count: number; default_branch: string; pushed_at: string | null };
-  return { description: data.description, stars: data.stargazers_count, default_branch: data.default_branch, pushed_at: data.pushed_at };
+  const data = (await res.json()) as { full_name: string; description: string | null; stargazers_count: number; default_branch: string; pushed_at: string | null };
+  return { description: data.description, stars: data.stargazers_count, default_branch: data.default_branch, pushed_at: data.pushed_at, full_name: data.full_name };
 }
 
 async function fetchFileContent(
@@ -534,6 +535,15 @@ async function scrapeTheme(
 
   const meta = await fetchRepoMeta(owner, repo, token);
 
+  // Detect renamed/transferred repos by comparing canonical full_name
+  const requestedFullName = `${owner}/${repo}`;
+  const canonicalFullName = meta.full_name;
+  let canonicalGithubUrl: string | null = null;
+  if (canonicalFullName.toLowerCase() !== requestedFullName.toLowerCase()) {
+    canonicalGithubUrl = `https://github.com/${canonicalFullName}`;
+    console.log(`REDIRECT: ${requestedFullName} → ${canonicalFullName}`);
+  }
+
   const pathPrefix = entry.path ? `${entry.path}/` : "";
 
   // Fetch colors: try colors.toml first, fall back to alacritty.toml
@@ -598,6 +608,7 @@ async function scrapeTheme(
     readme: readme,
     default_branch: branch,
     github_pushed_at: meta.pushed_at,
+    canonical_github_url: canonicalGithubUrl,
   };
 
   return { record, result };
@@ -614,8 +625,8 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
         id, name, slug, github_url, github_owner, github_repo,
         description, preview_url, colors_json, apps_json, primary_hue,
         is_builtin, is_curated, stars, readme_text, default_branch,
-        github_pushed_at, last_scraped_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+        github_pushed_at, canonical_github_url, last_scraped_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         github_url = excluded.github_url,
@@ -632,6 +643,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
         readme_text = excluded.readme_text,
         default_branch = excluded.default_branch,
         github_pushed_at = excluded.github_pushed_at,
+        canonical_github_url = excluded.canonical_github_url,
         last_scraped_at = datetime('now'),
         updated_at = datetime('now')`,
     )
@@ -653,6 +665,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
       theme.readme,
       theme.default_branch,
       theme.github_pushed_at,
+      theme.canonical_github_url,
     )
     .run();
 }
@@ -748,22 +761,32 @@ interface ThemeStatus {
   stale: boolean;
 }
 
+interface RedirectedTheme {
+  slug: string;
+  name: string;
+  registered_url: string;
+  canonical_url: string;
+}
+
 async function getStatus(db: D1Database): Promise<{
   total: number;
   missing_colors: ThemeStatus[];
   missing_preview: ThemeStatus[];
   stale: ThemeStatus[];
   never_scraped: ThemeStatus[];
+  redirected: RedirectedTheme[];
 }> {
   const all = await db
-    .prepare(`SELECT slug, name, colors_json, preview_url, primary_hue, last_scraped_at FROM themes ORDER BY name`)
+    .prepare(`SELECT slug, name, github_url, colors_json, preview_url, primary_hue, last_scraped_at, canonical_github_url FROM themes ORDER BY name`)
     .all<{
       slug: string;
       name: string;
+      github_url: string;
       colors_json: string | null;
       preview_url: string | null;
       primary_hue: string | null;
       last_scraped_at: string | null;
+      canonical_github_url: string | null;
     }>();
 
   const now = Date.now();
@@ -773,6 +796,7 @@ async function getStatus(db: D1Database): Promise<{
   const missing_preview: ThemeStatus[] = [];
   const stale: ThemeStatus[] = [];
   const never_scraped: ThemeStatus[] = [];
+  const redirected: RedirectedTheme[] = [];
 
   for (const t of all.results) {
     const lastScraped = t.last_scraped_at ? new Date(t.last_scraped_at + "Z").getTime() : 0;
@@ -792,6 +816,15 @@ async function getStatus(db: D1Database): Promise<{
     if (!t.preview_url) missing_preview.push(status);
     if (!t.last_scraped_at) never_scraped.push(status);
     else if (isStale) stale.push(status);
+
+    if (t.canonical_github_url) {
+      redirected.push({
+        slug: t.slug,
+        name: t.name,
+        registered_url: t.github_url,
+        canonical_url: t.canonical_github_url,
+      });
+    }
   }
 
   return {
@@ -800,6 +833,7 @@ async function getStatus(db: D1Database): Promise<{
     missing_preview,
     stale,
     never_scraped,
+    redirected,
   };
 }
 
