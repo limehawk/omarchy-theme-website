@@ -44,6 +44,9 @@ export function Footer() {
             </a>
           </div>
         </div>
+        <p className="text-center text-[10px] text-muted-foreground/60 leading-relaxed">
+          Not affiliated with Hyprland, Omarchy, DHH, 37signals, or Arch Linux. All trademarks belong to their respective owners.
+        </p>
       </div>
     </footer>
   );
