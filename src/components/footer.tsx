@@ -5,7 +5,7 @@ export function Footer() {
     <footer className="border-t border-border/50 mt-auto">
       <div className="mx-auto max-w-6xl px-6 py-8 flex flex-col gap-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="font-mono text-xs text-muted-foreground">
+          <p className="font-mono text-xs text-muted-foreground sm:flex-1">
             <Link href="/" className="hover:text-foreground transition-colors">
               omarchy themes
             </Link>
@@ -25,7 +25,7 @@ export function Footer() {
             </span>
             <span className="text-xs uppercase tracking-[0.3em] font-thin">Product</span>
           </a>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center justify-end gap-6 sm:flex-1">
             <a
               href="https://omarchy.org/"
               target="_blank"

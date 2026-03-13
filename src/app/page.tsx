@@ -103,6 +103,15 @@ export default function Home() {
             </Link>
           </div>
           <ThemeGrid themes={featured} />
+          <div className="mt-10 text-center">
+            <Button
+              className="font-mono"
+              render={<Link href="/themes" />}
+            >
+              browse all themes
+              <ArrowRight className="size-4" />
+            </Button>
+          </div>
         </section>
       )}
     </div>
