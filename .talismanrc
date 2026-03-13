@@ -4,7 +4,7 @@ fileignoreconfig:
 - filename: scripts/dump-themes.sh
   checksum: 09341637a0b0a0789441936fa4c08c5d9c2216331617c02bef9de15ebf00eaa7
 - filename: src/components/theme-grid.tsx
-  checksum: ac9531b1f83543d1eac5d95b915188e64e1fb3d822ee761ae316d358e0dc1af9
+  checksum: a2b4ccdd97ed8237b9c875a54fff294282e0711b58d9bf044172d32f7385ce60
 - filename: src/components/sort-select.tsx
   checksum: a2a6aa7818fdd079f96da0ec41657e105f234753a07df6395b30834eb0c0f309
 - filename: src/components/source-filter.tsx
@@ -18,7 +18,9 @@ fileignoreconfig:
 - filename: src/components/color-palette.tsx
   checksum: 85b145d42c6a0670a41c3d55cbe7fbb37c3f3fee9131a7133564c4a8102fe780
 - filename: src/components/theme-browser.tsx
-  checksum: ab31f8710ee514603ad1daaa07f43e2b7b7eace4f1da9fcf6aac6f6b14ef37ab
+  checksum: 8f42b2a9fd2e03b72e24e52e0df3bf3c73cd13369b554e157785f703c480c1e3
+- filename: src/components/view-toggle.tsx
+  checksum: fa079263c1ea550e9c89735943086643b995d2b778258d0086ee75b02b7a40b5
 - filename: worker/schema.sql
   checksum: 5166ab77d4ce71d312eadb82fe4dd5860ad0c55f10e239d58b8bf45c890e6516
 - filename: worker/scraper.ts
