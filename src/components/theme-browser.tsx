@@ -9,6 +9,7 @@ import { SortSelect } from "@/components/sort-select";
 import { SourceFilter } from "@/components/source-filter";
 import { ColorFilter } from "@/components/color-filter";
 import { BrightnessFilter } from "@/components/brightness-filter";
+import { ViewToggle } from "@/components/view-toggle";
 import { getThemeBrightness } from "@/lib/colors";
 
 interface ThemeBrowserProps {
@@ -24,6 +25,7 @@ export function ThemeBrowser({ themes }: ThemeBrowserProps) {
   const source = searchParams.get("source") ?? "community";
   const color = searchParams.getAll("color");
   const brightness = searchParams.get("brightness") ?? "";
+  const view = searchParams.get("view") ?? "";
 
   function updateParam(key: string, value: string | string[]) {
     const params = new URLSearchParams(searchParams.toString());
@@ -124,10 +126,14 @@ export function ThemeBrowser({ themes }: ThemeBrowserProps) {
             value={color}
             onChange={(v) => updateParam("color", v)}
           />
+          <ViewToggle
+            value={view}
+            onChange={(v) => updateParam("view", v)}
+          />
         </div>
       </div>
 
-      <ThemeGrid themes={filtered} />
+      <ThemeGrid themes={filtered} forceTerminal={view === "terminal"} />
     </div>
   );
 }
