@@ -11,6 +11,7 @@ const COLOR_INDICES = Array.from({ length: 16 }, (_, i) => i);
 
 interface ThemeCardProps {
   theme: ThemeListItem;
+  forceTerminal?: boolean;
 }
 
 function TerminalPreview({
@@ -77,7 +78,7 @@ function TerminalPreview({
   );
 }
 
-export function ThemeCard({ theme }: ThemeCardProps) {
+export function ThemeCard({ theme, forceTerminal }: ThemeCardProps) {
   const colors = parseColors(theme.colors_json);
 
   return (
@@ -88,7 +89,7 @@ export function ThemeCard({ theme }: ThemeCardProps) {
       >
         {/* Hero: screenshot or terminal fallback */}
         <div className="relative aspect-[16/10] overflow-hidden">
-          {theme.preview_url ? (
+          {theme.preview_url && !forceTerminal ? (
             <img
               src={theme.preview_url}
               alt={theme.name}

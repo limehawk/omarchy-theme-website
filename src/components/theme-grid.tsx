@@ -3,9 +3,10 @@ import type { ThemeListItem } from "@/lib/db";
 
 interface ThemeGridProps {
   themes: ThemeListItem[];
+  forceTerminal?: boolean;
 }
 
-export function ThemeGrid({ themes }: ThemeGridProps) {
+export function ThemeGrid({ themes, forceTerminal }: ThemeGridProps) {
   if (themes.length === 0) {
     return (
       <div className="py-20 text-center">
@@ -19,7 +20,7 @@ export function ThemeGrid({ themes }: ThemeGridProps) {
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {themes.map((theme) => (
-        <ThemeCard key={theme.id} theme={theme} />
+        <ThemeCard key={theme.id} theme={theme} forceTerminal={forceTerminal} />
       ))}
     </div>
   );
