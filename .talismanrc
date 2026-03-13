@@ -10,7 +10,7 @@ fileignoreconfig:
 - filename: src/components/source-filter.tsx
   checksum: 617dc31880678f1c7901cd3638be0fd332abbfcdc3bfaa31c54bfa911b6f8882
 - filename: src/components/color-filter.tsx
-  checksum: ae2fe8a4308f4aa8a5f4a193b7cbb07412aea48cfef2711af40efee82f796f58
+  checksum: f0fddc7d371f8c6438bcae3f66ad287d1295ca6846ca8181839733be660e7883
 - filename: src/components/brightness-filter.tsx
   checksum: 5dc573ffc6a7420e723636aa2cdd0ab53d1bafb96e6f8263f91d332dfca7f8d2
 - filename: src/app/page.tsx
@@ -18,7 +18,7 @@ fileignoreconfig:
 - filename: src/components/color-palette.tsx
   checksum: 85b145d42c6a0670a41c3d55cbe7fbb37c3f3fee9131a7133564c4a8102fe780
 - filename: src/components/theme-browser.tsx
-  checksum: 8f42b2a9fd2e03b72e24e52e0df3bf3c73cd13369b554e157785f703c480c1e3
+  checksum: 6295de26c02e95b7fd89da76f0bf9b782c071a2e862ec5d0193e866880376cc1
 - filename: src/components/view-toggle.tsx
   checksum: fa079263c1ea550e9c89735943086643b995d2b778258d0086ee75b02b7a40b5
 - filename: worker/schema.sql
