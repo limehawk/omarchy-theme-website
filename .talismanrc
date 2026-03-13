@@ -14,7 +14,7 @@ fileignoreconfig:
 - filename: src/components/brightness-filter.tsx
   checksum: 5dc573ffc6a7420e723636aa2cdd0ab53d1bafb96e6f8263f91d332dfca7f8d2
 - filename: src/app/page.tsx
-  checksum: 759eeb1827ec7e05a8a4675caf9b6614dc1c9a0eace247ec712aa8a5cb1910dd
+  checksum: ffb65d6ca3424bbb11865b5be46fa107dda97909309eb7e8f06a8c85804396a2
 - filename: src/components/color-palette.tsx
   checksum: 85b145d42c6a0670a41c3d55cbe7fbb37c3f3fee9131a7133564c4a8102fe780
 - filename: src/components/theme-browser.tsx
