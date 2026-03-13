@@ -28,18 +28,19 @@ export function ColorFilter({ value, onChange }: ColorFilterProps) {
         all
       </Badge>
       {COLOR_BUCKETS.map((bucket) => (
-        <Badge
+        <button
           key={bucket}
-          variant={value.includes(bucket) ? "default" : "outline"}
-          className={cn("font-mono text-xs gap-1.5 cursor-pointer")}
-          render={<button type="button" onClick={() => toggle(bucket)} />}
-        >
-          <span
-            className="size-2.5 rounded-full shrink-0"
-            style={{ backgroundColor: BUCKET_COLORS[bucket] }}
-          />
-          {bucket}
-        </Badge>
+          type="button"
+          title={bucket}
+          onClick={() => toggle(bucket)}
+          className={cn(
+            "size-4 rounded-full shrink-0 transition-all",
+            value.includes(bucket)
+              ? "ring-2 ring-foreground ring-offset-2 ring-offset-background scale-110"
+              : "opacity-60 hover:opacity-100"
+          )}
+          style={{ backgroundColor: BUCKET_COLORS[bucket] }}
+        />
       ))}
     </div>
   );

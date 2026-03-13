@@ -10,6 +10,7 @@ import { SourceFilter } from "@/components/source-filter";
 import { ColorFilter } from "@/components/color-filter";
 import { BrightnessFilter } from "@/components/brightness-filter";
 import { ViewToggle } from "@/components/view-toggle";
+import { FilterGroup } from "@/components/filter-group";
 import { getThemeBrightness } from "@/lib/colors";
 
 interface ThemeBrowserProps {
@@ -113,24 +114,32 @@ export function ThemeBrowser({ themes }: ThemeBrowserProps) {
           </div>
           <SortSelect value={sort} onChange={(v) => updateParam("sort", v)} />
         </div>
-        <div className="flex flex-wrap items-center gap-4">
-          <SourceFilter
-            value={source}
-            onChange={(v) => updateParam("source", v)}
-          />
-          <BrightnessFilter
-            value={brightness}
-            onChange={(v) => updateParam("brightness", v)}
-          />
+        <div className="flex flex-wrap items-start gap-x-6 gap-y-3">
+          <FilterGroup label="source">
+            <SourceFilter
+              value={source}
+              onChange={(v) => updateParam("source", v)}
+            />
+          </FilterGroup>
+          <FilterGroup label="brightness">
+            <BrightnessFilter
+              value={brightness}
+              onChange={(v) => updateParam("brightness", v)}
+            />
+          </FilterGroup>
+          <FilterGroup label="view">
+            <ViewToggle
+              value={view}
+              onChange={(v) => updateParam("view", v)}
+            />
+          </FilterGroup>
+        </div>
+        <FilterGroup label="color">
           <ColorFilter
             value={color}
             onChange={(v) => updateParam("color", v)}
           />
-          <ViewToggle
-            value={view}
-            onChange={(v) => updateParam("view", v)}
-          />
-        </div>
+        </FilterGroup>
       </div>
 
       <ThemeGrid themes={filtered} forceTerminal={view === "terminal"} />
