@@ -10,6 +10,7 @@ import { SourceFilter } from "@/components/source-filter";
 import { ColorFilter } from "@/components/color-filter";
 import { BrightnessFilter } from "@/components/brightness-filter";
 import { ViewToggle } from "@/components/view-toggle";
+import { AuthorFilter } from "@/components/author-filter";
 import { FilterGroup } from "@/components/filter-group";
 import { getThemeBrightness } from "@/lib/colors";
 
@@ -26,7 +27,13 @@ export function ThemeBrowser({ themes }: ThemeBrowserProps) {
   const source = searchParams.get("source") ?? "community";
   const color = searchParams.getAll("color");
   const brightness = searchParams.get("brightness") ?? "";
+  const author = searchParams.get("author") ?? "";
   const view = searchParams.get("view") ?? "";
+
+  const authors = useMemo(
+    () => [...new Set(themes.map((t) => t.github_owner))].sort((a, b) => a.localeCompare(b)),
+    [themes]
+  );
 
   function updateParam(key: string, value: string | string[]) {
     const params = new URLSearchParams(searchParams.toString());
@@ -65,12 +72,18 @@ export function ThemeBrowser({ themes }: ThemeBrowserProps) {
       );
     }
 
+    // Author filter
+    if (author) {
+      result = result.filter((t) => t.github_owner === author);
+    }
+
     // Search
     if (q) {
       const lower = q.toLowerCase();
       result = result.filter(
         (t) =>
           t.name.toLowerCase().includes(lower) ||
+          t.github_owner.toLowerCase().includes(lower) ||
           (t.description?.toLowerCase().includes(lower) ?? false)
       );
     }
@@ -94,7 +107,7 @@ export function ThemeBrowser({ themes }: ThemeBrowserProps) {
     }
 
     return result;
-  }, [themes, q, sort, source, color, brightness]);
+  }, [themes, q, sort, source, color, brightness, author]);
 
   return (
     <div className="space-y-8">
@@ -125,6 +138,13 @@ export function ThemeBrowser({ themes }: ThemeBrowserProps) {
             <BrightnessFilter
               value={brightness}
               onChange={(v) => updateParam("brightness", v)}
+            />
+          </FilterGroup>
+          <FilterGroup label="author">
+            <AuthorFilter
+              authors={authors}
+              value={author}
+              onChange={(v) => updateParam("author", v)}
             />
           </FilterGroup>
           <FilterGroup label="view">
