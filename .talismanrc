@@ -3,6 +3,8 @@ fileignoreconfig:
   checksum: 0eb6bdbb1b40d77be0f6c4f865dbf6882e9d4cf96c999f052153c6645a207eb1
 - filename: scripts/dump-themes.sh
   checksum: feef3f6d6ebcb5899c28988f68c57d40372bfbb848e01f53ff7fd32cd466d73f
+- filename: src/app/themes/[slug]/page.tsx
+  checksum: 8e231701d9b2c96052b0faca634d9a425b4b6c9f6234792c06eedb4cc0ede9d5
 - filename: src/components/theme-grid.tsx
   checksum: a2b4ccdd97ed8237b9c875a54fff294282e0711b58d9bf044172d32f7385ce60
 - filename: src/components/sort-select.tsx
