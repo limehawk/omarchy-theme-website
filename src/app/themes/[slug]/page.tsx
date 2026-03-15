@@ -2,6 +2,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Star, ExternalLink } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { getAllThemes, getThemeBySlug } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -54,17 +62,19 @@ export default async function ThemeDetailPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       {/* Breadcrumb */}
-      <nav className="mb-8">
-        <ol className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-          <li>
-            <Link href="/themes" className="hover:text-foreground transition-colors">
+      <Breadcrumb className="mb-8 font-mono text-xs">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href="/themes" />}>
               themes
-            </Link>
-          </li>
-          <li>/</li>
-          <li className="text-foreground">{theme.name}</li>
-        </ol>
-      </nav>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{theme.name}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
       <div className="grid gap-10 lg:grid-cols-[1fr_340px]">
         {/* Main content */}

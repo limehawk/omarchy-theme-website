@@ -1,8 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Dump all themes from D1 to JSON for static build
-QUERY="SELECT id, name, slug, github_url, github_owner, github_repo, description, preview_url, colors_json, apps_json, primary_hue, is_builtin, is_curated, stars, readme_text, default_branch, last_scraped_at, created_at, updated_at, github_pushed_at FROM themes ORDER BY stars DESC"
+# Compute valid slugs from themes.json
+VALID_SLUGS=$(node -e "
+const t = require('./src/data/themes.json');
+const slugs = [];
+for (const b of t.builtin) {
+  slugs.push(b.path.split('/').pop().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'').replace(/^-+/,''));
+}
+for (const c of t.curated) {
+  if (c.dead) continue;
+  const repo = c.url.match(/github\.com\/[^\/]+\/([^\/]+)/)[1];
+  slugs.push(repo.toLowerCase().replace(/^omarchy-/,'').replace(/-theme$/,'').replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'').replace(/^-+/,''));
+}
+console.log(slugs.join(','));
+")
+
+# Build SQL IN clause from valid slugs
+IN_CLAUSE=$(node -e "
+const slugs = process.argv[1].split(',');
+console.log(slugs.map(s => \"'\" + s + \"'\").join(','));
+" "$VALID_SLUGS")
+
+# Dump only themes whose slugs match themes.json
+QUERY="SELECT id, name, slug, github_url, github_owner, github_repo, description, preview_url, colors_json, apps_json, primary_hue, is_builtin, is_curated, stars, readme_text, default_branch, last_scraped_at, created_at, updated_at, github_pushed_at FROM themes WHERE slug IN ($IN_CLAUSE) ORDER BY stars DESC"
 
 RAW=$(npx wrangler d1 execute omarchytheme --remote --command "$QUERY" --json 2>/dev/null)
 

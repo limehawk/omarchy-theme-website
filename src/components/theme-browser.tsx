@@ -30,6 +30,11 @@ export function ThemeBrowser({ themes }: ThemeBrowserProps) {
   const author = searchParams.get("author") ?? "";
   const view = searchParams.get("view") ?? "";
 
+  const themeNames = useMemo(
+    () => [...new Set(themes.map((t) => t.name))].sort((a, b) => a.localeCompare(b)),
+    [themes]
+  );
+
   const authors = useMemo(
     () => [...new Set(themes.map((t) => t.github_owner))].sort((a, b) => a.localeCompare(b)),
     [themes]
@@ -77,15 +82,10 @@ export function ThemeBrowser({ themes }: ThemeBrowserProps) {
       result = result.filter((t) => t.github_owner === author);
     }
 
-    // Search
+    // Search by theme name
     if (q) {
       const lower = q.toLowerCase();
-      result = result.filter(
-        (t) =>
-          t.name.toLowerCase().includes(lower) ||
-          t.github_owner.toLowerCase().includes(lower) ||
-          (t.description?.toLowerCase().includes(lower) ?? false)
-      );
+      result = result.filter((t) => t.name.toLowerCase().includes(lower));
     }
 
     // Sort
@@ -123,8 +123,13 @@ export function ThemeBrowser({ themes }: ThemeBrowserProps) {
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1">
-            <SearchBar value={q} onChange={(v) => updateParam("q", v)} />
+            <SearchBar names={themeNames} value={q} onChange={(v) => updateParam("q", v)} />
           </div>
+          <AuthorFilter
+            authors={authors}
+            value={author}
+            onChange={(v) => updateParam("author", v)}
+          />
           <SortSelect value={sort} onChange={(v) => updateParam("sort", v)} />
         </div>
         <div className="flex flex-wrap items-start gap-x-6 gap-y-3">
@@ -138,13 +143,6 @@ export function ThemeBrowser({ themes }: ThemeBrowserProps) {
             <BrightnessFilter
               value={brightness}
               onChange={(v) => updateParam("brightness", v)}
-            />
-          </FilterGroup>
-          <FilterGroup label="author">
-            <AuthorFilter
-              authors={authors}
-              value={author}
-              onChange={(v) => updateParam("author", v)}
             />
           </FilterGroup>
           <FilterGroup label="view">
