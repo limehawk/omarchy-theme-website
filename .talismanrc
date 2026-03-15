@@ -3,8 +3,6 @@ fileignoreconfig:
   checksum: 0eb6bdbb1b40d77be0f6c4f865dbf6882e9d4cf96c999f052153c6645a207eb1
 - filename: scripts/dump-themes.sh
   checksum: feef3f6d6ebcb5899c28988f68c57d40372bfbb848e01f53ff7fd32cd466d73f
-- filename: src/app/themes/[slug]/page.tsx
-  checksum: 8e231701d9b2c96052b0faca634d9a425b4b6c9f6234792c06eedb4cc0ede9d5
 - filename: src/components/theme-grid.tsx
   checksum: a2b4ccdd97ed8237b9c875a54fff294282e0711b58d9bf044172d32f7385ce60
 - filename: src/components/sort-select.tsx
@@ -31,4 +29,6 @@ fileignoreconfig:
   checksum: 5166ab77d4ce71d312eadb82fe4dd5860ad0c55f10e239d58b8bf45c890e6516
 - filename: worker/scraper.ts
   checksum: 92070f0bbaaedb20c0a322490766f7a880edebaf6ac07ff491d8c3c82f503258
+allowed_patterns:
+- key=\{app\}
 version: "1.0"
