@@ -50,6 +50,7 @@ export default async function ThemeDetailPage({ params }: Props) {
   if (!theme) notFound();
 
   const colors = parseColors(theme.colors_json);
+  const apps: string[] = theme.apps_json ? JSON.parse(theme.apps_json) : [];
 
   // Derive branch and path prefix for resolving relative README URLs
   const readmeBranch = theme.default_branch ?? "main";
@@ -196,6 +197,22 @@ export default async function ThemeDetailPage({ params }: Props) {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Supported apps */}
+            {apps.length > 0 && (
+              <div className="space-y-2">
+                <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                  supported apps
+                </h2>
+                <div className="flex flex-wrap gap-1.5">
+                  {apps.sort().map((app) => (
+                    <Badge key={app} variant="outline" className="font-mono text-xs">
+                      {app}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Install */}
             <div className="space-y-2">
