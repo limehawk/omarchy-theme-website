@@ -1,36 +1,42 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 
 interface SearchBarProps {
+  names: string[];
   value: string;
   onChange: (value: string) => void;
 }
 
-export function SearchBar({ value: externalValue, onChange }: SearchBarProps) {
-  const [value, setValue] = useState(externalValue);
-
-  useEffect(() => {
-    setValue(externalValue);
-  }, [externalValue]);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => onChange(value), 300);
-    return () => clearTimeout(timeout);
-  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
-
+export function SearchBar({ names, value, onChange }: SearchBarProps) {
   return (
-    <div className="relative">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-      <Input
-        type="text"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="search themes..."
-        className="pl-9 font-mono text-sm"
+    <Combobox
+      items={names}
+      value={value || null}
+      onValueChange={(v) => onChange(v ?? "")}
+    >
+      <ComboboxInput
+        placeholder="find a theme..."
+        showClear={!!value}
+        className="w-full font-mono text-sm"
       />
-    </div>
+      <ComboboxContent>
+        <ComboboxEmpty>No themes found.</ComboboxEmpty>
+        <ComboboxList>
+          {(name) => (
+            <ComboboxItem key={name} value={name} className="font-mono text-sm">
+              {name}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 }
