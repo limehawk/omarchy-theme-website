@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Star } from "lucide-react";
 import { parseColors } from "@/lib/colors";
 import { Card, CardContent } from "@/components/ui/card";
@@ -79,6 +82,7 @@ function TerminalPreview({
 }
 
 export function ThemeCard({ theme, forceTerminal }: ThemeCardProps) {
+  const router = useRouter();
   const colors = parseColors(theme.colors_json);
 
   return (
@@ -114,9 +118,17 @@ export function ThemeCard({ theme, forceTerminal }: ThemeCardProps) {
               </Badge>
             )}
           </div>
-          <p className="font-mono text-[10px] text-muted-foreground truncate">
+          <button
+            type="button"
+            className="font-mono text-[10px] text-muted-foreground truncate hover:text-foreground transition-colors"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              router.push(`/themes?author=${encodeURIComponent(theme.github_owner)}`);
+            }}
+          >
             {theme.github_owner}
-          </p>
+          </button>
         </CardContent>
 
         {/* Color bar — flush to bottom edge */}
