@@ -17,8 +17,10 @@ fileignoreconfig:
   checksum: ffb65d6ca3424bbb11865b5be46fa107dda97909309eb7e8f06a8c85804396a2
 - filename: src/components/color-palette.tsx
   checksum: 85b145d42c6a0670a41c3d55cbe7fbb37c3f3fee9131a7133564c4a8102fe780
+- filename: src/components/author-filter.tsx
+  checksum: 38442a198a4b03060501c97a0bc37a0f1418857da317cd55e65974f1d7d9e821
 - filename: src/components/theme-browser.tsx
-  checksum: 6295de26c02e95b7fd89da76f0bf9b782c071a2e862ec5d0193e866880376cc1
+  checksum: 4b3656034d5e0741e41cb769bccdf71defa6d0690f72f77f3c739908fdcc80cb
 - filename: src/components/view-toggle.tsx
   checksum: fa079263c1ea550e9c89735943086643b995d2b778258d0086ee75b02b7a40b5
 - filename: worker/schema.sql
