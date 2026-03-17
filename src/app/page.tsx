@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getFeaturedThemes } from "@/lib/db";
-import { COLOR_BUCKETS, BUCKET_COLORS } from "@/lib/colors";
 import { ThemeGrid } from "@/components/theme-grid";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
 export default function Home() {
   const featured = getFeaturedThemes(6);
@@ -62,29 +60,6 @@ export default function Home() {
               contribute a theme
             </Button>
           </div>
-        </div>
-      </section>
-
-      {/* Color quick-links */}
-      <section className="pb-16">
-        <h2 className="font-mono text-xs text-muted-foreground mb-4 uppercase tracking-wider">
-          browse by color
-        </h2>
-        <div className="flex flex-wrap gap-3">
-          {COLOR_BUCKETS.map((bucket) => (
-            <Badge
-              key={bucket}
-              variant="outline"
-              className="font-mono text-xs gap-2 py-2 px-4 hover:bg-muted transition-colors"
-              render={<Link href={`/themes?color=${bucket}`} />}
-            >
-              <span
-                className="size-3 rounded-full"
-                style={{ backgroundColor: BUCKET_COLORS[bucket] }}
-              />
-              {bucket}
-            </Badge>
-          ))}
         </div>
       </section>
 
