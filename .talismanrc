@@ -22,7 +22,7 @@ fileignoreconfig:
 - filename: src/components/author-filter.tsx
   checksum: ec507e28030ad569432cfb35128e807ef12a8104425b7b251af6638abe334bbb
 - filename: src/components/theme-browser.tsx
-  checksum: 6f2b7eec9b761c361327e5a86dbba3a4a0859c58838b71cdde7e846473187845
+  checksum: 975fb269b846a53e34f3fab24987696c48ac24f4bc48d7e62fffec6e6834e87f
 - filename: src/components/view-toggle.tsx
   checksum: fa079263c1ea550e9c89735943086643b995d2b778258d0086ee75b02b7a40b5
 - filename: worker/schema.sql
