@@ -23,7 +23,7 @@ export function Footer() {
             >
               LIMEHAWK
             </span>
-            <span className="text-xs uppercase tracking-[0.3em] font-thin">Product</span>
+            <span className="text-xs uppercase tracking-[0.3em] font-thin">Project</span>
           </a>
           <div className="flex items-center justify-end gap-6 sm:flex-1">
             <a
