@@ -120,7 +120,7 @@ export function ThemeBrowser({ themes }: ThemeBrowserProps) {
         </p>
       </div>
 
-      <div className="sticky top-0 z-30 -mx-6 px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border/40 space-y-4">
+      <div className="sticky top-14 z-30 -mx-6 px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border/40 space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1">
             <SearchBar names={themeNames} value={q} onChange={(v) => updateParam("q", v)} />
