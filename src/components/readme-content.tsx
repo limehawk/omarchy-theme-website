@@ -3,6 +3,7 @@
 import Markdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
+import remarkGfm from "remark-gfm";
 
 interface ReadmeContentProps {
   content: string;
@@ -49,6 +50,7 @@ export function ReadmeContent({
     <div className="space-y-4 text-sm text-muted-foreground leading-relaxed break-words">
     <Markdown
       children={content}
+      remarkPlugins={[remarkGfm]}
       rehypePlugins={[rehypeRaw, rehypeSanitize]}
       components={{
         h1: ({ children }) => (
