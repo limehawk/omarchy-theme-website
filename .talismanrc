@@ -1,6 +1,6 @@
 fileignoreconfig:
 - filename: bun.lock
-  checksum: 0eb6bdbb1b40d77be0f6c4f865dbf6882e9d4cf96c999f052153c6645a207eb1
+  checksum: e03fb8dc92f696c3a6fe21c4ddc4735baa3d3e45b832e2279ec4e9ca71bd79a7
 - filename: scripts/dump-themes.sh
   checksum: feef3f6d6ebcb5899c28988f68c57d40372bfbb848e01f53ff7fd32cd466d73f
 - filename: src/components/theme-grid.tsx
