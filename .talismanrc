@@ -29,6 +29,8 @@ fileignoreconfig:
   checksum: 5166ab77d4ce71d312eadb82fe4dd5860ad0c55f10e239d58b8bf45c890e6516
 - filename: worker/scraper.ts
   checksum: 92070f0bbaaedb20c0a322490766f7a880edebaf6ac07ff491d8c3c82f503258
+- filename: CLAUDE.md
+  checksum: 57c68fbdf621567be739d4967d34cdeff96ea9fd6b1699258b0e209202aec296
 allowed_patterns:
 - key=\{app\}
 version: "1.0"
