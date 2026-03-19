@@ -50,6 +50,8 @@ next-env.d.ts
 # Build-time generated theme data
 src/data/themes-data.json
 
+nohup.out
+
 # Local-only files
 CLAUDE.md
 .mcp.json
