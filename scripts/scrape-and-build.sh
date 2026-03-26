@@ -16,15 +16,23 @@ cd worker && npx wrangler deploy && cd ..
 node -e "
 const t = require('./src/data/themes.json');
 const slugs = new Map();
+const builtinSlugs = new Set();
 let collisions = 0;
 for (const b of t.builtin) {
   const slug = b.path.split('/').pop().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'').replace(/^-+/,'');
   slugs.set(slug, 'builtin: ' + b.name);
+  builtinSlugs.add(slug);
 }
 for (const c of t.curated) {
   if (c.dead) continue;
-  const repo = c.url.match(/github\.com\/[^/]+\/([^/]+)/)[1];
-  const slug = repo.toLowerCase().replace(/^omarchy-/,'').replace(/-theme$/,'').replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'').replace(/^-+/,'');
+  const match = c.url.match(/github\.com\/([^/]+)\/([^/]+)/);
+  const owner = match[1];
+  const repo = match[2];
+  let slug = repo.toLowerCase().replace(/^omarchy-/,'').replace(/-theme$/,'').replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'').replace(/^-+/,'');
+  if (builtinSlugs.has(slug)) {
+    console.log('OVERLAY: ' + c.name + ' by ' + owner + ' overlays builtin ' + slug + ' -> slug: ' + slug + '-' + owner.toLowerCase());
+    slug = slug + '-' + owner.toLowerCase();
+  }
   if (slugs.has(slug)) {
     console.error('SLUG COLLISION: ' + slug + ' -> ' + slugs.get(slug) + ' vs curated: ' + c.name);
     collisions++;
