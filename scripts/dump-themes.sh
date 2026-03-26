@@ -5,13 +5,22 @@ set -euo pipefail
 VALID_SLUGS=$(node -e "
 const t = require('./src/data/themes.json');
 const slugs = [];
+const builtinSlugs = new Set();
 for (const b of t.builtin) {
-  slugs.push(b.path.split('/').pop().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'').replace(/^-+/,''));
+  const s = b.path.split('/').pop().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'').replace(/^-+/,'');
+  slugs.push(s);
+  builtinSlugs.add(s);
 }
 for (const c of t.curated) {
   if (c.dead) continue;
-  const repo = c.url.match(/github\.com\/[^\/]+\/([^\/]+)/)[1];
-  slugs.push(repo.toLowerCase().replace(/^omarchy-/,'').replace(/-theme$/,'').replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'').replace(/^-+/,''));
+  const match = c.url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+  const owner = match[1];
+  const repo = match[2];
+  let s = repo.toLowerCase().replace(/^omarchy-/,'').replace(/-theme$/,'').replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'').replace(/^-+/,'');
+  if (builtinSlugs.has(s)) {
+    s = s + '-' + owner.toLowerCase();
+  }
+  slugs.push(s);
 }
 console.log(slugs.join(','));
 ")
@@ -23,7 +32,7 @@ console.log(slugs.map(s => \"'\" + s + \"'\").join(','));
 " "$VALID_SLUGS")
 
 # Dump only themes whose slugs match themes.json
-QUERY="SELECT id, name, slug, github_url, github_owner, github_repo, description, preview_url, colors_json, apps_json, primary_hue, is_builtin, is_curated, stars, readme_text, default_branch, last_scraped_at, created_at, updated_at, github_pushed_at FROM themes WHERE slug IN ($IN_CLAUSE) ORDER BY stars DESC"
+QUERY="SELECT id, name, slug, github_url, github_owner, github_repo, description, preview_url, colors_json, apps_json, primary_hue, is_builtin, is_curated, stars, readme_text, default_branch, last_scraped_at, created_at, updated_at, github_pushed_at, overlays_builtin FROM themes WHERE slug IN ($IN_CLAUSE) ORDER BY stars DESC"
 
 RAW=$(npx wrangler d1 execute omarchytheme --remote --command "$QUERY" --json 2>/dev/null)
 

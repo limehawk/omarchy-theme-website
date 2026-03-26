@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS themes (
   default_branch TEXT DEFAULT 'main',
   github_pushed_at TEXT,
   canonical_github_url TEXT,
+  overlays_builtin TEXT,
   last_scraped_at TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
@@ -25,3 +26,4 @@ CREATE TABLE IF NOT EXISTS themes (
 CREATE INDEX IF NOT EXISTS idx_themes_primary_hue ON themes(primary_hue);
 CREATE INDEX IF NOT EXISTS idx_themes_slug ON themes(slug);
 CREATE INDEX IF NOT EXISTS idx_themes_github_pushed_at ON themes(github_pushed_at);
+CREATE INDEX IF NOT EXISTS idx_themes_overlays_builtin ON themes(overlays_builtin);

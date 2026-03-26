@@ -28,6 +28,7 @@ export interface Theme {
   created_at: string;
   updated_at: string;
   github_pushed_at: string | null;
+  overlays_builtin: string | null;
 }
 
 const allThemes = themesData as Theme[];
@@ -66,8 +67,20 @@ export interface ThemeListItem {
   created_at: string;
   updated_at: string;
   github_pushed_at: string | null;
+  overlays_builtin: string | null;
 }
 
 export function getThemeList(): ThemeListItem[] {
   return allThemes.map(({ readme_text, default_branch, last_scraped_at, ...rest }) => rest);
+}
+
+/** Get all community themes that overlay a given builtin */
+export function getOverlaysOf(builtinSlug: string): Theme[] {
+  return allThemes.filter((t) => t.overlays_builtin === builtinSlug);
+}
+
+/** Get the builtin theme that this overlay enhances */
+export function getBuiltinForOverlay(theme: Theme): Theme | null {
+  if (!theme.overlays_builtin) return null;
+  return allThemes.find((t) => t.slug === theme.overlays_builtin && t.is_builtin === 1) ?? null;
 }
