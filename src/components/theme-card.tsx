@@ -129,6 +129,11 @@ export function ThemeCard({ theme, forceTerminal }: ThemeCardProps) {
           >
             {theme.github_owner}
           </button>
+          {theme.overlays_builtin && (
+            <span className="font-mono text-[10px] text-muted-foreground">
+              enhances {theme.overlays_builtin}
+            </span>
+          )}
         </CardContent>
 
         {/* Color bar — flush to bottom edge */}

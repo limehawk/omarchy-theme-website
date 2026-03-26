@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Star, ExternalLink } from "lucide-react";
+import { Star, ExternalLink, Layers } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,7 +10,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { getAllThemes, getThemeBySlug } from "@/lib/db";
+import { getAllThemes, getThemeBySlug, getOverlaysOf, getBuiltinForOverlay } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ColorPalette } from "@/components/color-palette";
@@ -48,6 +48,13 @@ export default async function ThemeDetailPage({ params }: Props) {
   const theme = getThemeBySlug(slug);
 
   if (!theme) notFound();
+
+  const builtinBase = getBuiltinForOverlay(theme);
+  const overlayVariants = theme.is_builtin
+    ? getOverlaysOf(theme.slug)
+    : theme.overlays_builtin
+      ? getOverlaysOf(theme.overlays_builtin).filter((t) => t.slug !== theme.slug)
+      : [];
 
   const colors = parseColors(theme.colors_json);
   const apps: string[] = theme.apps_json ? JSON.parse(theme.apps_json) : [];
@@ -197,6 +204,63 @@ export default async function ThemeDetailPage({ params }: Props) {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Overlay info — community theme enhancing a builtin */}
+            {builtinBase && (
+              <Card>
+                <CardContent className="space-y-3 text-sm">
+                  <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                    <Layers className="size-3" />
+                    enhances builtin
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">
+                    This theme overlays the builtin{" "}
+                    <Link href={`/themes/${builtinBase.slug}`} className="text-foreground hover:underline">
+                      {builtinBase.name}
+                    </Link>
+                    . Files it provides take precedence — anything missing falls back to the builtin.
+                  </p>
+                  {overlayVariants.length > 0 && (
+                    <div className="border-t border-border/40 pt-3">
+                      <p className="font-mono text-xs text-muted-foreground mb-2">other variants</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {overlayVariants.map((v) => (
+                          <Link key={v.slug} href={`/themes/${v.slug}`}>
+                            <Badge variant="outline" className="font-mono text-xs">
+                              {v.name}
+                            </Badge>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Community variants — builtin theme with overlay themes */}
+            {theme.is_builtin === 1 && overlayVariants.length > 0 && (
+              <Card>
+                <CardContent className="space-y-3 text-sm">
+                  <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                    <Layers className="size-3" />
+                    community variants
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">
+                    These community themes enhance this builtin with custom files.
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {overlayVariants.map((v) => (
+                      <Link key={v.slug} href={`/themes/${v.slug}`}>
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {v.name}
+                        </Badge>
+                      </Link>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Supported apps */}
             {apps.length > 0 && (

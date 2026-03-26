@@ -29,6 +29,7 @@ interface ScrapeMessage {
   path?: string;
   is_builtin: boolean;
   is_curated: boolean;
+  overlays_builtin?: string;
 }
 
 interface CuratedTheme {
@@ -62,6 +63,7 @@ interface ThemeRecord {
   default_branch: string;
   github_pushed_at: string | null;
   canonical_github_url: string | null;
+  overlays_builtin: string | null;
 }
 
 interface ScrapeResult {
@@ -524,6 +526,11 @@ async function scrapeTheme(
     slug = deriveSlugFromRepo(repo);
   }
 
+  let overlaysBuiltin: string | null = entry.overlays_builtin ?? null;
+  if (overlaysBuiltin) {
+    slug = `${slug}-${owner.toLowerCase()}`;
+  }
+
   const result: ScrapeResult = {
     slug,
     name: entry.name,
@@ -609,6 +616,7 @@ async function scrapeTheme(
     default_branch: branch,
     github_pushed_at: meta.pushed_at,
     canonical_github_url: canonicalGithubUrl,
+    overlays_builtin: overlaysBuiltin,
   };
 
   return { record, result };
@@ -625,8 +633,8 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
         id, name, slug, github_url, github_owner, github_repo,
         description, preview_url, colors_json, apps_json, primary_hue,
         is_builtin, is_curated, stars, readme_text, default_branch,
-        github_pushed_at, canonical_github_url, last_scraped_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+        github_pushed_at, canonical_github_url, overlays_builtin, last_scraped_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         github_url = excluded.github_url,
@@ -644,6 +652,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
         default_branch = excluded.default_branch,
         github_pushed_at = excluded.github_pushed_at,
         canonical_github_url = excluded.canonical_github_url,
+        overlays_builtin = excluded.overlays_builtin,
         last_scraped_at = datetime('now'),
         updated_at = datetime('now')`,
     )
@@ -666,6 +675,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
       theme.default_branch,
       theme.github_pushed_at,
       theme.canonical_github_url,
+      theme.overlays_builtin,
     )
     .run();
 }
@@ -683,10 +693,18 @@ async function enqueueThemes(env: Env, force: boolean): Promise<{ enqueued: numb
     entries.push({ url, name: t.name, path: t.path, is_builtin: true, is_curated: false });
   }
 
+  const builtinSlugs = new Set<string>();
+  for (const t of themes.builtin) {
+    builtinSlugs.add(deriveSlugFromPath(t.path));
+  }
+
   for (const t of themes.curated) {
     if (t.dead) continue;
     const url = t.url.replace(/\/$/, "");
-    entries.push({ url, name: t.name, is_builtin: false, is_curated: true });
+    const { repo } = parseOwnerRepo(url);
+    const baseSlug = deriveSlugFromRepo(repo);
+    const overlaysBuiltin = builtinSlugs.has(baseSlug) ? baseSlug : undefined;
+    entries.push({ url, name: t.name, is_builtin: false, is_curated: true, overlays_builtin: overlaysBuiltin });
   }
 
   // Skip recently scraped (unless force)
@@ -704,8 +722,11 @@ async function enqueueThemes(env: Env, force: boolean): Promise<{ enqueued: numb
   let skipped = 0;
 
   for (const entry of entries) {
-    const { repo } = parseOwnerRepo(entry.url);
-    const expectedSlug = entry.path ? deriveSlugFromPath(entry.path) : deriveSlugFromRepo(repo);
+    const { owner, repo } = parseOwnerRepo(entry.url);
+    let expectedSlug = entry.path ? deriveSlugFromPath(entry.path) : deriveSlugFromRepo(repo);
+    if (entry.overlays_builtin) {
+      expectedSlug = `${expectedSlug}-${owner.toLowerCase()}`;
+    }
     if (recentlyScraped.has(expectedSlug)) {
       skipped++;
       continue;
