@@ -25,16 +25,27 @@ export function InstallCommand({ githubUrl }: InstallCommandProps) {
   }
 
   return (
-    <Card className="bg-black/40 p-4 font-mono text-sm">
+    <Card
+      className="bg-black/40 p-4 font-mono text-sm cursor-pointer hover:bg-black/55 hover:border-white/15 transition-all"
+      onClick={handleCopy}
+    >
       <div className="flex items-start gap-3">
-        <span className="text-green-400/70 select-none shrink-0 leading-relaxed">$</span>
-        <code className="text-foreground/90 flex-1 break-all leading-relaxed">
-          {command}
-        </code>
+        <div className="flex-1 min-w-0">
+          <div>
+            <span className="text-green-400/60 select-none mr-2">$</span>
+            <span className="text-foreground/90 font-medium">omarchy-theme-install</span>
+          </div>
+          <div className="text-muted-foreground text-xs pl-5 mt-1 break-all">
+            {gitUrl}
+          </div>
+        </div>
         <Button
           variant="ghost"
           size="icon-xs"
-          onClick={handleCopy}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleCopy();
+          }}
           aria-label="Copy install command"
           className={copied ? "text-green-400" : ""}
         >

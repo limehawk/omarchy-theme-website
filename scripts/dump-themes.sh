@@ -25,6 +25,14 @@ for (const c of t.curated) {
 console.log(slugs.join(','));
 ")
 
+# Validate all slugs are safe for SQL interpolation
+echo "$VALID_SLUGS" | tr ',' '\n' | while read -r s; do
+  if [[ ! "$s" =~ ^[a-z0-9-]+$ ]]; then
+    echo "ERROR: Invalid slug '$s' — aborting to prevent SQL injection" >&2
+    exit 1
+  fi
+done || exit 1
+
 # Build SQL IN clause from valid slugs
 IN_CLAUSE=$(node -e "
 const slugs = process.argv[1].split(',');

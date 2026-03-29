@@ -197,7 +197,30 @@ async function githubFetch(
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
-  return fetch(url, { headers });
+  const res = await fetch(url, { headers });
+
+  // Handle 429 Too Many Requests
+  if (res.status === 429) {
+    const resetHeader = res.headers.get("X-RateLimit-Reset");
+    const resetAt = resetHeader ? new Date(parseInt(resetHeader, 10) * 1000).toISOString() : "unknown";
+    throw new Error(`GitHub rate limit exceeded (429). Resets at ${resetAt}`);
+  }
+
+  // Warn when rate limit is running low
+  const remaining = res.headers.get("X-RateLimit-Remaining");
+  if (remaining !== null) {
+    const remainingNum = parseInt(remaining, 10);
+    if (remainingNum === 0) {
+      const resetHeader = res.headers.get("X-RateLimit-Reset");
+      const resetAt = resetHeader ? new Date(parseInt(resetHeader, 10) * 1000).toISOString() : "unknown";
+      throw new Error(`GitHub rate limit exhausted (0 remaining). Resets at ${resetAt}`);
+    }
+    if (remainingNum < 100) {
+      console.warn(`GitHub rate limit low: ${remainingNum} requests remaining`);
+    }
+  }
+
+  return res;
 }
 
 async function fetchRepoMeta(
@@ -762,7 +785,11 @@ async function processBatch(
       msg.ack();
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      console.error(`FAIL: ${entry.name}: ${errorMsg}`);
+      if (errorMsg.includes("rate limit")) {
+        console.warn(`RATE LIMITED: ${entry.name}: ${errorMsg}`);
+      } else {
+        console.error(`FAIL: ${entry.name}: ${errorMsg}`);
+      }
       msg.retry();
     }
   }
