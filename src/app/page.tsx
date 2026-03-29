@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getFeaturedThemes, getRandomThemes } from "@/lib/db";
 import { ThemeGrid } from "@/components/theme-grid";
-import { HowItWorks } from "@/components/how-it-works";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -83,14 +82,6 @@ export default function Home() {
           <ThemeGrid themes={featured} />
         </section>
       )}
-
-      {/* How it works */}
-      <section className="pb-20">
-        <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider mb-6">
-          how it works
-        </h2>
-        <HowItWorks />
-      </section>
 
       {/* Discover */}
       {discover.length > 0 && (
