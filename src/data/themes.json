@@ -170,6 +170,11 @@
     },
     {
       "name": "Bliss",
+      "dead": true,
+      "url": "https://github.com/mishonki3/omarchy-bliss-theme"
+    },
+    {
+      "name": "Bliss",
       "url": "https://github.com/twodogsdave/omarchy-bliss-theme"
     },
     {
