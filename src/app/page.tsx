@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { getFeaturedThemes } from "@/lib/db";
+import { getFeaturedThemes, getRandomThemes } from "@/lib/db";
 import { ThemeGrid } from "@/components/theme-grid";
+import { HowItWorks } from "@/components/how-it-works";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const featured = getFeaturedThemes(6);
+  const featuredIds = new Set(featured.map((t) => t.id));
+  const discover = getRandomThemes(6, featuredIds);
 
   return (
     <div className="mx-auto max-w-6xl px-6">
@@ -63,7 +66,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured themes */}
+      {/* Popular themes */}
       {featured.length > 0 && (
         <section className="pb-20">
           <div className="flex items-center justify-between mb-6">
@@ -78,17 +81,45 @@ export default function Home() {
             </Link>
           </div>
           <ThemeGrid themes={featured} />
-          <div className="mt-10 text-center">
-            <Button
-              className="font-mono"
-              render={<Link href="/themes" />}
-            >
-              browse all themes
-              <ArrowRight className="size-4" />
-            </Button>
-          </div>
         </section>
       )}
+
+      {/* How it works */}
+      <section className="pb-20">
+        <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider mb-6">
+          how it works
+        </h2>
+        <HowItWorks />
+      </section>
+
+      {/* Discover */}
+      {discover.length > 0 && (
+        <section className="pb-20">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
+              discover
+            </h2>
+            <Link
+              href="/themes"
+              className="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              view all &rarr;
+            </Link>
+          </div>
+          <ThemeGrid themes={discover} />
+        </section>
+      )}
+
+      {/* CTA */}
+      <section className="pb-20 text-center">
+        <Button
+          className="font-mono"
+          render={<Link href="/themes" />}
+        >
+          browse all themes
+          <ArrowRight className="size-4" />
+        </Button>
+      </section>
     </div>
   );
 }

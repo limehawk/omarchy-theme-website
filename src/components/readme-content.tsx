@@ -67,10 +67,11 @@ export function ReadmeContent({
         ol: ({ children }) => <ol className="list-decimal pl-5 space-y-1">{children}</ol>,
         li: ({ children }) => <li>{children}</li>,
         code: ({ className, children }) => {
-          const isBlock = className?.includes("language-");
+          const text = String(children);
+          const isBlock = className?.includes("language-") || text.includes("\n");
           if (isBlock) {
             return (
-              <code className="block bg-muted/30 rounded-lg p-4 font-mono text-xs overflow-x-auto whitespace-pre">
+              <code className="block whitespace-pre" style={{ fontSize: "inherit", lineHeight: "inherit", fontFamily: "inherit" }}>
                 {children}
               </code>
             );
@@ -81,7 +82,14 @@ export function ReadmeContent({
             </code>
           );
         },
-        pre: ({ children }) => <pre className="overflow-x-auto">{children}</pre>,
+        pre: ({ children }) => (
+          <pre
+            className="bg-muted/30 rounded-lg p-4 overflow-x-auto max-h-50 text-xs subpixel-antialiased"
+            style={{ fontFamily: 'monospace, "Courier New", "Liberation Mono", "JetBrains Mono"', lineHeight: 1 }}
+          >
+            {children}
+          </pre>
+        ),
         blockquote: ({ children }) => (
           <blockquote className="border-l-2 border-border/60 pl-4 italic text-muted-foreground/80">
             {children}

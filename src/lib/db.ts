@@ -48,6 +48,29 @@ export function getFeaturedThemes(limit: number = 6): Theme[] {
     .slice(0, limit);
 }
 
+/** Seeded random themes — stable within a build, rotates each deploy */
+export function getRandomThemes(count: number = 6, exclude: Set<string> = new Set()): ThemeListItem[] {
+  const candidates = allThemes
+    .filter((t) => t.is_builtin === 0 && !exclude.has(t.id))
+    .map(({ readme_text, default_branch, last_scraped_at, ...rest }) => rest);
+
+  // Simple seeded shuffle using build date
+  const seed = new Date().toISOString().slice(0, 10);
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
+  }
+
+  const shuffled = [...candidates];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    hash = ((hash << 5) - hash + i) | 0;
+    const j = ((hash >>> 0) % (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  return shuffled.slice(0, count);
+}
+
 /** Themes list for the browse page — excludes readme_text to keep bundle small */
 export interface ThemeListItem {
   id: string;
