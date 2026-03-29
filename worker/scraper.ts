@@ -707,8 +707,8 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
 // Enqueue themes for scraping (producer)
 // ---------------------------------------------------------------------------
 
-async function enqueueThemes(env: Env, force: boolean): Promise<{ enqueued: number; skipped: number; total: number }> {
-  const themes = await fetchThemesRegistry();
+async function enqueueThemes(env: Env, force: boolean, registry?: ThemesRegistry): Promise<{ enqueued: number; skipped: number; total: number }> {
+  const themes = registry ?? await fetchThemesRegistry();
   const entries: ScrapeMessage[] = [];
 
   for (const t of themes.builtin) {
@@ -776,23 +776,26 @@ async function processBatch(
 ): Promise<void> {
   const token = env.GITHUB_TOKEN;
 
-  for (const msg of batch.messages) {
-    const entry = msg.body;
-    try {
-      const { record, result } = await scrapeTheme(entry, token);
-      await upsertTheme(env.DB, record);
-      console.log(`OK: ${record.slug} [colors: ${result.colors_source}, preview: ${result.has_preview}]`);
-      msg.ack();
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      if (errorMsg.includes("rate limit")) {
-        console.warn(`RATE LIMITED: ${entry.name}: ${errorMsg}`);
-      } else {
-        console.error(`FAIL: ${entry.name}: ${errorMsg}`);
+  // Process all messages in the batch concurrently
+  await Promise.all(
+    batch.messages.map(async (msg) => {
+      const entry = msg.body;
+      try {
+        const { record, result } = await scrapeTheme(entry, token);
+        await upsertTheme(env.DB, record);
+        console.log(`OK: ${record.slug} [colors: ${result.colors_source}, preview: ${result.has_preview}]`);
+        msg.ack();
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        if (errorMsg.includes("rate limit")) {
+          console.warn(`RATE LIMITED: ${entry.name}: ${errorMsg}`);
+        } else {
+          console.error(`FAIL: ${entry.name}: ${errorMsg}`);
+        }
+        msg.retry();
       }
-      msg.retry();
-    }
-  }
+    })
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -886,6 +889,79 @@ async function getStatus(db: D1Database): Promise<{
 }
 
 // ---------------------------------------------------------------------------
+// Validate: check themes.json for slug collisions
+// ---------------------------------------------------------------------------
+
+function validateRegistry(themes: ThemesRegistry): { ok: boolean; collisions: string[]; total: number } {
+  const slugs = new Map<string, string>();
+  const builtinSlugs = new Set<string>();
+  const collisions: string[] = [];
+
+  for (const b of themes.builtin) {
+    const s = deriveSlugFromPath(b.path);
+    slugs.set(s, `builtin: ${b.name}`);
+    builtinSlugs.add(s);
+  }
+
+  for (const c of themes.curated) {
+    if (c.dead) continue;
+    const { owner, repo } = parseOwnerRepo(c.url);
+    let s = deriveSlugFromRepo(repo);
+    if (builtinSlugs.has(s)) {
+      s = `${s}-${owner.toLowerCase()}`;
+    }
+    if (slugs.has(s)) {
+      collisions.push(`${s}: ${slugs.get(s)} vs curated: ${c.name}`);
+    }
+    slugs.set(s, `curated: ${c.name}`);
+  }
+
+  return { ok: collisions.length === 0, collisions, total: slugs.size };
+}
+
+// ---------------------------------------------------------------------------
+// Dump: compute valid slugs from registry, query D1
+// ---------------------------------------------------------------------------
+
+function computeValidSlugs(themes: ThemesRegistry): Set<string> {
+  const slugs = new Set<string>();
+  const builtinSlugs = new Set<string>();
+
+  for (const b of themes.builtin) {
+    const s = deriveSlugFromPath(b.path);
+    slugs.add(s);
+    builtinSlugs.add(s);
+  }
+
+  for (const c of themes.curated) {
+    if (c.dead) continue;
+    const { owner, repo } = parseOwnerRepo(c.url);
+    let s = deriveSlugFromRepo(repo);
+    if (builtinSlugs.has(s)) {
+      s = `${s}-${owner.toLowerCase()}`;
+    }
+    slugs.add(s);
+  }
+
+  return slugs;
+}
+
+async function dumpThemes(db: D1Database, validSlugs: Set<string>): Promise<unknown[]> {
+  const all = await db
+    .prepare(
+      `SELECT id, name, slug, github_url, github_owner, github_repo,
+              description, preview_url, colors_json, apps_json, primary_hue,
+              is_builtin, is_curated, stars, readme_text, default_branch,
+              last_scraped_at, created_at, updated_at, github_pushed_at,
+              overlays_builtin
+       FROM themes ORDER BY stars DESC`
+    )
+    .all();
+
+  return all.results.filter((row: Record<string, unknown>) => validSlugs.has(row.slug as string));
+}
+
+// ---------------------------------------------------------------------------
 // Worker export
 // ---------------------------------------------------------------------------
 
@@ -916,7 +992,7 @@ export default {
       });
 
     // Authenticate admin endpoints
-    if (url.pathname === "/run" || url.pathname === "/run-force" || url.pathname === "/status") {
+    if (url.pathname === "/run" || url.pathname === "/run-force" || url.pathname === "/status" || url.pathname === "/dump" || url.pathname === "/validate") {
       const authHeader = request.headers.get("Authorization");
       const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
       if (!env.SCRAPER_AUTH_TOKEN || !token || !(await timingSafeEqual(token, env.SCRAPER_AUTH_TOKEN))) {
@@ -924,16 +1000,43 @@ export default {
       }
     }
 
+    // Parse optional themes.json from POST body
+    let registry: ThemesRegistry | undefined;
+    if (request.method === "POST" && request.headers.get("content-type")?.includes("application/json")) {
+      try {
+        registry = await request.json() as ThemesRegistry;
+      } catch {
+        // Body parse failed — fall back to fetching from GitHub
+      }
+    }
+
     // POST /run — enqueue themes for scraping (skips recently scraped)
     if (url.pathname === "/run" && request.method === "POST") {
-      const summary = await enqueueThemes(env, false);
+      const summary = await enqueueThemes(env, false, registry);
       return json(summary);
     }
 
     // POST /run-force — enqueue all themes (ignores 12hr cache)
     if (url.pathname === "/run-force" && request.method === "POST") {
-      const summary = await enqueueThemes(env, true);
+      const summary = await enqueueThemes(env, true, registry);
       return json(summary);
+    }
+
+    // POST /validate — check themes.json for slug collisions
+    if (url.pathname === "/validate" && request.method === "POST") {
+      const themes = registry ?? await fetchThemesRegistry();
+      const result = validateRegistry(themes);
+      return json(result, result.ok ? 200 : 409);
+    }
+
+    // POST /dump — return themes-data.json filtered by themes.json
+    if (url.pathname === "/dump" && request.method === "POST") {
+      const themes = registry ?? await fetchThemesRegistry();
+      const validSlugs = computeValidSlugs(themes);
+      const data = await dumpThemes(env.DB, validSlugs);
+      return new Response(JSON.stringify(data, null, 2), {
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // GET /status — show current DB health
@@ -945,8 +1048,10 @@ export default {
     return json({
       name: "Omarchy Theme Scraper",
       endpoints: {
-        "POST /run": "Enqueue themes for scraping (skips recently scraped)",
-        "POST /run-force": "Enqueue all themes (ignores 12hr cache)",
+        "POST /run": "Enqueue themes for scraping (skips recently scraped). Accepts themes.json as body.",
+        "POST /run-force": "Enqueue all themes (ignores 12hr cache). Accepts themes.json as body.",
+        "POST /validate": "Check themes.json for slug collisions. Returns 409 if collisions found.",
+        "POST /dump": "Return themes-data.json filtered by themes.json. Accepts themes.json as body.",
         "GET /status": "Show DB health — missing colors, stale themes, etc.",
       },
     });

@@ -7,8 +7,7 @@
     "build": "next build",
     "deploy": "bun run build && bunx wrangler pages deploy out/ --project-name=omarchy-theme-website",
     "start": "next start",
-    "lint": "eslint",
-    "dump-data": "bash scripts/dump-themes.sh"
+    "lint": "eslint"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
