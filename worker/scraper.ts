@@ -64,6 +64,7 @@ interface ThemeRecord {
   github_pushed_at: string | null;
   canonical_github_url: string | null;
   overlays_builtin: string | null;
+  security_warnings: string | null;
 }
 
 interface ScrapeResult {
@@ -497,6 +498,59 @@ const APP_FILE_MAP: Record<string, string> = {
   "eza.yml": "eza",
 };
 
+// ---------------------------------------------------------------------------
+// Security: scan file tree for suspicious additions
+// ---------------------------------------------------------------------------
+
+const SUSPICIOUS_EXTENSIONS = new Set([
+  ".sh", ".bash", ".zsh", ".py", ".js", ".ts", ".rb", ".pl",
+  ".exe", ".bin", ".elf", ".so", ".dll", ".dylib",
+  ".AppImage", ".deb", ".rpm",
+]);
+
+function scanForSuspiciousFiles(files: Set<string>, pathPrefix: string): string[] {
+  const warnings: string[] = [];
+  for (const file of files) {
+    if (pathPrefix && !file.startsWith(pathPrefix)) continue;
+    const name = file.split("/").pop() ?? file;
+    const ext = name.includes(".") ? "." + name.split(".").pop()!.toLowerCase() : "";
+    if (SUSPICIOUS_EXTENSIONS.has(ext)) {
+      warnings.push(`suspicious file: ${file}`);
+    }
+    if (name.startsWith(".") && name !== ".gitignore" && name !== ".gitattributes" && !file.includes(".github/")) {
+      if (![".toml", ".css", ".json", ".yaml", ".yml", ".conf", ".ini", ".theme", ".lua", ".fish"].includes(ext)) {
+        warnings.push(`hidden file: ${file}`);
+      }
+    }
+  }
+  return warnings;
+}
+
+async function scanLuaFiles(
+  files: Set<string>,
+  owner: string,
+  repo: string,
+  pathPrefix: string,
+  token?: string,
+): Promise<string[]> {
+  const warnings: string[] = [];
+  const dangerousPatterns = /os\.execute|io\.popen|vim\.fn\.system|vim\.fn\.systemlist|loadstring|dofile/;
+  for (const file of files) {
+    if (pathPrefix && !file.startsWith(pathPrefix)) continue;
+    if (!file.endsWith(".lua")) continue;
+    const content = await fetchFileContent(owner, repo, file, token);
+    if (content && dangerousPatterns.test(content)) {
+      const matches = content.match(dangerousPatterns);
+      warnings.push(`dangerous lua code in ${file}: ${matches?.[0]}`);
+    }
+  }
+  return warnings;
+}
+
+// ---------------------------------------------------------------------------
+// Fetch repo tree
+// ---------------------------------------------------------------------------
+
 async function fetchRepoTree(
   owner: string,
   repo: string,
@@ -608,6 +662,11 @@ async function scrapeTheme(
   // Detect which apps this theme covers
   const apps = detectApps(files, pathPrefix.replace(/\/$/, ""));
 
+  // Security scan
+  const fileWarnings = scanForSuspiciousFiles(files, pathPrefix);
+  const luaWarnings = await scanLuaFiles(files, owner, repo, pathPrefix.replace(/\/$/, ""), token);
+  const allWarnings = [...fileWarnings, ...luaWarnings];
+
   // Fetch README.md (try uppercase first, then lowercase)
   const readme = await fetchFileContent(owner, repo, `${pathPrefix}README.md`, token)
     ?? await fetchFileContent(owner, repo, `${pathPrefix}readme.md`, token);
@@ -640,7 +699,12 @@ async function scrapeTheme(
     github_pushed_at: meta.pushed_at,
     canonical_github_url: canonicalGithubUrl,
     overlays_builtin: overlaysBuiltin,
+    security_warnings: allWarnings.length > 0 ? JSON.stringify(allWarnings) : null,
   };
+
+  if (allWarnings.length > 0) {
+    console.warn(`SECURITY: ${slug}: ${allWarnings.join("; ")}`);
+  }
 
   return { record, result };
 }
@@ -656,8 +720,8 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
         id, name, slug, github_url, github_owner, github_repo,
         description, preview_url, colors_json, apps_json, primary_hue,
         is_builtin, is_curated, stars, readme_text, default_branch,
-        github_pushed_at, canonical_github_url, overlays_builtin, last_scraped_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+        github_pushed_at, canonical_github_url, overlays_builtin, security_warnings, last_scraped_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         github_url = excluded.github_url,
@@ -676,6 +740,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
         github_pushed_at = excluded.github_pushed_at,
         canonical_github_url = excluded.canonical_github_url,
         overlays_builtin = excluded.overlays_builtin,
+        security_warnings = excluded.security_warnings,
         last_scraped_at = datetime('now'),
         updated_at = datetime('now')`,
     )
@@ -699,6 +764,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
       theme.github_pushed_at,
       theme.canonical_github_url,
       theme.overlays_builtin,
+      theme.security_warnings,
     )
     .run();
 }
@@ -819,6 +885,12 @@ interface RedirectedTheme {
   canonical_url: string;
 }
 
+interface SecurityWarning {
+  slug: string;
+  name: string;
+  warnings: string[];
+}
+
 async function getStatus(db: D1Database): Promise<{
   total: number;
   missing_colors: ThemeStatus[];
@@ -826,9 +898,10 @@ async function getStatus(db: D1Database): Promise<{
   stale: ThemeStatus[];
   never_scraped: ThemeStatus[];
   redirected: RedirectedTheme[];
+  security_warnings: SecurityWarning[];
 }> {
   const all = await db
-    .prepare(`SELECT slug, name, github_url, colors_json, preview_url, primary_hue, last_scraped_at, canonical_github_url FROM themes ORDER BY name`)
+    .prepare(`SELECT slug, name, github_url, colors_json, preview_url, primary_hue, last_scraped_at, canonical_github_url, security_warnings FROM themes ORDER BY name`)
     .all<{
       slug: string;
       name: string;
@@ -838,6 +911,7 @@ async function getStatus(db: D1Database): Promise<{
       primary_hue: string | null;
       last_scraped_at: string | null;
       canonical_github_url: string | null;
+      security_warnings: string | null;
     }>();
 
   const now = Date.now();
@@ -848,6 +922,7 @@ async function getStatus(db: D1Database): Promise<{
   const stale: ThemeStatus[] = [];
   const never_scraped: ThemeStatus[] = [];
   const redirected: RedirectedTheme[] = [];
+  const security_warnings: SecurityWarning[] = [];
 
   for (const t of all.results) {
     const lastScraped = t.last_scraped_at ? new Date(t.last_scraped_at + "Z").getTime() : 0;
@@ -876,6 +951,15 @@ async function getStatus(db: D1Database): Promise<{
         canonical_url: t.canonical_github_url,
       });
     }
+
+    if (t.security_warnings) {
+      try {
+        const warnings = JSON.parse(t.security_warnings) as string[];
+        if (warnings.length > 0) {
+          security_warnings.push({ slug: t.slug, name: t.name, warnings });
+        }
+      } catch { /* ignore malformed */ }
+    }
   }
 
   return {
@@ -885,6 +969,7 @@ async function getStatus(db: D1Database): Promise<{
     stale,
     never_scraped,
     redirected,
+    security_warnings,
   };
 }
 
