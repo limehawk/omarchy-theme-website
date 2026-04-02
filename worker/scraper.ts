@@ -1038,7 +1038,7 @@ async function dumpThemes(db: D1Database, validSlugs: Set<string>): Promise<unkn
               description, preview_url, colors_json, apps_json, primary_hue,
               is_builtin, is_curated, stars, readme_text, default_branch,
               last_scraped_at, created_at, updated_at, github_pushed_at,
-              overlays_builtin
+              overlays_builtin, security_warnings
        FROM themes ORDER BY stars DESC`
     )
     .all();

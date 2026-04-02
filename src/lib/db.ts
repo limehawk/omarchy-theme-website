@@ -29,6 +29,7 @@ export interface Theme {
   updated_at: string;
   github_pushed_at: string | null;
   overlays_builtin: string | null;
+  security_warnings: string | null;
 }
 
 const allThemes = themesData as Theme[];

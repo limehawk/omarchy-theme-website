@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Star, ExternalLink, Layers } from "lucide-react";
+import { Star, ExternalLink, Layers, TriangleAlert } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -285,6 +285,44 @@ export default async function ThemeDetailPage({ params }: Props) {
               </h2>
               <InstallCommand githubUrl={theme.github_url} />
             </div>
+
+            {/* Security warning */}
+            {theme.security_warnings && (() => {
+              try {
+                const warnings = JSON.parse(theme.security_warnings) as string[];
+                if (warnings.length === 0) return null;
+                const scriptCount = warnings.filter(w => w.startsWith("suspicious file:")).length;
+                const luaCount = warnings.filter(w => w.startsWith("dangerous lua")).length;
+                return (
+                  <Card className="border-yellow-500/30 bg-yellow-500/5">
+                    <CardContent className="space-y-3 text-sm">
+                      <div className="flex items-center gap-2 font-mono text-xs text-yellow-500 uppercase tracking-wider">
+                        <TriangleAlert className="size-3" />
+                        review before installing
+                      </div>
+                      <p className="text-muted-foreground leading-relaxed">
+                        This theme contains
+                        {scriptCount > 0 && ` ${scriptCount} script${scriptCount > 1 ? "s" : ""}`}
+                        {scriptCount > 0 && luaCount > 0 && " and"}
+                        {luaCount > 0 && ` ${luaCount} file${luaCount > 1 ? "s" : ""} with system-level code`}
+                        {" "}that may run on your machine. Check the{" "}
+                        <a
+                          href={theme.github_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-foreground underline underline-offset-4 hover:text-foreground/80 transition-colors"
+                        >
+                          repo
+                        </a>
+                        {" "}before installing.
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              } catch {
+                return null;
+              }
+            })()}
 
           </div>
         </aside>
