@@ -335,7 +335,7 @@ export default async function ThemeDetailPage({ params }: Props) {
                         <p className="text-muted-foreground leading-relaxed">
                           {hasDangerousLua
                             ? "This theme includes code that can run commands on your machine. Review it before installing."
-                            : "These scripts won\u2019t run on install. Read them before you run them yourself."}
+                            : "Never run scripts from the internet without reading them first. Community themes are not audited \u2014 you are responsible for anything you execute on your machine."}
                         </p>
                       </CardContent>
                     </Card>
