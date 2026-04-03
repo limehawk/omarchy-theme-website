@@ -286,52 +286,56 @@ export default async function ThemeDetailPage({ params }: Props) {
               <InstallCommand githubUrl={theme.github_url} />
             </div>
 
-            {/* Extra scripts notice + review warning */}
+            {/* Extra scripts + review warning */}
             {theme.security_warnings && (() => {
               try {
                 const warnings = JSON.parse(theme.security_warnings) as string[];
                 if (warnings.length === 0) return null;
-                const scriptFiles = warnings.filter(w => w.startsWith("suspicious file:"));
-                const luaWarnings = warnings.filter(w => w.startsWith("dangerous lua"));
-                if (scriptFiles.length === 0 && luaWarnings.length === 0) return null;
+                const scripts = warnings
+                  .filter(w => w.startsWith("suspicious file:"))
+                  .map(w => w.replace("suspicious file: ", ""));
+                const hasDangerousLua = warnings.some(w => w.startsWith("dangerous lua"));
+                if (scripts.length === 0 && !hasDangerousLua) return null;
+                const repoBase = `${theme.github_url}/blob/${theme.default_branch}`;
                 return (
                   <div className="space-y-3">
-                    {/* Positive: this theme has extras */}
-                    {scriptFiles.length > 0 && (
+                    {scripts.length > 0 && (
                       <Card className="border-blue-500/20 bg-blue-500/5">
-                        <CardContent className="space-y-2 text-sm">
+                        <CardContent className="space-y-3 text-sm">
                           <div className="font-mono text-xs text-blue-400 uppercase tracking-wider">
                             includes extras
                           </div>
                           <p className="text-muted-foreground leading-relaxed">
-                            This theme includes {scriptFiles.length} optional script{scriptFiles.length > 1 ? "s" : ""} for
-                            additional setup beyond the base theme.
+                            This theme ships optional scripts for additional setup.
                           </p>
+                          <ul className="space-y-1">
+                            {scripts.map((file) => (
+                              <li key={file}>
+                                <a
+                                  href={`${repoBase}/${file}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-4 decoration-blue-400/30"
+                                >
+                                  {file}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
                         </CardContent>
                       </Card>
                     )}
 
-                    {/* Warning: always review scripts before running */}
                     <Card className="border-yellow-500/30 bg-yellow-500/5">
                       <CardContent className="space-y-2 text-sm">
                         <div className="flex items-center gap-2 font-mono text-xs text-yellow-500 uppercase tracking-wider">
                           <TriangleAlert className="size-3" />
-                          review scripts before running
+                          heads up
                         </div>
                         <p className="text-muted-foreground leading-relaxed">
-                          {luaWarnings.length > 0
-                            ? "This theme contains code that could execute commands on your machine. "
-                            : "Scripts don't run automatically on install, but always review them before running. "}
-                          Check the{" "}
-                          <a
-                            href={theme.github_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-foreground underline underline-offset-4 hover:text-foreground/80 transition-colors"
-                          >
-                            repo
-                          </a>
-                          {" "}first.
+                          {hasDangerousLua
+                            ? "This theme includes code that can run commands on your machine. Review it before installing."
+                            : "These scripts won\u2019t run on install. Read them before you run them yourself."}
                         </p>
                       </CardContent>
                     </Card>
