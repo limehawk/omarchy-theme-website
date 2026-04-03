@@ -286,38 +286,68 @@ export default async function ThemeDetailPage({ params }: Props) {
               <InstallCommand githubUrl={theme.github_url} />
             </div>
 
-            {/* Security warning */}
+            {/* Extra scripts notice + security warning */}
             {theme.security_warnings && (() => {
               try {
                 const warnings = JSON.parse(theme.security_warnings) as string[];
                 if (warnings.length === 0) return null;
                 const scriptCount = warnings.filter(w => w.startsWith("suspicious file:")).length;
                 const luaCount = warnings.filter(w => w.startsWith("dangerous lua")).length;
+                const hasScripts = scriptCount > 0;
+                const hasDangerousLua = luaCount > 0;
                 return (
-                  <Card className="border-yellow-500/30 bg-yellow-500/5">
-                    <CardContent className="space-y-3 text-sm">
-                      <div className="flex items-center gap-2 font-mono text-xs text-yellow-500 uppercase tracking-wider">
-                        <TriangleAlert className="size-3" />
-                        review before installing
-                      </div>
-                      <p className="text-muted-foreground leading-relaxed">
-                        This theme contains
-                        {scriptCount > 0 && ` ${scriptCount} script${scriptCount > 1 ? "s" : ""}`}
-                        {scriptCount > 0 && luaCount > 0 && " and"}
-                        {luaCount > 0 && ` ${luaCount} file${luaCount > 1 ? "s" : ""} with system-level code`}
-                        {" "}that may run on your machine. Check the{" "}
-                        <a
-                          href={theme.github_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-foreground underline underline-offset-4 hover:text-foreground/80 transition-colors"
-                        >
-                          repo
-                        </a>
-                        {" "}before installing.
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <div className="space-y-3">
+                    {/* Positive: this theme does more */}
+                    {hasScripts && !hasDangerousLua && (
+                      <Card className="border-blue-500/20 bg-blue-500/5">
+                        <CardContent className="space-y-2 text-sm">
+                          <div className="flex items-center gap-2 font-mono text-xs text-blue-400 uppercase tracking-wider">
+                            includes extras
+                          </div>
+                          <p className="text-muted-foreground leading-relaxed">
+                            This theme includes {scriptCount} optional script{scriptCount > 1 ? "s" : ""} for
+                            additional setup beyond the base theme. These don't run automatically
+                            — review them in the{" "}
+                            <a
+                              href={theme.github_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-foreground underline underline-offset-4 hover:text-foreground/80 transition-colors"
+                            >
+                              repo
+                            </a>
+                            {" "}before running.
+                          </p>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Warning: dangerous code patterns */}
+                    {hasDangerousLua && (
+                      <Card className="border-yellow-500/30 bg-yellow-500/5">
+                        <CardContent className="space-y-2 text-sm">
+                          <div className="flex items-center gap-2 font-mono text-xs text-yellow-500 uppercase tracking-wider">
+                            <TriangleAlert className="size-3" />
+                            review before installing
+                          </div>
+                          <p className="text-muted-foreground leading-relaxed">
+                            This theme contains {luaCount} file{luaCount > 1 ? "s" : ""} with
+                            system-level code that could execute commands on your machine.
+                            Check the{" "}
+                            <a
+                              href={theme.github_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-foreground underline underline-offset-4 hover:text-foreground/80 transition-colors"
+                            >
+                              repo
+                            </a>
+                            {" "}before installing.
+                          </p>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
                 );
               } catch {
                 return null;
