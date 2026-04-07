@@ -21,6 +21,7 @@ export function SearchBar({ names, value, onChange }: SearchBarProps) {
       items={names}
       value={value || null}
       onValueChange={(v) => onChange(v ?? "")}
+      filter={(value, query) => value.toLowerCase().includes(query.toLowerCase())}
     >
       <ComboboxInput
         placeholder="find a theme..."
