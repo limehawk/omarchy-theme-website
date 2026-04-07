@@ -72,6 +72,37 @@ export function getRandomThemes(count: number = 6, exclude: Set<string> = new Se
   return shuffled.slice(0, count);
 }
 
+/** Featured author — cycles through authors with 6+ themes, one per day */
+export function getFeaturedAuthor(exclude: Set<string> = new Set()): { author: string; themes: ThemeListItem[] } | null {
+  // Group community themes by author
+  const byAuthor = new Map<string, ThemeListItem[]>();
+  for (const t of allThemes) {
+    if (t.is_builtin === 1 || exclude.has(t.id)) continue;
+    const { readme_text, default_branch, last_scraped_at, ...rest } = t;
+    const list = byAuthor.get(t.github_owner) ?? [];
+    list.push(rest);
+    byAuthor.set(t.github_owner, list);
+  }
+
+  // Filter to authors with 6+ themes
+  const eligible = [...byAuthor.entries()]
+    .filter(([, themes]) => themes.length >= 6)
+    .sort(([a], [b]) => a.localeCompare(b)); // deterministic order
+
+  if (eligible.length === 0) return null;
+
+  // Day-of-year index — cycles through authors deterministically, one per day
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((now.getTime() - startOfYear.getTime()) / 86400000);
+  const index = dayOfYear % eligible.length;
+  const [author, themes] = eligible[index];
+
+  // Sort by stars descending, cap at 6
+  const sorted = themes.sort((a, b) => b.stars - a.stars).slice(0, 6);
+  return { author, themes: sorted };
+}
+
 /** Themes list for the browse page — excludes readme_text to keep bundle small */
 export interface ThemeListItem {
   id: string;

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { getFeaturedThemes, getRandomThemes } from "@/lib/db";
+import { getFeaturedThemes, getRandomThemes, getFeaturedAuthor } from "@/lib/db";
 import { ThemeGrid } from "@/components/theme-grid";
 import { Button } from "@/components/ui/button";
 
@@ -8,6 +8,8 @@ export default function Home() {
   const featured = getFeaturedThemes(6);
   const featuredIds = new Set(featured.map((t) => t.id));
   const discover = getRandomThemes(6, featuredIds);
+  const discoverIds = new Set([...featuredIds, ...discover.map((t) => t.id)]);
+  const authorSpotlight = getFeaturedAuthor(discoverIds);
 
   return (
     <div className="mx-auto max-w-6xl px-6">
@@ -98,6 +100,30 @@ export default function Home() {
             </Link>
           </div>
           <ThemeGrid themes={discover} />
+        </section>
+      )}
+
+      {/* Author spotlight */}
+      {authorSpotlight && (
+        <section className="pb-20">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
+              author spotlight &mdash;{" "}
+              <Link
+                href={`/themes?author=${encodeURIComponent(authorSpotlight.author)}`}
+                className="text-foreground hover:underline underline-offset-4"
+              >
+                {authorSpotlight.author}
+              </Link>
+            </h2>
+            <Link
+              href={`/themes?author=${encodeURIComponent(authorSpotlight.author)}`}
+              className="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              view all &rarr;
+            </Link>
+          </div>
+          <ThemeGrid themes={authorSpotlight.themes} />
         </section>
       )}
 
