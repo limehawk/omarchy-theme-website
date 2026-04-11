@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Combobox,
   ComboboxContent,
@@ -15,13 +16,25 @@ interface SearchBarProps {
   onChange: (value: string) => void;
 }
 
-export function SearchBar({ names, value, onChange }: SearchBarProps) {
+export function SearchBar({ names, value: externalValue, onChange }: SearchBarProps) {
+  const [value, setValue] = useState(externalValue);
+
+  useEffect(() => {
+    setValue(externalValue);
+  }, [externalValue]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => onChange(value), 200);
+    return () => clearTimeout(timeout);
+  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <Combobox
       items={names}
       value={value || null}
-      onValueChange={(v) => onChange(v ?? "")}
-      filter={(value, query) => value.toLowerCase().includes(query.toLowerCase())}
+      onValueChange={(v) => setValue(v ?? "")}
+      inputValue={value}
+      onInputValueChange={(v) => setValue(v)}
     >
       <ComboboxInput
         placeholder="find a theme..."
