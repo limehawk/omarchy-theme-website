@@ -294,8 +294,11 @@ export default async function ThemeDetailPage({ params }: Props) {
                 const scripts = warnings
                   .filter(w => w.startsWith("suspicious file:"))
                   .map(w => w.replace("suspicious file: ", ""));
+                const extensions = warnings
+                  .filter(w => w.startsWith("vscode.json installs extension:"))
+                  .map(w => w.replace("vscode.json installs extension: ", ""));
                 const hasDangerousLua = warnings.some(w => w.startsWith("dangerous lua"));
-                if (scripts.length === 0 && !hasDangerousLua) return null;
+                if (scripts.length === 0 && extensions.length === 0 && !hasDangerousLua) return null;
                 const repoBase = `${theme.github_url}/blob/${theme.default_branch}`;
                 return (
                   <div className="space-y-3">
@@ -318,6 +321,33 @@ export default async function ThemeDetailPage({ params }: Props) {
                                   className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-4 decoration-blue-400/30"
                                 >
                                   {file}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {extensions.length > 0 && (
+                      <Card className="border-blue-500/20 bg-blue-500/5">
+                        <CardContent className="space-y-3 text-sm">
+                          <div className="font-mono text-xs text-blue-400 uppercase tracking-wider">
+                            installs vscode extension
+                          </div>
+                          <p className="text-muted-foreground leading-relaxed">
+                            Installing this theme will install the following VS Code extension:
+                          </p>
+                          <ul className="space-y-1">
+                            {extensions.map((ext) => (
+                              <li key={ext}>
+                                <a
+                                  href={`https://marketplace.visualstudio.com/items?itemName=${encodeURIComponent(ext)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-4 decoration-blue-400/30"
+                                >
+                                  {ext}
                                 </a>
                               </li>
                             ))}

@@ -526,6 +526,26 @@ function scanForSuspiciousFiles(files: Set<string>, pathPrefix: string): string[
   return warnings;
 }
 
+async function scanVscodeExtension(
+  files: Set<string>,
+  owner: string,
+  repo: string,
+  pathPrefix: string,
+  token?: string,
+): Promise<string[]> {
+  const path = pathPrefix ? `${pathPrefix}/vscode.json` : "vscode.json";
+  if (!files.has(path)) return [];
+  const content = await fetchFileContent(owner, repo, path, token);
+  if (!content) return [];
+  try {
+    const parsed = JSON.parse(content) as { extension?: unknown };
+    if (typeof parsed.extension === "string" && parsed.extension.trim()) {
+      return [`vscode.json installs extension: ${parsed.extension.trim()}`];
+    }
+  } catch { /* malformed json — ignore */ }
+  return [];
+}
+
 async function scanLuaFiles(
   files: Set<string>,
   owner: string,
@@ -665,7 +685,8 @@ async function scrapeTheme(
   // Security scan
   const fileWarnings = scanForSuspiciousFiles(files, pathPrefix);
   const luaWarnings = await scanLuaFiles(files, owner, repo, pathPrefix.replace(/\/$/, ""), token);
-  const allWarnings = [...fileWarnings, ...luaWarnings];
+  const vscodeWarnings = await scanVscodeExtension(files, owner, repo, pathPrefix.replace(/\/$/, ""), token);
+  const allWarnings = [...fileWarnings, ...luaWarnings, ...vscodeWarnings];
 
   // Fetch README.md (try uppercase first, then lowercase)
   const readme = await fetchFileContent(owner, repo, `${pathPrefix}README.md`, token)
