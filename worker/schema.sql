@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS themes (
   canonical_github_url TEXT,
   overlays_builtin TEXT,
   security_warnings TEXT,
+  terminal_style_json TEXT,
   last_scraped_at TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
