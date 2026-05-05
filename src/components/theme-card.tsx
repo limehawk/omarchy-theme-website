@@ -77,14 +77,14 @@ function TerminalPreview({
         </span>
       </div>
       <div
-        className="flex-1 p-2 text-[3px] leading-[1.1] whitespace-pre overflow-hidden"
+        className="flex-1 p-3 text-[5px] leading-[1.15] whitespace-pre overflow-hidden"
         style={{
           color: fg,
           fontFamily: `var(--font-jetbrains-mono), "Symbols Nerd Font", monospace`,
         }}
       >
         <div className="flex gap-2 items-start">
-          <pre className="text-[2px] leading-[1.05] whitespace-pre select-none shrink-0" style={{ color: green }} aria-hidden>{OMARCHY_LOGO}</pre>
+          <pre className="text-[3.5px] leading-[1.05] whitespace-pre select-none shrink-0" style={{ color: green }} aria-hidden>{OMARCHY_LOGO}</pre>
           <div>
             <div style={{ color: dim }}>{HW_TOP}</div>
             <div><span style={{ color: green }}>{" PC"}</span>: omarchy-host</div>
