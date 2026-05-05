@@ -59,6 +59,34 @@ export default async function ThemeDetailPage({ params }: Props) {
   const colors = parseColors(theme.colors_json);
   const apps: string[] = theme.apps_json ? JSON.parse(theme.apps_json) : [];
 
+  interface TerminalStyle {
+    source?: string;
+    background_opacity?: number;
+    padding?: number;
+    font_family?: string;
+    cursor_style?: "block" | "beam" | "underline";
+    rounding?: number;
+  }
+  const termStyle: TerminalStyle | null = theme.terminal_style_json
+    ? JSON.parse(theme.terminal_style_json)
+    : null;
+
+  function hexToRgba(hex: string, alpha: number): string {
+    const h = hex.replace(/^#/, "");
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
+  const bgHex = colors?.background ?? "#1a1a2e";
+  const opacity = termStyle?.background_opacity ?? 1;
+  const cardBg = opacity < 1 ? hexToRgba(bgHex, opacity) : bgHex;
+  const cardRadius = termStyle?.rounding;
+  const innerPadding = termStyle?.padding;
+  const termFont = termStyle?.font_family;
+  const cursorStyle = termStyle?.cursor_style ?? "block";
+
   // Derive branch and path prefix for resolving relative README URLs
   const readmeBranch = theme.default_branch ?? "main";
   let readmePathPrefix = "";
@@ -107,7 +135,17 @@ export default async function ThemeDetailPage({ params }: Props) {
               <h2 className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
                 preview
               </h2>
-              <Card className="overflow-hidden p-0" style={{ backgroundColor: colors.background ?? "#1a1a2e" }}>
+              <Card
+                className="overflow-hidden p-0"
+                style={{
+                  backgroundColor: cardBg,
+                  borderRadius: cardRadius !== undefined ? `${cardRadius}px` : undefined,
+                  fontFamily: termFont
+                    ? `"${termFont}", "JetBrains Mono", "Fira Code", "Hack", monospace`
+                    : undefined,
+                  backdropFilter: opacity < 1 ? "blur(8px)" : undefined,
+                }}
+              >
                 <div className="flex items-center gap-2 px-4 py-2 border-b border-white/5">
                   <span className="size-2.5 rounded-full bg-red-500/70" />
                   <span className="size-2.5 rounded-full bg-yellow-500/70" />
@@ -117,10 +155,13 @@ export default async function ThemeDetailPage({ params }: Props) {
                   </span>
                 </div>
                 <div
-                  className="p-5 font-mono text-[12px] leading-tight overflow-x-auto"
-                  style={{ color: colors.foreground ?? "#ccc" }}
+                  className="font-mono text-[11px] leading-tight overflow-hidden"
+                  style={{
+                    color: colors.foreground ?? "#ccc",
+                    padding: innerPadding !== undefined ? `${innerPadding}px` : "20px",
+                  }}
                 >
-                  <div className="flex gap-6 items-start min-w-max">
+                  <div className="flex gap-4 items-start">
                     <pre
                       className="text-[8px] leading-[1.05] whitespace-pre select-none shrink-0"
                       style={{ color: colors.accent ?? colors.color4 ?? "#4a9eff" }}
@@ -155,39 +196,93 @@ export default async function ThemeDetailPage({ params }: Props) {
                     </pre>
 
                     <div className="space-y-3 whitespace-pre">
-                      <div>
-                        <div style={{ color: colors.color8 ?? "#666" }}>{`┌──────── Hardware ────────`}</div>
-                        <div>{`│ `}<span style={{ color: colors.color1 ?? "#ff5555" }}>CPU</span>{`: x86_64 (8 cores)`}</div>
-                        <div>{`│ `}<span style={{ color: colors.color2 ?? "#50fa7b" }}>GPU</span>{`: Integrated Graphics`}</div>
-                        <div>{`│ `}<span style={{ color: colors.color3 ?? "#f1fa8c" }}>Disk</span>{`: 120 / 500 GiB (24%)`}</div>
-                        <div>{`│ `}<span style={{ color: colors.color4 ?? "#6272a4" }}>Memory</span>{`: 8 / 16 GiB (50%)`}</div>
-                        <div style={{ color: colors.color8 ?? "#666" }}>{`└──────────────────────────`}</div>
-                      </div>
+                      {(() => {
+                        const dim = colors.color8 ?? "#666";
+                        const key = colors.color2 ?? colors.accent ?? "#50fa7b";
+                        const dash = (n: number) => "─".repeat(n);
+                        const WIDTH = 40;
+                        const top = (title: string) => {
+                          const inner = WIDTH - 2 - 2 - title.length;
+                          const l = Math.floor(inner / 2);
+                          const r = inner - l;
+                          return `┌${dash(l)} ${title} ${dash(r)}┐`;
+                        };
+                        const bot = `└${dash(WIDTH - 2)}┘`;
+                        const Row = ({ branch, label, value, last }: { branch: "first" | "mid" | "last"; label: string; value: React.ReactNode; last?: boolean }) => {
+                          const prefix = branch === "first" ? "  " : branch === "last" ? "│ └" : "│ ├";
+                          return (
+                            <div>
+                              <span style={{ color: dim }}>{prefix}</span>
+                              <span style={{ color: key }}>{` ${label}`}</span>
+                              <span>{`: `}</span>
+                              {value}
+                            </div>
+                          );
+                        };
+                        return (
+                          <>
+                            <div>
+                              <div style={{ color: dim }}>{top("Hardware")}</div>
+                              <Row branch="first" label="PC" value={"omarchy-host"} />
+                              <Row branch="mid" label="CPU" value={"x86_64 (8 cores)"} />
+                              <Row branch="mid" label="GPU" value={"Integrated Graphics"} />
+                              <Row branch="mid" label="Display" value={"1920x1080"} />
+                              <Row branch="mid" label="Disk" value={"120 / 500 GiB (24%)"} />
+                              <Row branch="mid" label="Memory" value={"8 / 16 GiB (50%)"} />
+                              <Row branch="last" label="Swap" value={"0 / 4 GiB (0%)"} />
+                              <div style={{ color: dim }}>{bot}</div>
+                            </div>
 
-                      <div>
-                        <div style={{ color: colors.color8 ?? "#666" }}>{`┌──────── Software ────────`}</div>
-                        <div>{`│ `}<span style={{ color: colors.color1 ?? "#ff5555" }}>OS</span>{`: Omarchy`}</div>
-                        <div>{`│ `}<span style={{ color: colors.color2 ?? "#50fa7b" }}>Kernel</span>{`: linux-arch`}</div>
-                        <div>{`│ `}<span style={{ color: colors.color3 ?? "#f1fa8c" }}>WM</span>{`: Hyprland (Wayland)`}</div>
-                        <div>{`│ `}<span style={{ color: colors.color4 ?? "#6272a4" }}>Shell</span>{`: bash`}</div>
-                        <div>{`│ `}<span style={{ color: colors.color5 ?? "#ff79c6" }}>Terminal</span>{`: ghostty`}</div>
-                        <div>
-                          {`│ `}<span style={{ color: colors.accent ?? colors.color6 ?? "#8be9fd" }}>Theme</span>{`: ${theme.name} `}
-                          {["color1","color2","color3","color4","color5","color6","color7","color8"].map((k) => (
-                            <span key={k} style={{ color: colors[k] ?? "#888" }}>●</span>
-                          ))}
-                        </div>
-                        <div>{`│ `}<span style={{ color: colors.color6 ?? "#8be9fd" }}>Font</span>{`: JetBrainsMono Nerd Font`}</div>
-                        <div style={{ color: colors.color8 ?? "#666" }}>{`└──────────────────────────`}</div>
-                      </div>
+                            <div>
+                              <div style={{ color: dim }}>{top("Software")}</div>
+                              <Row branch="first" label="OS" value={"Omarchy"} />
+                              <Row branch="mid" label="Branch" value={"master"} />
+                              <Row branch="mid" label="Kernel" value={"linux-arch"} />
+                              <Row branch="mid" label="WM" value={"Hyprland (Wayland)"} />
+                              <Row branch="mid" label="Terminal" value={termStyle?.source?.replace(".conf","").replace(".toml","") ?? "ghostty"} />
+                              <Row branch="mid" label="Packages" value={"1024 (pacman)"} />
+                              <Row
+                                branch="mid"
+                                label="Theme"
+                                value={
+                                  <>
+                                    {theme.name + " "}
+                                    {["color1","color2","color3","color4","color5","color6","color7","color8"].map((k) => (
+                                      <span key={k} style={{ color: colors[k] ?? "#888" }}>●</span>
+                                    ))}
+                                  </>
+                                }
+                              />
+                              <Row branch="last" label="Font" value={termFont ? `${termFont} (9pt)` : "JetBrainsMono Nerd Font (9pt)"} />
+                              <div style={{ color: dim }}>{bot}</div>
+                            </div>
 
-                      <div>
-                        <div style={{ color: colors.color8 ?? "#666" }}>{`┌──────── Session ─────────`}</div>
-                        <div>{`│ `}<span style={{ color: colors.color3 ?? "#f1fa8c" }}>Uptime</span>{`: 2 hours`}</div>
-                        <div>{`│ `}<span style={{ color: colors.color2 ?? "#50fa7b" }}>Packages</span>{`: 1024 (pacman)`}</div>
-                        <div style={{ color: colors.color8 ?? "#666" }}>{`└──────────────────────────`}</div>
-                      </div>
+                            <div>
+                              <div style={{ color: dim }}>{top("Uptime / Age")}</div>
+                              <Row branch="first" label="OS Age" value={"0 days"} />
+                              <Row branch="last" label="Uptime" value={"2 hours, 13 mins"} />
+                              <div style={{ color: dim }}>{bot}</div>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
+                  </div>
+
+                  <div className="pt-4">
+                    <span style={{ color: colors.color2 ?? colors.accent ?? "#50fa7b" }}>user@omarchy</span>
+                    <span>:</span>
+                    <span style={{ color: colors.color4 ?? "#6272a4" }}>~</span>
+                    <span> $ </span>
+                    <span
+                      className="inline-block align-middle animate-pulse"
+                      style={{
+                        backgroundColor: colors.cursor ?? colors.accent ?? "#4a9eff",
+                        width: cursorStyle === "beam" ? "1px" : "8px",
+                        height: cursorStyle === "underline" ? "2px" : "16px",
+                        verticalAlign: cursorStyle === "underline" ? "bottom" : "middle",
+                      }}
+                    />
                   </div>
                 </div>
               </Card>

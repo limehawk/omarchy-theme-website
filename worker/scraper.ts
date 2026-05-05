@@ -65,6 +65,7 @@ interface ThemeRecord {
   canonical_github_url: string | null;
   overlays_builtin: string | null;
   security_warnings: string | null;
+  terminal_style_json: string | null;
 }
 
 interface ScrapeResult {
@@ -356,6 +357,193 @@ function parseAlacrittyColors(tomlContent: string): Record<string, string> | nul
   } catch {
     return null;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Parse terminal window style (ghostty.conf > kitty.conf > alacritty.toml)
+// + corner rounding from hyprland.conf
+// ---------------------------------------------------------------------------
+
+interface TerminalStyle {
+  source: "ghostty.conf" | "kitty.conf" | "alacritty.toml";
+  background_opacity?: number;
+  padding?: number;
+  font_family?: string;
+  cursor_style?: "block" | "beam" | "underline";
+  rounding?: number;
+}
+
+function stripQuotes(v: string): string {
+  return v.replace(/^["']|["']$/g, "");
+}
+
+function parseFlatConfig(content: string, mode: "equals" | "space"): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const raw of content.split("\n")) {
+    const line = raw.replace(/#.*$/, "").trim();
+    if (!line) continue;
+    let key: string | undefined;
+    let value: string | undefined;
+    if (mode === "equals") {
+      const eq = line.indexOf("=");
+      if (eq !== -1) {
+        key = line.slice(0, eq).trim();
+        value = line.slice(eq + 1).trim();
+      } else {
+        const m = line.match(/^(\S+)\s+(.+)$/);
+        if (m) { key = m[1]; value = m[2]; }
+      }
+    } else {
+      const m = line.match(/^(\S+)\s+(.+)$/);
+      if (m) { key = m[1]; value = m[2]; }
+    }
+    if (key && value !== undefined) out.set(key, stripQuotes(value.trim()));
+  }
+  return out;
+}
+
+function clamp01(n: number): number {
+  if (Number.isNaN(n)) return 1;
+  if (n < 0) return 0;
+  if (n > 1) return 1;
+  return n;
+}
+
+function normalizeCursorStyle(v: string): "block" | "beam" | "underline" | undefined {
+  const s = v.toLowerCase();
+  if (s.includes("beam") || s.includes("bar") || s.includes("ibeam")) return "beam";
+  if (s.includes("underline") || s.includes("under")) return "underline";
+  if (s.includes("block")) return "block";
+  return undefined;
+}
+
+function parseGhosttyStyle(content: string): Omit<TerminalStyle, "source" | "rounding"> {
+  const cfg = parseFlatConfig(content, "equals");
+  const out: Omit<TerminalStyle, "source" | "rounding"> = {};
+  const op = cfg.get("background-opacity");
+  if (op !== undefined) out.background_opacity = clamp01(parseFloat(op));
+  const px = cfg.get("window-padding-x");
+  const py = cfg.get("window-padding-y");
+  if (px !== undefined || py !== undefined) {
+    const a = parseFloat(px ?? py ?? "0");
+    const b = parseFloat(py ?? px ?? "0");
+    if (!Number.isNaN(a) && !Number.isNaN(b)) out.padding = Math.max(a, b);
+  }
+  const ff = cfg.get("font-family");
+  if (ff) out.font_family = ff;
+  const cs = cfg.get("cursor-style");
+  if (cs) out.cursor_style = normalizeCursorStyle(cs);
+  return out;
+}
+
+function parseKittyStyle(content: string): Omit<TerminalStyle, "source" | "rounding"> {
+  const cfg = parseFlatConfig(content, "space");
+  const out: Omit<TerminalStyle, "source" | "rounding"> = {};
+  const op = cfg.get("background_opacity");
+  if (op !== undefined) out.background_opacity = clamp01(parseFloat(op));
+  const pad = cfg.get("window_padding_width");
+  if (pad !== undefined) {
+    const n = parseFloat(pad.split(/\s+/)[0]);
+    if (!Number.isNaN(n)) out.padding = n;
+  }
+  const ff = cfg.get("font_family");
+  if (ff) out.font_family = ff;
+  const cs = cfg.get("cursor_shape");
+  if (cs) out.cursor_style = normalizeCursorStyle(cs);
+  return out;
+}
+
+function parseAlacrittyStyle(tomlContent: string): Omit<TerminalStyle, "source" | "rounding"> | null {
+  try {
+    const parsed = parseTOML(tomlContent) as Record<string, unknown>;
+    const out: Omit<TerminalStyle, "source" | "rounding"> = {};
+    const win = parsed.window as Record<string, unknown> | undefined;
+    if (win) {
+      if (typeof win.opacity === "number") out.background_opacity = clamp01(win.opacity);
+      const pad = win.padding as Record<string, number> | undefined;
+      if (pad && (typeof pad.x === "number" || typeof pad.y === "number")) {
+        out.padding = Math.max(pad.x ?? 0, pad.y ?? 0);
+      }
+    }
+    const font = parsed.font as Record<string, unknown> | undefined;
+    if (font) {
+      const normal = font.normal as Record<string, unknown> | undefined;
+      if (normal && typeof normal.family === "string") out.font_family = normal.family;
+    }
+    const cursor = parsed.cursor as Record<string, unknown> | undefined;
+    if (cursor) {
+      const style = cursor.style;
+      if (typeof style === "string") out.cursor_style = normalizeCursorStyle(style);
+      else if (style && typeof style === "object") {
+        const shape = (style as Record<string, unknown>).shape;
+        if (typeof shape === "string") out.cursor_style = normalizeCursorStyle(shape);
+      }
+    }
+    return out;
+  } catch {
+    return null;
+  }
+}
+
+function parseHyprlandRounding(content: string): number | undefined {
+  // decoration { rounding = N }  or top-level `rounding = N` inside a decoration block
+  const m = content.match(/decoration\s*\{[^}]*?\brounding\s*=\s*(\d+(?:\.\d+)?)/s);
+  if (m) {
+    const n = parseFloat(m[1]);
+    if (!Number.isNaN(n)) return n;
+  }
+  return undefined;
+}
+
+async function fetchTerminalStyle(
+  owner: string,
+  repo: string,
+  pathPrefix: string,
+  token?: string,
+): Promise<TerminalStyle | null> {
+  let style: Omit<TerminalStyle, "source" | "rounding"> | null = null;
+  let source: TerminalStyle["source"] | undefined;
+
+  const ghostty = await fetchFileContent(owner, repo, `${pathPrefix}ghostty.conf`, token);
+  if (ghostty) {
+    style = parseGhosttyStyle(ghostty);
+    source = "ghostty.conf";
+  } else {
+    const kitty = await fetchFileContent(owner, repo, `${pathPrefix}kitty.conf`, token);
+    if (kitty) {
+      style = parseKittyStyle(kitty);
+      source = "kitty.conf";
+    } else {
+      const alacritty = await fetchFileContent(owner, repo, `${pathPrefix}alacritty.toml`, token);
+      if (alacritty) {
+        style = parseAlacrittyStyle(alacritty);
+        if (style) source = "alacritty.toml";
+      }
+    }
+  }
+
+  // Pull rounding from hyprland.conf regardless of which terminal config was found.
+  let rounding: number | undefined;
+  const hypr = await fetchFileContent(owner, repo, `${pathPrefix}hyprland.conf`, token);
+  if (hypr) rounding = parseHyprlandRounding(hypr);
+
+  if (!style && rounding === undefined) return null;
+  if (!source && rounding !== undefined) source = "alacritty.toml"; // placeholder; only rounding present
+
+  const result: TerminalStyle = { source: source! };
+  if (style) Object.assign(result, style);
+  if (rounding !== undefined) result.rounding = rounding;
+
+  // Drop empty payloads
+  const hasAny =
+    result.background_opacity !== undefined ||
+    result.padding !== undefined ||
+    result.font_family !== undefined ||
+    result.cursor_style !== undefined ||
+    result.rounding !== undefined;
+  if (!hasAny) return null;
+
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -674,6 +862,8 @@ async function scrapeTheme(
     primaryHue = computeHueBucket(colors.accent);
   }
 
+  const terminalStyle = await fetchTerminalStyle(owner, repo, pathPrefix, token);
+
   const branch = meta.default_branch;
 
   // Fetch tree once — used for app detection and image finding
@@ -721,6 +911,7 @@ async function scrapeTheme(
     canonical_github_url: canonicalGithubUrl,
     overlays_builtin: overlaysBuiltin,
     security_warnings: allWarnings.length > 0 ? JSON.stringify(allWarnings) : null,
+    terminal_style_json: terminalStyle ? JSON.stringify(terminalStyle) : null,
   };
 
   if (allWarnings.length > 0) {
@@ -741,8 +932,8 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
         id, name, slug, github_url, github_owner, github_repo,
         description, preview_url, colors_json, apps_json, primary_hue,
         is_builtin, is_curated, stars, readme_text, default_branch,
-        github_pushed_at, canonical_github_url, overlays_builtin, security_warnings, last_scraped_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+        github_pushed_at, canonical_github_url, overlays_builtin, security_warnings, terminal_style_json, last_scraped_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         github_url = excluded.github_url,
@@ -762,6 +953,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
         canonical_github_url = excluded.canonical_github_url,
         overlays_builtin = excluded.overlays_builtin,
         security_warnings = excluded.security_warnings,
+        terminal_style_json = excluded.terminal_style_json,
         last_scraped_at = datetime('now'),
         updated_at = datetime('now')`,
     )
@@ -786,6 +978,7 @@ async function upsertTheme(db: D1Database, theme: ThemeRecord): Promise<void> {
       theme.canonical_github_url,
       theme.overlays_builtin,
       theme.security_warnings,
+      theme.terminal_style_json,
     )
     .run();
 }
@@ -1059,7 +1252,7 @@ async function dumpThemes(db: D1Database, validSlugs: Set<string>): Promise<unkn
               description, preview_url, colors_json, apps_json, primary_hue,
               is_builtin, is_curated, stars, readme_text, default_branch,
               last_scraped_at, created_at, updated_at, github_pushed_at,
-              overlays_builtin, security_warnings
+              overlays_builtin, security_warnings, terminal_style_json
        FROM themes ORDER BY stars DESC`
     )
     .all();
