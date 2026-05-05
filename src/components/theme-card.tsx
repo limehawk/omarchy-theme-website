@@ -20,20 +20,18 @@ interface ThemeCardProps {
 function TerminalPreview({
   colors,
   slug,
+  themeName,
 }: {
   colors: Record<string, string> | null;
   slug: string;
+  themeName: string;
 }) {
   const bg = colors?.background ?? "#1a1a2e";
   const fg = colors?.foreground ?? "#e0e0e0";
-  const accent = colors?.accent ?? DEFAULT_ACCENT;
-  const cursor = colors?.cursor ?? accent;
-  const c1 = colors?.color1 ?? "#ff5555";
-  const c2 = colors?.color2 ?? "#50fa7b";
-  const c3 = colors?.color3 ?? "#f1fa8c";
-  const c4 = colors?.color4 ?? "#6272a4";
-  const c5 = colors?.color5 ?? "#ff79c6";
-  const c6 = colors?.color6 ?? "#8be9fd";
+  const dim = colors?.color8 ?? "#666";
+  const green = colors?.color2 ?? "#50fa7b";
+  const blue = colors?.color4 ?? "#6272a4";
+  const dotKeys = ["color8","color7","color6","color5","color4","color3","color2","color1"];
 
   return (
     <div className="w-full h-full flex flex-col" style={{ backgroundColor: bg }}>
@@ -42,40 +40,36 @@ function TerminalPreview({
         <span className="size-1.5 rounded-full bg-red-500/70" />
         <span className="size-1.5 rounded-full bg-yellow-500/70" />
         <span className="size-1.5 rounded-full bg-green-500/70" />
-        <span
-          className="ml-1.5 font-mono text-[8px]"
-          style={{ color: fg, opacity: 0.5 }}
-        >
+        <span className="ml-1.5 font-mono text-[8px]" style={{ color: fg, opacity: 0.5 }}>
           ~/{slug}
         </span>
       </div>
-      {/* Terminal content */}
-      <div className="flex-1 px-3 py-2 font-mono text-[9px] leading-relaxed space-y-0.5">
+      {/* Compact fastfetch */}
+      <div
+        className="flex-1 px-3 py-2 text-[8px] leading-tight whitespace-pre"
+        style={{
+          color: fg,
+          fontFamily: `var(--font-jetbrains-mono), "Symbols Nerd Font", monospace`,
+        }}
+      >
+        <div style={{ color: dim }}>{"┌──────── Hardware ────────"}</div>
+        <div><span style={{ color: green }}>{" PC"}</span>: omarchy-host</div>
+        <div><span style={{ color: green }}>{"│ ├"}</span>: x86_64 (8 cores)</div>
+        <div><span style={{ color: green }}>{"│ ├"}</span>: Integrated Graphics</div>
+        <div><span style={{ color: green }}>{"└ └"}</span>: 8 / 16 GiB</div>
+        <div style={{ color: dim }}>{"└──────────────────────────"}</div>
+        <div className="h-1" />
+        <div style={{ color: dim }}>{"┌──────── Software ────────"}</div>
+        <div><span style={{ color: blue }}>{" OS"}</span>: Omarchy</div>
+        <div><span style={{ color: blue }}>{"│ ├"}</span>: Hyprland</div>
+        <div><span style={{ color: blue }}>{"│ ├"}</span>: ghostty</div>
         <div>
-          <span style={{ color: c2 }}>user@omarchy</span>
-          <span style={{ color: fg }}>:</span>
-          <span style={{ color: c4 }}>~</span>
-          <span style={{ color: fg }}> $ </span>
-          <span style={{ color: accent }}>ls</span>
+          <span style={{ color: blue }}>{"│ ├" + String.fromCodePoint(0xf0e0c)}</span>
+          {": "}{themeName} {dotKeys.map(k => (
+            <span key={k} style={{ color: colors?.[k] ?? "#888" }}>●</span>
+          ))}
         </div>
-        <div className="flex flex-wrap gap-x-4">
-          <span style={{ color: c4 }}>desktop/</span>
-          <span style={{ color: c2 }}>scripts/</span>
-          <span style={{ color: c1 }}>.config/</span>
-          <span style={{ color: c3 }}>notes.md</span>
-          <span style={{ color: c5 }}>Makefile</span>
-          <span style={{ color: c6 }}>README</span>
-        </div>
-        <div className="pt-0.5">
-          <span style={{ color: c2 }}>user@omarchy</span>
-          <span style={{ color: fg }}>:</span>
-          <span style={{ color: c4 }}>~</span>
-          <span style={{ color: fg }}> $ </span>
-          <span
-            className="inline-block w-1.5 h-3 align-middle"
-            style={{ backgroundColor: cursor }}
-          />
-        </div>
+        <div style={{ color: dim }}>{"└──────────────────────────"}</div>
       </div>
     </div>
   );
@@ -101,7 +95,7 @@ export function ThemeCard({ theme, forceTerminal }: ThemeCardProps) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <TerminalPreview colors={colors} slug={theme.slug} />
+            <TerminalPreview colors={colors} slug={theme.slug} themeName={theme.name} />
           )}
         </div>
 
