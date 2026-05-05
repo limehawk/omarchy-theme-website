@@ -17,6 +17,33 @@ interface ThemeCardProps {
   forceTerminal?: boolean;
 }
 
+const OMARCHY_LOGO = `██████████████████████████████████████████████████████
+██████████████████████████████████████████████████████
+████                     ████                     ████
+████                     ████                     ████
+████    █████████████████████         ████████    ████
+████    █████████████████████         ████████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████████████                              ████    ████
+████████████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ██████████████████████████████████████    ████
+████    ██████████████████████████████████████    ████
+████                     ████                     ████
+████                     ████                     ████
+█████████████████████████████     ████████████████████
+█████████████████████████████     ████████████████████`;
+
 function TerminalPreview({
   colors,
   slug,
@@ -31,12 +58,17 @@ function TerminalPreview({
   const dim = colors?.color8 ?? "#666";
   const green = colors?.color2 ?? "#50fa7b";
   const blue = colors?.color4 ?? "#6272a4";
+  const magenta = colors?.color5 ?? "#ff79c6";
   const dotKeys = ["color8","color7","color6","color5","color4","color3","color2","color1"];
 
+  const HW_TOP = "┌──────────────────────Hardware──────────────────────┐";
+  const SW_TOP = "┌──────────────────────Software──────────────────────┐";
+  const AU_TOP = "┌─────────────────Age / Uptime / Update───────────────┐";
+  const BOT = "└────────────────────────────────────────────────────┘";
+
   return (
-    <div className="w-full h-full flex flex-col" style={{ backgroundColor: bg }}>
-      {/* Title bar */}
-      <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-white/5">
+    <div className="w-full h-full flex flex-col overflow-hidden" style={{ backgroundColor: bg }}>
+      <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-white/5 shrink-0">
         <span className="size-1.5 rounded-full bg-red-500/70" />
         <span className="size-1.5 rounded-full bg-yellow-500/70" />
         <span className="size-1.5 rounded-full bg-green-500/70" />
@@ -44,32 +76,48 @@ function TerminalPreview({
           ~/{slug}
         </span>
       </div>
-      {/* Compact fastfetch */}
       <div
-        className="flex-1 px-3 py-2 text-[8px] leading-tight whitespace-pre"
+        className="flex-1 p-2 text-[3px] leading-[1.1] whitespace-pre overflow-hidden"
         style={{
           color: fg,
           fontFamily: `var(--font-jetbrains-mono), "Symbols Nerd Font", monospace`,
         }}
       >
-        <div style={{ color: dim }}>{"┌──────── Hardware ────────"}</div>
-        <div><span style={{ color: green }}>{" PC"}</span>: omarchy-host</div>
-        <div><span style={{ color: green }}>{"│ ├"}</span>: x86_64 (8 cores)</div>
-        <div><span style={{ color: green }}>{"│ ├"}</span>: Integrated Graphics</div>
-        <div><span style={{ color: green }}>{"└ └"}</span>: 8 / 16 GiB</div>
-        <div style={{ color: dim }}>{"└──────────────────────────"}</div>
-        <div className="h-1" />
-        <div style={{ color: dim }}>{"┌──────── Software ────────"}</div>
-        <div><span style={{ color: blue }}>{" OS"}</span>: Omarchy</div>
-        <div><span style={{ color: blue }}>{"│ ├"}</span>: Hyprland</div>
-        <div><span style={{ color: blue }}>{"│ ├"}</span>: ghostty</div>
-        <div>
-          <span style={{ color: blue }}>{"│ ├" + String.fromCodePoint(0xf0e0c)}</span>
-          {": "}{themeName} {dotKeys.map(k => (
-            <span key={k} style={{ color: colors?.[k] ?? "#888" }}>●</span>
-          ))}
+        <div className="flex gap-2 items-start">
+          <pre className="text-[2px] leading-[1.05] whitespace-pre select-none shrink-0" style={{ color: green }} aria-hidden>{OMARCHY_LOGO}</pre>
+          <div>
+            <div style={{ color: dim }}>{HW_TOP}</div>
+            <div><span style={{ color: green }}>{" PC"}</span>: omarchy-host</div>
+            <div><span style={{ color: green }}>{"│ ├"}</span>: x86_64 (8 cores)</div>
+            <div><span style={{ color: green }}>{"│ ├"}</span>: Integrated Graphics</div>
+            <div><span style={{ color: green }}>{"│ ├" + String.fromCodePoint(0xf1104)}</span>: 1920x1080</div>
+            <div><span style={{ color: green }}>{"│ ├" + String.fromCodePoint(0xf02ca)}</span>: 120 / 500 GiB</div>
+            <div><span style={{ color: green }}>{"│ ├"}</span>: 8 / 16 GiB</div>
+            <div><span style={{ color: green }}>{"└ └" + String.fromCodePoint(0xf04e1) + " "}</span>: 0 / 4 GiB</div>
+            <div style={{ color: dim }}>{BOT}</div>
+            <div className="h-[2px]" />
+            <div style={{ color: dim }}>{SW_TOP}</div>
+            <div><span style={{ color: blue }}>{" OS"}</span>: Omarchy 3.6.0</div>
+            <div><span style={{ color: blue }}>{"│ ├" + String.fromCodePoint(0xf062c)}</span>: master</div>
+            <div><span style={{ color: blue }}>{"│ ├" + String.fromCodePoint(0xf052b)}</span>: stable</div>
+            <div><span style={{ color: blue }}>{"│ ├"}</span>: linux-arch</div>
+            <div><span style={{ color: blue }}>{"│ ├"}</span>: Hyprland</div>
+            <div><span style={{ color: blue }}>{"│ ├"}</span>: ghostty</div>
+            <div><span style={{ color: blue }}>{"│ ├" + String.fromCodePoint(0xf03d6)}</span>: 1024 (pacman)</div>
+            <div>
+              <span style={{ color: blue }}>{"│ ├" + String.fromCodePoint(0xf0e0c)}</span>: {themeName}{" "}
+              {dotKeys.map(k => (<span key={k} style={{ color: colors?.[k] ?? "#888" }}>●</span>))}
+            </div>
+            <div><span style={{ color: blue }}>{"└ └"}</span>: JetBrainsMono Nerd Font</div>
+            <div style={{ color: dim }}>{BOT}</div>
+            <div className="h-[2px]" />
+            <div style={{ color: dim }}>{AU_TOP}</div>
+            <div><span style={{ color: magenta }}>{String.fromCodePoint(0xf179f) + " OS Age"}</span>: 0 days</div>
+            <div><span style={{ color: magenta }}>{String.fromCodePoint(0xf1bd0) + " Uptime"}</span>: 2 hours</div>
+            <div><span style={{ color: magenta }}>{" Update"}</span>: Today</div>
+            <div style={{ color: dim }}>{BOT}</div>
+          </div>
         </div>
-        <div style={{ color: dim }}>{"└──────────────────────────"}</div>
       </div>
     </div>
   );
