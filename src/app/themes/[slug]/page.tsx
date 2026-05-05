@@ -116,32 +116,78 @@ export default async function ThemeDetailPage({ params }: Props) {
                     ~/{theme.slug}
                   </span>
                 </div>
-                <div className="p-5 font-mono text-sm leading-relaxed space-y-1">
-                  <div>
-                    <span style={{ color: colors.color2 ?? "#50fa7b" }}>user@omarchy</span>
-                    <span style={{ color: colors.foreground ?? "#ccc" }}>:</span>
-                    <span style={{ color: colors.color4 ?? "#6272a4" }}>~</span>
-                    <span style={{ color: colors.foreground ?? "#ccc" }}> $ </span>
-                    <span style={{ color: colors.accent ?? "#4a9eff" }}>ls</span>
-                    <span style={{ color: colors.foreground ?? "#ccc" }}> --color</span>
-                  </div>
-                  <div className="flex flex-wrap gap-x-6 gap-y-1">
-                    <span style={{ color: colors.color4 ?? "#6272a4" }}>desktop/</span>
-                    <span style={{ color: colors.color2 ?? "#50fa7b" }}>scripts/</span>
-                    <span style={{ color: colors.color1 ?? "#ff5555" }}>.config/</span>
-                    <span style={{ color: colors.color3 ?? "#f1fa8c" }}>notes.md</span>
-                    <span style={{ color: colors.color5 ?? "#ff79c6" }}>Makefile</span>
-                    <span style={{ color: colors.color6 ?? "#8be9fd" }}>README.md</span>
-                  </div>
-                  <div className="pt-1">
-                    <span style={{ color: colors.color2 ?? "#50fa7b" }}>user@omarchy</span>
-                    <span style={{ color: colors.foreground ?? "#ccc" }}>:</span>
-                    <span style={{ color: colors.color4 ?? "#6272a4" }}>~</span>
-                    <span style={{ color: colors.foreground ?? "#ccc" }}> $ </span>
-                    <span
-                      className="inline-block w-2 h-4 align-middle animate-pulse"
-                      style={{ backgroundColor: colors.cursor ?? colors.accent ?? "#4a9eff" }}
-                    />
+                <div
+                  className="p-5 font-mono text-[12px] leading-tight overflow-x-auto"
+                  style={{ color: colors.foreground ?? "#ccc" }}
+                >
+                  <div className="flex gap-6 items-start min-w-max">
+                    <pre
+                      className="text-[8px] leading-[1.05] whitespace-pre select-none shrink-0"
+                      style={{ color: colors.accent ?? colors.color4 ?? "#4a9eff" }}
+                      aria-hidden
+                    >
+{`██████████████████████████████████████████████████████
+██████████████████████████████████████████████████████
+████                     ████                     ████
+████                     ████                     ████
+████    █████████████████████         ████████    ████
+████    █████████████████████         ████████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████████████                              ████    ████
+████████████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ████                              ████    ████
+████    ██████████████████████████████████████    ████
+████    ██████████████████████████████████████    ████
+████                     ████                     ████
+████                     ████                     ████
+█████████████████████████████     ████████████████████
+█████████████████████████████     ████████████████████`}
+                    </pre>
+
+                    <div className="space-y-3 whitespace-pre">
+                      <div>
+                        <div style={{ color: colors.color8 ?? "#666" }}>{`┌──────── Hardware ────────`}</div>
+                        <div>{`│ `}<span style={{ color: colors.color1 ?? "#ff5555" }}>CPU</span>{`: x86_64 (8 cores)`}</div>
+                        <div>{`│ `}<span style={{ color: colors.color2 ?? "#50fa7b" }}>GPU</span>{`: Integrated Graphics`}</div>
+                        <div>{`│ `}<span style={{ color: colors.color3 ?? "#f1fa8c" }}>Disk</span>{`: 120 / 500 GiB (24%)`}</div>
+                        <div>{`│ `}<span style={{ color: colors.color4 ?? "#6272a4" }}>Memory</span>{`: 8 / 16 GiB (50%)`}</div>
+                        <div style={{ color: colors.color8 ?? "#666" }}>{`└──────────────────────────`}</div>
+                      </div>
+
+                      <div>
+                        <div style={{ color: colors.color8 ?? "#666" }}>{`┌──────── Software ────────`}</div>
+                        <div>{`│ `}<span style={{ color: colors.color1 ?? "#ff5555" }}>OS</span>{`: Omarchy`}</div>
+                        <div>{`│ `}<span style={{ color: colors.color2 ?? "#50fa7b" }}>Kernel</span>{`: linux-arch`}</div>
+                        <div>{`│ `}<span style={{ color: colors.color3 ?? "#f1fa8c" }}>WM</span>{`: Hyprland (Wayland)`}</div>
+                        <div>{`│ `}<span style={{ color: colors.color4 ?? "#6272a4" }}>Shell</span>{`: bash`}</div>
+                        <div>{`│ `}<span style={{ color: colors.color5 ?? "#ff79c6" }}>Terminal</span>{`: ghostty`}</div>
+                        <div>
+                          {`│ `}<span style={{ color: colors.accent ?? colors.color6 ?? "#8be9fd" }}>Theme</span>{`: ${theme.name} `}
+                          {["color1","color2","color3","color4","color5","color6","color7","color8"].map((k) => (
+                            <span key={k} style={{ color: colors[k] ?? "#888" }}>●</span>
+                          ))}
+                        </div>
+                        <div>{`│ `}<span style={{ color: colors.color6 ?? "#8be9fd" }}>Font</span>{`: JetBrainsMono Nerd Font`}</div>
+                        <div style={{ color: colors.color8 ?? "#666" }}>{`└──────────────────────────`}</div>
+                      </div>
+
+                      <div>
+                        <div style={{ color: colors.color8 ?? "#666" }}>{`┌──────── Session ─────────`}</div>
+                        <div>{`│ `}<span style={{ color: colors.color3 ?? "#f1fa8c" }}>Uptime</span>{`: 2 hours`}</div>
+                        <div>{`│ `}<span style={{ color: colors.color2 ?? "#50fa7b" }}>Packages</span>{`: 1024 (pacman)`}</div>
+                        <div style={{ color: colors.color8 ?? "#666" }}>{`└──────────────────────────`}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Card>
