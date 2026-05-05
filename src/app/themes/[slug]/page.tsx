@@ -155,16 +155,17 @@ export default async function ThemeDetailPage({ params }: Props) {
                   </span>
                 </div>
                 <div
-                  className="font-mono text-[11px] leading-tight overflow-hidden"
+                  className="text-[11px] leading-tight overflow-hidden"
                   style={{
                     color: colors.foreground ?? "#ccc",
                     padding: innerPadding !== undefined ? `${innerPadding}px` : "20px",
+                    fontFamily: `${termFont ? `"${termFont}", ` : ""}var(--font-jetbrains-mono), "Symbols Nerd Font", monospace`,
                   }}
                 >
-                  <div className="flex gap-4 items-start">
+                  <div className="flex gap-6 items-start">
                     <pre
                       className="text-[8px] leading-[1.05] whitespace-pre select-none shrink-0"
-                      style={{ color: colors.accent ?? colors.color4 ?? "#4a9eff" }}
+                      style={{ color: colors.color2 ?? "#50fa7b" }}
                       aria-hidden
                     >
 {`██████████████████████████████████████████████████████
@@ -195,74 +196,68 @@ export default async function ThemeDetailPage({ params }: Props) {
 █████████████████████████████     ████████████████████`}
                     </pre>
 
-                    <div className="space-y-3 whitespace-pre">
+                    <div className="whitespace-pre">
                       {(() => {
                         const dim = colors.color8 ?? "#666";
-                        const key = colors.color2 ?? colors.accent ?? "#50fa7b";
-                        const dash = (n: number) => "─".repeat(n);
-                        const WIDTH = 40;
-                        const top = (title: string) => {
-                          const inner = WIDTH - 2 - 2 - title.length;
-                          const l = Math.floor(inner / 2);
-                          const r = inner - l;
-                          return `┌${dash(l)} ${title} ${dash(r)}┐`;
-                        };
-                        const bot = `└${dash(WIDTH - 2)}┘`;
-                        const Row = ({ branch, label, value, last }: { branch: "first" | "mid" | "last"; label: string; value: React.ReactNode; last?: boolean }) => {
-                          const prefix = branch === "first" ? "  " : branch === "last" ? "│ └" : "│ ├";
-                          return (
-                            <div>
-                              <span style={{ color: dim }}>{prefix}</span>
-                              <span style={{ color: key }}>{` ${label}`}</span>
-                              <span>{`: `}</span>
-                              {value}
-                            </div>
-                          );
-                        };
+                        const green = colors.color2 ?? "#50fa7b";
+                        const blue = colors.color4 ?? "#6272a4";
+                        const magenta = colors.color5 ?? "#ff79c6";
+
+                        const HW_TOP = "┌──────────────────────Hardware──────────────────────┐";
+                        const SW_TOP = "┌──────────────────────Software──────────────────────┐";
+                        const AU_TOP = "┌─────────────────Age / Uptime / Update───────────────┐";
+                        const BOT = "└────────────────────────────────────────────────────┘";
+
+                        const Row = ({ keyText, color, children }: { keyText: string; color: string; children: React.ReactNode }) => (
+                          <div>
+                            <span style={{ color }}>{keyText}</span>
+                            <span>: </span>
+                            {children}
+                          </div>
+                        );
+
+                        const dotColors = ["color8", "color7", "color6", "color5", "color4", "color3", "color2", "color1"];
+                        const termName = termStyle?.source === "ghostty.conf" ? "ghostty" : termStyle?.source === "kitty.conf" ? "kitty" : termStyle?.source === "alacritty.toml" ? "alacritty" : "ghostty";
+                        const fontDisplay = termFont ? `${termFont} (9pt)` : "JetBrainsMono Nerd Font (9pt)";
+
                         return (
                           <>
-                            <div>
-                              <div style={{ color: dim }}>{top("Hardware")}</div>
-                              <Row branch="first" label="PC" value={"omarchy-host"} />
-                              <Row branch="mid" label="CPU" value={"x86_64 (8 cores)"} />
-                              <Row branch="mid" label="GPU" value={"Integrated Graphics"} />
-                              <Row branch="mid" label="Display" value={"1920x1080"} />
-                              <Row branch="mid" label="Disk" value={"120 / 500 GiB (24%)"} />
-                              <Row branch="mid" label="Memory" value={"8 / 16 GiB (50%)"} />
-                              <Row branch="last" label="Swap" value={"0 / 4 GiB (0%)"} />
-                              <div style={{ color: dim }}>{bot}</div>
-                            </div>
+                            <div style={{ color: dim }}>{HW_TOP}</div>
+                            <Row keyText=" PC" color={green}>omarchy-host</Row>
+                            <Row keyText="│ ├" color={green}>x86_64 (8 cores) @ 4.00 GHz</Row>
+                            <Row keyText="│ ├" color={green}>Integrated Graphics</Row>
+                            <Row keyText={"│ ├" + String.fromCodePoint(0xf1104)} color={green}>1920x1080 @ 60 Hz</Row>
+                            <Row keyText={"│ ├" + String.fromCodePoint(0xf02ca)} color={green}>120 / 500 GiB (24%)</Row>
+                            <Row keyText="│ ├" color={green}>8 / 16 GiB (50%)</Row>
+                            <Row keyText={"└ └" + String.fromCodePoint(0xf04e1) + " "} color={green}>0 / 4 GiB (0%)</Row>
+                            <div style={{ color: dim }}>{BOT}</div>
 
-                            <div>
-                              <div style={{ color: dim }}>{top("Software")}</div>
-                              <Row branch="first" label="OS" value={"Omarchy"} />
-                              <Row branch="mid" label="Branch" value={"master"} />
-                              <Row branch="mid" label="Kernel" value={"linux-arch"} />
-                              <Row branch="mid" label="WM" value={"Hyprland (Wayland)"} />
-                              <Row branch="mid" label="Terminal" value={termStyle?.source?.replace(".conf","").replace(".toml","") ?? "ghostty"} />
-                              <Row branch="mid" label="Packages" value={"1024 (pacman)"} />
-                              <Row
-                                branch="mid"
-                                label="Theme"
-                                value={
-                                  <>
-                                    {theme.name + " "}
-                                    {["color1","color2","color3","color4","color5","color6","color7","color8"].map((k) => (
-                                      <span key={k} style={{ color: colors[k] ?? "#888" }}>●</span>
-                                    ))}
-                                  </>
-                                }
-                              />
-                              <Row branch="last" label="Font" value={termFont ? `${termFont} (9pt)` : "JetBrainsMono Nerd Font (9pt)"} />
-                              <div style={{ color: dim }}>{bot}</div>
-                            </div>
+                            <div className="h-3" />
 
-                            <div>
-                              <div style={{ color: dim }}>{top("Uptime / Age")}</div>
-                              <Row branch="first" label="OS Age" value={"0 days"} />
-                              <Row branch="last" label="Uptime" value={"2 hours, 13 mins"} />
-                              <div style={{ color: dim }}>{bot}</div>
-                            </div>
+                            <div style={{ color: dim }}>{SW_TOP}</div>
+                            <Row keyText=" OS" color={blue}>Omarchy 3.6.0</Row>
+                            <Row keyText={"│ ├" + String.fromCodePoint(0xf062c)} color={blue}>master</Row>
+                            <Row keyText={"│ ├" + String.fromCodePoint(0xf052b)} color={blue}>stable</Row>
+                            <Row keyText="│ ├" color={blue}>linux-arch</Row>
+                            <Row keyText="│ ├" color={blue}>Hyprland (Wayland)</Row>
+                            <Row keyText="│ ├" color={blue}>{termName}</Row>
+                            <Row keyText={"│ ├" + String.fromCodePoint(0xf03d6)} color={blue}>1024 (pacman)</Row>
+                            <Row keyText={"│ ├" + String.fromCodePoint(0xf0e0c)} color={blue}>
+                              {theme.name + " "}
+                              {dotColors.map((k) => (
+                                <span key={k} style={{ color: colors[k] ?? "#888" }}>●</span>
+                              ))}
+                            </Row>
+                            <Row keyText="└ └" color={blue}>{fontDisplay}</Row>
+                            <div style={{ color: dim }}>{BOT}</div>
+
+                            <div className="h-3" />
+
+                            <div style={{ color: dim }}>{AU_TOP}</div>
+                            <Row keyText={String.fromCodePoint(0xf179f) + " OS Age"} color={magenta}>0 days</Row>
+                            <Row keyText={String.fromCodePoint(0xf1bd0) + " Uptime"} color={magenta}>2 hours, 13 mins</Row>
+                            <Row keyText=" Update" color={magenta}>Today</Row>
+                            <div style={{ color: dim }}>{BOT}</div>
                           </>
                         );
                       })()}
