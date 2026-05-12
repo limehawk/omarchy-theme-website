@@ -97,20 +97,22 @@
 }
 
 @layer components {
+  .btn-primary, .btn-outline {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    transition: opacity 150ms, background-color 150ms;
+  }
   .btn-primary {
     background: var(--primary);
     color: var(--primary-foreground);
     border: 1px solid transparent;
-    font-weight: 500;
-    transition: opacity 150ms;
   }
   .btn-primary:hover { opacity: 0.9; }
-
   .btn-outline {
     background: transparent;
     color: var(--foreground);
     border: 1px solid var(--border);
-    transition: background-color 150ms;
   }
   .btn-outline:hover { background: var(--accent); }
 
