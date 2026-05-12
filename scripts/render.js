@@ -584,12 +584,19 @@ export function browsePage({ themes, authors }) {
       </div>
     </div>
 
-    <div class="space-y-1.5">
+    <div class="hidden lg:block space-y-1.5">
       <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">color</span>
       <div class="flex flex-wrap items-center gap-2">
         <button type="button" data-color-all class="pill">all</button>
         ${colorButtons}
       </div>
+    </div>
+  </div>
+
+  <div class="lg:hidden sticky top-14 z-30 -mx-6 px-6 py-3 bg-background/80 backdrop-blur-md border-b border-border/40">
+    <div class="flex flex-wrap items-center gap-2">
+      <button type="button" data-color-all class="pill">all</button>
+      ${colorButtons}
     </div>
   </div>
 
