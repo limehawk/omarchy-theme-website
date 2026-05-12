@@ -622,9 +622,10 @@ export function themeDetailPage(theme, { overlayBase, overlayVariants }) {
     if (m) pathPrefix = m[1];
   }
 
-  const paletteSection = colors
-    ? `<div class="border border-border/40 rounded-xl bg-card p-6">${colorPaletteLarge(colors)}</div>`
-    : "";
+  const paletteSection = colors ? `<div class="space-y-3">
+    <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">color palette</h2>
+    <div class="border border-border/40 rounded-xl bg-card p-6">${colorPaletteLarge(colors)}</div>
+  </div>` : "";
 
   const previewSection = colors ? `<div class="space-y-3">
     <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">preview</h2>
@@ -717,7 +718,8 @@ export function themeDetailPage(theme, { overlayBase, overlayVariants }) {
       ${readmeSection}
     </div>
     <aside class="space-y-6">
-      <div class="sticky top-20 space-y-6">
+      <div class="sticky top-20 space-y-3">
+        <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">about</h2>
         <div class="border border-border/40 rounded-xl bg-card p-5 space-y-4">
           <div>
             <h2 class="font-mono text-lg font-medium">${escapeHtml(theme.name)}</h2>
