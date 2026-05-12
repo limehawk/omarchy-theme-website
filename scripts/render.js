@@ -538,7 +538,7 @@ export function browsePage({ themes, authors }) {
     <p class="mt-1 font-mono text-sm text-muted-foreground" data-theme-count>${themes.length} theme${themes.length !== 1 ? "s" : ""} available</p>
   </div>
 
-  <div class="sticky top-14 z-30 -mx-6 px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border/40 space-y-4">
+  <div class="lg:sticky lg:top-14 z-30 -mx-6 px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border/40 space-y-4">
     <div class="flex flex-col sm:flex-row gap-3">
       <div class="flex-1 relative">
         <input type="search" name="q" placeholder="find a theme..." autocomplete="off" class="w-full font-mono text-sm pl-3 pr-8 h-9 rounded-md border border-border/60 bg-input/40 focus:outline-none focus:ring-1 focus:ring-ring">
