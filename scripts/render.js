@@ -22,7 +22,6 @@ export function escapeHtml(str) {
 }
 
 const attr = (v) => escapeHtml(v);
-const styleAttr = (s) => `style="${escapeHtml(s)}"`;
 
 // ---------- shell ----------
 
@@ -348,19 +347,11 @@ export function themeCard(theme) {
       <h3 class="font-mono text-sm font-medium text-foreground truncate">${escapeHtml(theme.name)}</h3>
       ${stars}
     </div>
-    <span class="font-mono text-[10px] text-muted-foreground truncate block">${escapeHtml(theme.github_owner)}</span>
+    <span data-author-link="${attr(theme.github_owner)}" role="button" tabindex="0" class="font-mono text-[10px] text-muted-foreground truncate block cursor-pointer hover:text-foreground transition-colors">${escapeHtml(theme.github_owner)}</span>
     ${overlayNote}
   </div>
   ${colorBar}
 </a>`;
-}
-
-export function themeGrid(themes, { forceTerminal } = {}) {
-  if (themes.length === 0) {
-    return `<div class="py-20 text-center"><p class="font-mono text-sm text-muted-foreground">no themes found</p></div>`;
-  }
-  const cls = forceTerminal ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 view-terminal" : "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3";
-  return `<div ${forceTerminal ? "" : `data-theme-grid`} class="${cls}">${themes.map(themeCard).join("")}</div>`;
 }
 
 // ---------- install command ----------
@@ -547,10 +538,14 @@ export function browsePage({ themes, authors }) {
 
   <div class="sticky top-14 z-30 -mx-6 px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border/40 space-y-4">
     <div class="flex flex-col sm:flex-row gap-3">
-      <div class="flex-1">
-        <input type="search" name="q" placeholder="find a theme..." autocomplete="off" class="w-full font-mono text-sm px-3 h-9 rounded-md border border-border/60 bg-input/40 focus:outline-none focus:ring-1 focus:ring-ring">
+      <div class="flex-1 relative">
+        <input type="search" name="q" placeholder="find a theme..." autocomplete="off" class="w-full font-mono text-sm pl-3 pr-8 h-9 rounded-md border border-border/60 bg-input/40 focus:outline-none focus:ring-1 focus:ring-ring">
+        <button type="button" data-clear="q" hidden class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors font-mono text-sm leading-none size-5 inline-flex items-center justify-center rounded hover:bg-foreground/10" aria-label="Clear theme search">×</button>
       </div>
-      <input type="search" name="author" placeholder="find an author..." autocomplete="off" class="w-48 font-mono text-sm px-3 h-9 rounded-md border border-border/60 bg-input/40 focus:outline-none focus:ring-1 focus:ring-ring">
+      <div class="w-48 relative">
+        <input type="search" name="author" placeholder="find an author..." autocomplete="off" class="w-full font-mono text-sm pl-3 pr-8 h-9 rounded-md border border-border/60 bg-input/40 focus:outline-none focus:ring-1 focus:ring-ring">
+        <button type="button" data-clear="author" hidden class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors font-mono text-sm leading-none size-5 inline-flex items-center justify-center rounded hover:bg-foreground/10" aria-label="Clear author search">×</button>
+      </div>
     </div>
 
     <div class="flex flex-wrap items-start gap-x-6 gap-y-3">

@@ -14,7 +14,7 @@
 - **Live color previews** — see the full 16-color terminal palette on every theme card
 - **Search and sort** — find themes by name, sort by stars, newest, or alphabetically
 - **One-command install** — `omarchy-theme-install <repo-url>.git`
-- **200+ community themes** — and growing, with new submissions welcome
+- **270+ community themes** — and growing, with new submissions welcome
 
 ## Submit a Theme
 

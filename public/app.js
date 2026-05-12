@@ -24,6 +24,27 @@
     btn?.addEventListener("click", (e) => { e.stopPropagation(); copy(); });
   });
 
+  // ---------- author-link clicks (works everywhere) ----------
+  // Clicking an author name on a theme card either filters the browse grid
+  // (when we're already on /themes/) or navigates to /themes/?author=<name>.
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest("[data-author-link]");
+    if (!el) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const author = el.getAttribute("data-author-link");
+    const onBrowse = document.querySelector("[data-theme-grid]");
+    if (onBrowse) {
+      const input = document.querySelector('[name="author"]');
+      if (input) {
+        input.value = author;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    } else {
+      window.location.href = `/themes/?author=${encodeURIComponent(author)}`;
+    }
+  });
+
   // ---------- browse-page filter (only runs on /themes/) ----------
   const grid = document.querySelector("[data-theme-grid]");
   if (!grid) return;
@@ -78,6 +99,11 @@
   function syncInputs() {
     if (inputs.q) inputs.q.value = state.q;
     if (inputs.author) inputs.author.value = state.author;
+    document.querySelectorAll("[data-clear]").forEach((btn) => {
+      const target = btn.getAttribute("data-clear");
+      const input = document.querySelector(`[name="${target}"]`);
+      btn.hidden = !input || !input.value;
+    });
     inputs.sort.forEach((b) => b.classList.toggle("is-active", b.value === state.sort));
     inputs.source.forEach((b) => b.classList.toggle("is-active", b.value === state.source));
     inputs.brightness.forEach((b) => b.classList.toggle("is-active", b.value === state.brightness));
@@ -141,6 +167,15 @@
     update();
   }));
   document.querySelector("[data-color-all]")?.addEventListener("click", () => { state.color = []; update(); });
+
+  document.querySelectorAll("[data-clear]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = btn.getAttribute("data-clear");
+      if (target === "q") { state.q = ""; }
+      if (target === "author") { state.author = ""; }
+      update();
+    });
+  });
 
   window.addEventListener("popstate", () => { readURL(); syncInputs(); applyFilters(); });
 

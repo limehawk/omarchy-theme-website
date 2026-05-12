@@ -157,6 +157,13 @@
   }
 }
 
+/* Hide the browser's native search-input clear button — we render our own */
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 /* Hero image vs terminal toggle on browse-page cards */
 .hero-terminal { display: none; }
 [data-theme-grid].view-terminal .hero-screenshot { display: none; }
