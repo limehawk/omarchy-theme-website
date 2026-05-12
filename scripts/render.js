@@ -479,7 +479,6 @@ export function renderReadme(content, owner, repo, branch, pathPrefix = "") {
 export function homePage({ featured, discover, authorSpotlight }) {
   const heroButtons = `<div class="flex flex-wrap items-center gap-3 pt-2">
     <a href="/themes/" class="btn-primary inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">browse themes <span aria-hidden="true">→</span></a>
-    <a href="https://omarchy.org/" target="_blank" rel="noopener noreferrer" class="btn-outline inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">get omarchy</a>
     <a href="https://github.com/limehawk/omarchy-theme-website/issues/new?template=submit-theme.yml" target="_blank" rel="noopener noreferrer" class="btn-outline inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">contribute a theme</a>
   </div>`;
 
