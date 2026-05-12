@@ -34,5 +34,15 @@ jobs:
           else
             git add src/data/themes-data.json
             git commit -m "Refresh themes-data.json"
-            git push
+            # Rebase onto any commits pushed while we were scraping, then retry once.
+            for attempt in 1 2 3; do
+              git pull --rebase origin main
+              if git push; then
+                exit 0
+              fi
+              echo "Push attempt $attempt failed; refetching and retrying..."
+              sleep 5
+            done
+            echo "Push failed after 3 attempts."
+            exit 1
           fi
