@@ -99,7 +99,7 @@
         if (!hue || !state.color.includes(hue)) return false;
       }
       if (state.brightness && card.dataset.brightness !== state.brightness) return false;
-      if (state.author && card.dataset.author !== state.author) return false;
+      if (state.author && !card.dataset.author.toLowerCase().includes(state.author.toLowerCase())) return false;
       if (state.q && !card.dataset.name.toLowerCase().includes(lower)) return false;
       return true;
     });
@@ -129,7 +129,7 @@
   function update() { writeURL(); syncInputs(); applyFilters(); }
 
   inputs.q?.addEventListener("input", () => { state.q = inputs.q.value; update(); });
-  inputs.author?.addEventListener("change", () => { state.author = inputs.author.value; update(); });
+  inputs.author?.addEventListener("input", () => { state.author = inputs.author.value; update(); });
 
   inputs.sort.forEach((b) => b.addEventListener("click", () => { state.sort = b.value; update(); }));
   inputs.source.forEach((b) => b.addEventListener("click", () => { state.source = b.value; update(); }));
