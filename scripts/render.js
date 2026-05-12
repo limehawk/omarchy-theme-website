@@ -484,9 +484,9 @@ export function renderReadme(content, owner, repo, branch, pathPrefix = "") {
 
 export function homePage({ featured, discover, authorSpotlight }) {
   const heroButtons = `<div class="flex flex-wrap items-center gap-3 pt-2">
-    <a href="/themes/" class="btn-primary inline-flex items-center gap-2 font-mono px-4 h-9 rounded-md">browse themes <span aria-hidden="true">→</span></a>
-    <a href="https://omarchy.org/" target="_blank" rel="noopener noreferrer" class="btn-outline inline-flex items-center gap-2 font-mono px-4 h-9 rounded-md">get omarchy</a>
-    <a href="https://github.com/limehawk/omarchy-theme-website/issues/new?template=submit-theme.yml" target="_blank" rel="noopener noreferrer" class="btn-outline inline-flex items-center gap-2 font-mono px-4 h-9 rounded-md">contribute a theme</a>
+    <a href="/themes/" class="btn-primary inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">browse themes <span aria-hidden="true">→</span></a>
+    <a href="https://omarchy.org/" target="_blank" rel="noopener noreferrer" class="btn-outline inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">get omarchy</a>
+    <a href="https://github.com/limehawk/omarchy-theme-website/issues/new?template=submit-theme.yml" target="_blank" rel="noopener noreferrer" class="btn-outline inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">contribute a theme</a>
   </div>`;
 
   const section = (title, themes, viewAll) => themes.length === 0 ? "" : `<section class="pb-20">
@@ -524,7 +524,7 @@ export function homePage({ featured, discover, authorSpotlight }) {
   ${section("discover", discover, "/themes/")}
   ${authorSection}
   <section class="pb-20 text-center">
-    <a href="/themes/" class="btn-primary inline-flex items-center gap-2 font-mono px-4 h-9 rounded-md">browse all themes <span aria-hidden="true">→</span></a>
+    <a href="/themes/" class="btn-primary inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">browse all themes <span aria-hidden="true">→</span></a>
   </section>
 </div>`;
 
@@ -537,7 +537,7 @@ export function browsePage({ themes, authors }) {
   ).join("");
 
   const filterPill = (name, value, label) =>
-    `<button type="button" name="${name}" value="${value}" class="pill font-mono text-xs px-2.5 py-0.5 rounded-full border border-border/60 text-muted-foreground hover:text-foreground transition-colors">${escapeHtml(label)}</button>`;
+    `<button type="button" name="${name}" value="${value}" class="pill">${escapeHtml(label)}</button>`;
 
   const authorOptions = authors.map((a) => `<option value="${attr(a)}">`).join("");
 
@@ -591,7 +591,7 @@ export function browsePage({ themes, authors }) {
     <div class="space-y-1.5">
       <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">color</span>
       <div class="flex flex-wrap items-center gap-2">
-        <button type="button" data-color-all class="pill font-mono text-xs px-2.5 py-0.5 rounded-full border border-border/60 text-muted-foreground hover:text-foreground transition-colors">all</button>
+        <button type="button" data-color-all class="pill">all</button>
         ${colorButtons}
       </div>
     </div>
@@ -768,8 +768,8 @@ export function notFoundPage() {
     <h1 class="font-mono text-3xl font-bold tracking-tight text-foreground">404</h1>
     <p class="text-muted-foreground leading-relaxed">This page doesn't exist. Maybe the theme was removed, or the URL is wrong.</p>
     <div class="flex gap-3 pt-2">
-      <a href="/themes/" class="btn-primary inline-flex items-center gap-2 font-mono px-4 h-9 rounded-md">browse themes</a>
-      <a href="/" class="btn-outline inline-flex items-center gap-2 font-mono px-4 h-9 rounded-md">home</a>
+      <a href="/themes/" class="btn-primary inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">browse themes</a>
+      <a href="/" class="btn-outline inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">home</a>
     </div>
   </div>
 </div>`;

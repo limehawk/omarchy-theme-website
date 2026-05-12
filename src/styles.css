@@ -98,8 +98,8 @@
 
 @layer components {
   .btn-primary, .btn-outline {
-    font-size: 0.875rem;
-    line-height: 1.25rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
     font-weight: 500;
     transition: opacity 150ms, background-color 150ms;
   }
@@ -140,6 +140,21 @@
   }
   .badge-outline:hover { color: var(--foreground); border-color: var(--foreground); }
 
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
+    background: transparent;
+    cursor: pointer;
+    transition: color 150ms, border-color 150ms, background-color 150ms;
+  }
+  .pill:hover { color: var(--foreground); }
   .pill.is-active {
     background: var(--primary);
     color: var(--primary-foreground);
