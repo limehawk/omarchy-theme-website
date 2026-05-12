@@ -134,7 +134,7 @@
     font-size: 0.75rem;
     line-height: 1rem;
     padding: 0.125rem 0.625rem;
-    border-radius: 9999px;
+    border-radius: var(--radius-md);
     border: 1px solid var(--border);
     color: var(--muted-foreground);
     background: transparent;
