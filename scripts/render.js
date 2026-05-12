@@ -178,7 +178,7 @@ function fastfetchRows(colors, themeName, opts) {
     dimDiv(BOT),
     spacer,
     dimDiv(SW_TOP),
-    row(" OS", blue, "Omarchy 3.6.0"),
+    row(" " + NF(0xf303) + " OS", blue, "Omarchy 3.6.0"),
     row("│ ├" + NF(0xf062c), blue, "master"),
     row("│ ├" + NF(0xf052b), blue, "stable"),
     row("│ ├" + NF(0xf013), blue, "linux-arch"),
