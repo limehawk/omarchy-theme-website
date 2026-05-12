@@ -11,9 +11,7 @@
   font-weight: normal;
   font-style: normal;
   font-display: swap;
-  unicode-range:
-    U+E000-E0FF, U+E5FA-E62F, U+E700-E7C5,
-    U+EA60-EBEB, U+F000-F2E0, U+F300-F32F, U+F400-F532, U+F0001-F1AF0;
+  unicode-range: U+E000-F8FF, U+F0000-FFFFD;
 }
 
 @custom-variant dark (&:is(.dark *));
