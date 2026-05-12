@@ -326,8 +326,11 @@ export function themeCard(theme) {
     ? `<span class="badge font-mono text-xs gap-1 shrink-0 inline-flex items-center"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 8.5 22 9.3 17 14 18 21 12 17.8 6 21 7 14 2 9.3 9 8.5 12 2"/></svg>${theme.stars}</span>`
     : "";
 
-  const overlayNote = theme.overlays_builtin
-    ? `<span class="font-mono text-[10px] text-muted-foreground">enhances ${escapeHtml(theme.overlays_builtin)}</span>`
+  const overlayBadge = theme.overlays_builtin
+    ? `<span class="absolute top-2 left-2 z-10 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background/80 backdrop-blur-sm border border-border/40 text-[9px] font-mono text-muted-foreground" title="overlays builtin ${attr(theme.overlays_builtin)}">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        ${escapeHtml(theme.overlays_builtin)}
+      </span>`
     : "";
 
   return `<a data-theme-card
@@ -339,8 +342,9 @@ export function themeCard(theme) {
   data-pushed="${attr(pushed)}"
   data-builtin="${attr(theme.is_builtin)}"
   href="/themes/${attr(theme.slug)}/"
-  class="theme-card group flex flex-col rounded-xl border border-border/40 bg-card overflow-hidden hover:border-[var(--card-accent)] transition-colors"
+  class="theme-card group relative flex flex-col rounded-xl border border-border/40 bg-card overflow-hidden hover:border-[var(--card-accent)] transition-colors"
   style="--card-accent:${escapeHtml(accent)}">
+  ${overlayBadge}
   ${hero}
   <div class="p-3 space-y-1 grow">
     <div class="flex items-start justify-between gap-2">
@@ -348,7 +352,6 @@ export function themeCard(theme) {
       ${stars}
     </div>
     <span data-author-link="${attr(theme.github_owner)}" role="button" tabindex="0" class="font-mono text-[10px] text-muted-foreground truncate block cursor-pointer hover:text-foreground transition-colors">${escapeHtml(theme.github_owner)}</span>
-    ${overlayNote}
   </div>
   ${colorBar}
 </a>`;
