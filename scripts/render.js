@@ -164,35 +164,37 @@ function fastfetchRows(colors, themeName, opts) {
     `<span style="color:${escapeHtml(colors[k] ?? "#888")}">●</span>`
   ).join("");
 
-  return `
-<div style="color:${escapeHtml(dim)}">${HW_TOP}</div>
-${row(" PC", green, "omarchy-host")}
-${row("│ ├", green, "x86_64 (8 cores) @ 4.00 GHz")}
-${row("│ ├", green, "Integrated Graphics")}
-${row("│ ├" + NF(0xf1104), green, "1920x1080 @ 60 Hz")}
-${row("│ ├" + NF(0xf02ca), green, "120 / 500 GiB (24%)")}
-${row("│ ├", green, "8 / 16 GiB (50%)")}
-${row("└ └" + NF(0xf04e1) + " ", green, "0 / 4 GiB (0%)")}
-<div style="color:${escapeHtml(dim)}">${BOT}</div>
-<div style="height:0.75rem"></div>
-<div style="color:${escapeHtml(dim)}">${SW_TOP}</div>
-${row(" OS", blue, "Omarchy 3.6.0")}
-${row("│ ├" + NF(0xf062c), blue, "master")}
-${row("│ ├" + NF(0xf052b), blue, "stable")}
-${row("│ ├", blue, "linux-arch")}
-${row("│ ├", blue, "Hyprland (Wayland)")}
-${row("│ ├", blue, escapeHtml(termName))}
-${row("│ ├" + NF(0xf03d6), blue, "1024 (pacman)")}
-${row("│ ├" + NF(0xf0e0c), blue, `${escapeHtml(themeName)} ${dots}`)}
-${row("└ └", blue, escapeHtml(fontDisplay))}
-<div style="color:${escapeHtml(dim)}">${BOT}</div>
-<div style="height:0.75rem"></div>
-<div style="color:${escapeHtml(dim)}">${AU_TOP}</div>
-${row(NF(0xf179f) + " OS Age", magenta, "0 days")}
-${row(NF(0xf1bd0) + " Uptime", magenta, "2 hours, 13 mins")}
-${row(" Update", magenta, "Today")}
-<div style="color:${escapeHtml(dim)}">${BOT}</div>
-`.trim();
+  const dimDiv = (content) => `<div style="color:${escapeHtml(dim)}">${content}</div>`;
+  const spacer = `<div style="height:0.75rem"></div>`;
+  return [
+    dimDiv(HW_TOP),
+    row(" PC", green, "omarchy-host"),
+    row("│ ├", green, "x86_64 (8 cores) @ 4.00 GHz"),
+    row("│ ├", green, "Integrated Graphics"),
+    row("│ ├" + NF(0xf1104), green, "1920x1080 @ 60 Hz"),
+    row("│ ├" + NF(0xf02ca), green, "120 / 500 GiB (24%)"),
+    row("│ ├", green, "8 / 16 GiB (50%)"),
+    row("└ └" + NF(0xf04e1) + " ", green, "0 / 4 GiB (0%)"),
+    dimDiv(BOT),
+    spacer,
+    dimDiv(SW_TOP),
+    row(" OS", blue, "Omarchy 3.6.0"),
+    row("│ ├" + NF(0xf062c), blue, "master"),
+    row("│ ├" + NF(0xf052b), blue, "stable"),
+    row("│ ├", blue, "linux-arch"),
+    row("│ ├", blue, "Hyprland (Wayland)"),
+    row("│ ├", blue, escapeHtml(termName)),
+    row("│ ├" + NF(0xf03d6), blue, "1024 (pacman)"),
+    row("│ ├" + NF(0xf0e0c), blue, `${escapeHtml(themeName)} ${dots}`),
+    row("└ └", blue, escapeHtml(fontDisplay)),
+    dimDiv(BOT),
+    spacer,
+    dimDiv(AU_TOP),
+    row(NF(0xf179f) + " OS Age", magenta, "0 days"),
+    row(NF(0xf1bd0) + " Uptime", magenta, "2 hours, 13 mins"),
+    row(" Update", magenta, "Today"),
+    dimDiv(BOT),
+  ].join("");
 }
 
 export function terminalPreviewCard({ colors, slug, themeName }) {
