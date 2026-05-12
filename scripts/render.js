@@ -533,7 +533,7 @@ export function homePage({ featured, discover, authorSpotlight }) {
 
 export function browsePage({ themes, authors }) {
   const colorButtons = COLOR_BUCKETS.map((bucket) =>
-    `<button type="button" name="color" value="${bucket}" title="${bucket}" class="color-dot size-4 rounded-full shrink-0 transition-all" style="background-color:${BUCKET_COLORS[bucket]}"></button>`
+    `<button type="button" name="color" value="${bucket}" title="${bucket}" class="color-dot size-4 rounded-sm shrink-0 transition-all" style="background-color:${BUCKET_COLORS[bucket]}"></button>`
   ).join("");
 
   const filterPill = (name, value, label) =>
