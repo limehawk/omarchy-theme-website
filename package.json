@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4",
-    "marked": "^15.0.0",
+    "marked": "^18.0.0",
     "sanitize-html": "^2.13.0",
     "smol-toml": "^1.6.1",
     "tailwindcss": "^4",
