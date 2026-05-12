@@ -178,7 +178,7 @@ function fastfetchRows(colors, themeName, opts) {
     dimDiv(BOT),
     spacer,
     dimDiv(SW_TOP),
-    row(" " + NF(0xf303) + "OS", blue, "Omarchy 3.6.0"),
+    row(NF(0xf303) + " OS", blue, "Omarchy 3.6.0"),
     row("│ ├" + NF(0xf062c), blue, "master"),
     row("│ ├" + NF(0xf052b), blue, "stable"),
     row("│ ├" + NF(0xf013), blue, "linux-arch"),
@@ -267,7 +267,7 @@ export function terminalPreviewLarge({ colors, slug, themeName, termStyle }) {
     <span class="size-2.5 rounded-full bg-green-500/70"></span>
     <span class="ml-2 font-mono text-[10px]" style="color:${escapeHtml(fg)}">~/${escapeHtml(slug)}</span>
   </div>
-  <div class="text-[11px] leading-[1.6] overflow-hidden" style="${escapeHtml(innerStyle)}">
+  <div class="text-[11px] leading-tight overflow-hidden" style="${escapeHtml(innerStyle)}">
     <div class="flex gap-6 items-start">
       <pre class="text-[8px] leading-[1.05] whitespace-pre select-none shrink-0" style="color:${escapeHtml(accent)}" aria-hidden="true">${escapeHtml(OMARCHY_LOGO)}</pre>
       <div class="whitespace-pre">${fastfetchRows(colors, themeName, { termName, fontDisplay })}</div>
