@@ -340,10 +340,10 @@ export function themeCard(theme) {
   data-pushed="${attr(pushed)}"
   data-builtin="${attr(theme.is_builtin)}"
   href="/themes/${attr(theme.slug)}/"
-  class="theme-card group block rounded-xl border border-border/40 bg-card overflow-hidden hover:border-[var(--card-accent)] transition-colors"
+  class="theme-card group flex flex-col rounded-xl border border-border/40 bg-card overflow-hidden hover:border-[var(--card-accent)] transition-colors"
   style="--card-accent:${escapeHtml(accent)}">
   ${hero}
-  <div class="p-3 space-y-1">
+  <div class="p-3 space-y-1 grow">
     <div class="flex items-start justify-between gap-2">
       <h3 class="font-mono text-sm font-medium text-foreground truncate">${escapeHtml(theme.name)}</h3>
       ${stars}
