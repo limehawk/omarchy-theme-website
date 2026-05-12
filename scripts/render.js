@@ -269,7 +269,7 @@ export function terminalPreviewLarge({ colors, slug, themeName, termStyle }) {
   </div>
   <div class="text-[11px] leading-[1.2] overflow-hidden" style="${escapeHtml(innerStyle)}">
     <div class="flex gap-6 items-start">
-      <pre class="text-[11px] leading-[1.2] whitespace-pre select-none shrink-0" style="color:${escapeHtml(accent)}" aria-hidden="true">${escapeHtml(OMARCHY_LOGO)}</pre>
+      <pre class="text-[10px] leading-[1.2] whitespace-pre select-none shrink-0" style="color:${escapeHtml(accent)}" aria-hidden="true">${escapeHtml(OMARCHY_LOGO)}</pre>
       <div class="whitespace-pre">${fastfetchRows(colors, themeName, { termName, fontDisplay })}</div>
     </div>
     <div class="pt-4">
