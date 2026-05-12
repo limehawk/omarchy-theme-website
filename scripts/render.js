@@ -718,7 +718,8 @@ export function themeDetailPage(theme, { overlayBase, overlayVariants }) {
       ${readmeSection}
     </div>
     <aside class="space-y-6">
-      <div class="sticky top-20 space-y-3">
+      <div class="sticky top-20 space-y-6">
+        <div class="space-y-3">
         <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">about</h2>
         <div class="border border-border/40 rounded-xl bg-card p-5 space-y-4">
           <div>
@@ -732,6 +733,7 @@ export function themeDetailPage(theme, { overlayBase, overlayVariants }) {
               ${escapeHtml(theme.github_owner)}/${escapeHtml(theme.github_repo)}
             </a>
           </div>
+        </div>
         </div>
         ${overlayCard}
         ${variantsCard}
