@@ -168,7 +168,7 @@ function fastfetchRows(colors, themeName, opts) {
   const spacer = `<div style="height:0.75rem"></div>`;
   return [
     dimDiv(HW_TOP),
-    row(" " + NF(0xf109) + "PC", green, "omarchy-host"),
+    row(NF(0xf109) + " PC", green, "omarchy-host"),
     row("│ ├" + NF(0xf4bc), green, "x86_64 (8 cores) @ 4.00 GHz"),
     row("│ ├" + NF(0xe266), green, "Integrated Graphics"),
     row("│ ├" + NF(0xf1104), green, "1920x1080 @ 60 Hz"),
