@@ -622,10 +622,9 @@ export function themeDetailPage(theme, { overlayBase, overlayVariants }) {
     if (m) pathPrefix = m[1];
   }
 
-  const paletteSection = colors ? `<div class="space-y-3">
-    <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">color palette</h2>
-    <div class="border border-border/40 rounded-xl bg-card p-6">${colorPaletteLarge(colors)}</div>
-  </div>` : "";
+  const paletteSection = colors
+    ? `<div class="border border-border/40 rounded-xl bg-card p-6">${colorPaletteLarge(colors)}</div>`
+    : "";
 
   const previewSection = colors ? `<div class="space-y-3">
     <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">preview</h2>
