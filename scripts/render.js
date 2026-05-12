@@ -539,8 +539,6 @@ export function browsePage({ themes, authors }) {
   const filterPill = (name, value, label) =>
     `<button type="button" name="${name}" value="${value}" class="pill">${escapeHtml(label)}</button>`;
 
-  const authorOptions = authors.map((a) => `<option value="${attr(a)}">`).join("");
-
   const body = `<div class="mx-auto max-w-6xl px-6 py-10 space-y-8">
   <div>
     <h1 class="font-mono text-2xl font-bold tracking-tight text-foreground">themes</h1>
@@ -550,16 +548,9 @@ export function browsePage({ themes, authors }) {
   <div class="sticky top-14 z-30 -mx-6 px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border/40 space-y-4">
     <div class="flex flex-col sm:flex-row gap-3">
       <div class="flex-1">
-        <input type="search" name="q" placeholder="find a theme..." list="theme-names" class="w-full font-mono text-sm px-3 h-9 rounded-md border border-border/60 bg-input/40 focus:outline-none focus:ring-1 focus:ring-ring">
-        <datalist id="theme-names">${[...new Set(themes.map((t) => t.name))].sort().map((n) => `<option value="${attr(n)}">`).join("")}</datalist>
+        <input type="search" name="q" placeholder="find a theme..." autocomplete="off" class="w-full font-mono text-sm px-3 h-9 rounded-md border border-border/60 bg-input/40 focus:outline-none focus:ring-1 focus:ring-ring">
       </div>
-      <input type="search" name="author" placeholder="find an author..." list="theme-authors" class="w-48 font-mono text-sm px-3 h-9 rounded-md border border-border/60 bg-input/40 focus:outline-none focus:ring-1 focus:ring-ring">
-      <datalist id="theme-authors">${authorOptions}</datalist>
-      <select name="sort" class="font-mono text-xs px-3 h-9 rounded-md border border-border/60 bg-input/40 focus:outline-none focus:ring-1 focus:ring-ring">
-        <option value="stars">stars</option>
-        <option value="name">name</option>
-        <option value="newest">newest</option>
-      </select>
+      <input type="search" name="author" placeholder="find an author..." autocomplete="off" class="w-48 font-mono text-sm px-3 h-9 rounded-md border border-border/60 bg-input/40 focus:outline-none focus:ring-1 focus:ring-ring">
     </div>
 
     <div class="flex flex-wrap items-start gap-x-6 gap-y-3">
@@ -584,6 +575,14 @@ export function browsePage({ themes, authors }) {
         <div class="flex flex-wrap items-center gap-2">
           ${filterPill("view", "", "screenshots")}
           ${filterPill("view", "terminal", "terminal")}
+        </div>
+      </div>
+      <div class="space-y-1.5">
+        <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">sort</span>
+        <div class="flex flex-wrap items-center gap-2">
+          ${filterPill("sort", "stars", "stars")}
+          ${filterPill("sort", "name", "name")}
+          ${filterPill("sort", "newest", "newest")}
         </div>
       </div>
     </div>

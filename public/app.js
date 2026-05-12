@@ -32,7 +32,7 @@
   const countEl = document.querySelector("[data-theme-count]");
   const inputs = {
     q: document.querySelector('[name="q"]'),
-    sort: document.querySelector('[name="sort"]'),
+    sort: document.querySelectorAll('[name="sort"]'),
     source: document.querySelectorAll('[name="source"]'),
     brightness: document.querySelectorAll('[name="brightness"]'),
     color: document.querySelectorAll('[name="color"]'),
@@ -77,8 +77,8 @@
 
   function syncInputs() {
     if (inputs.q) inputs.q.value = state.q;
-    if (inputs.sort) inputs.sort.value = state.sort;
     if (inputs.author) inputs.author.value = state.author;
+    inputs.sort.forEach((b) => b.classList.toggle("is-active", b.value === state.sort));
     inputs.source.forEach((b) => b.classList.toggle("is-active", b.value === state.source));
     inputs.brightness.forEach((b) => b.classList.toggle("is-active", b.value === state.brightness));
     inputs.view.forEach((b) => b.classList.toggle("is-active", b.value === state.view));
@@ -129,9 +129,9 @@
   function update() { writeURL(); syncInputs(); applyFilters(); }
 
   inputs.q?.addEventListener("input", () => { state.q = inputs.q.value; update(); });
-  inputs.sort?.addEventListener("change", () => { state.sort = inputs.sort.value; update(); });
   inputs.author?.addEventListener("change", () => { state.author = inputs.author.value; update(); });
 
+  inputs.sort.forEach((b) => b.addEventListener("click", () => { state.sort = b.value; update(); }));
   inputs.source.forEach((b) => b.addEventListener("click", () => { state.source = b.value; update(); }));
   inputs.brightness.forEach((b) => b.addEventListener("click", () => { state.brightness = b.value; update(); }));
   inputs.view.forEach((b) => b.addEventListener("click", () => { state.view = b.value; update(); }));
