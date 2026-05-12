@@ -35,6 +35,7 @@
   --color-ring: var(--ring);
   --font-sans: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --radius-xl: 0.625rem;
 }
 
 :root {
