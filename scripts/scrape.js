@@ -453,7 +453,7 @@ async function fetchTerminalStyle(owner, repo, pathPrefix) {
 
 // ---------- main per-theme scrape ----------
 
-async function scrapeTheme(entry) {
+async function scrapeTheme(entry, cachedBySlug) {
   const { owner, repo } = parseOwnerRepo(entry.url);
   let slug = entry.is_builtin && entry.path ? deriveSlugFromPath(entry.path) : deriveSlugFromRepo(repo);
   const overlaysBuiltin = entry.overlays_builtin ?? null;
@@ -463,6 +463,25 @@ async function scrapeTheme(entry) {
   let canonicalGithubUrl = null;
   if (meta.full_name.toLowerCase() !== `${owner}/${repo}`.toLowerCase()) {
     canonicalGithubUrl = `https://github.com/${meta.full_name}`;
+  }
+
+  // Skip-if-unchanged optimization: if the repo hasn't been pushed since we
+  // last scraped, reuse the cached deep-scrape data (colors, README, tree,
+  // security scan) and just refresh the fast-moving fields (stars,
+  // description, last_scraped_at) from the meta call we already paid for.
+  // Saves ~7-10 API calls per unchanged theme.
+  const cached = cachedBySlug?.get(slug);
+  if (cached && cached.github_pushed_at === meta.pushed_at && cached.colors_json !== undefined) {
+    return {
+      ...cached,
+      name: entry.name,                         // registry might rename
+      stars: meta.stars,                        // refresh
+      description: meta.description,            // refresh
+      default_branch: meta.default_branch,      // catch branch renames
+      canonical_github_url: canonicalGithubUrl, // catch repo renames
+      last_scraped_at: new Date().toISOString(),
+      _from_cache: true,
+    };
   }
 
   const pathPrefix = entry.path ? `${entry.path}/` : "";
@@ -584,10 +603,12 @@ async function main() {
   }
 
   let done = 0;
+  let skipped = 0;
   const results = await runBatched(targets, async (entry) => {
-    const record = await scrapeTheme(entry);
+    const record = await scrapeTheme(entry, cachedBySlug);
     done++;
-    log(`[scrape] (${done}/${targets.length}) ${record.slug}`);
+    if (record._from_cache) skipped++;
+    log(`[scrape] (${done}/${targets.length}) ${record.slug}${record._from_cache ? " [cached]" : ""}`);
     return record;
   }, CONCURRENCY);
 
@@ -596,7 +617,8 @@ async function main() {
   const reusedFromCache = [];
   for (let i = 0; i < results.length; i++) {
     if (results[i].ok) {
-      records.push(results[i].value);
+      const { _from_cache, ...clean } = results[i].value;
+      records.push(clean);
     } else {
       const entry = targets[i];
       const { owner, repo } = parseOwnerRepo(entry.url);
@@ -614,8 +636,21 @@ async function main() {
 
   records.sort((a, b) => b.stars - a.stars);
 
+  // LIMIT mode (test only): merge results with the rest of the cached set so
+  // we don't truncate the production file during a partial run.
+  if (LIMIT > 0) {
+    const touchedSlugs = new Set(records.map((r) => r.slug));
+    for (const cached of cachedBySlug.values()) {
+      if (!touchedSlugs.has(cached.slug)) records.push(cached);
+    }
+    log(`[scrape] LIMIT mode — merged ${cachedBySlug.size - touchedSlugs.size} unchanged cached records into output`);
+  }
+
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(records, null, 2));
   log(`[scrape] wrote ${records.length} themes → ${OUTPUT_PATH}`);
+  if (skipped > 0) {
+    log(`[scrape] skipped ${skipped} themes with unchanged pushed_at (cache hit, ~${skipped * 7} API calls saved)`);
+  }
   if (reusedFromCache.length > 0) {
     log(`[scrape] reused ${reusedFromCache.length} cached records for failed scrapes (data preserved)`);
   }
