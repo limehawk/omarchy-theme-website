@@ -562,6 +562,21 @@ async function main() {
     entries.push({ url, name: t.name, is_builtin: false, is_curated: true, overlays_builtin: overlaysBuiltin });
   }
 
+  // Load the existing scraped data so we can fall back to cached records
+  // for any theme that fails to scrape (e.g. transient GitHub error or rate
+  // limit). Dropping a theme from the output silently is a correctness bug —
+  // we'd rather ship slightly stale data than no data.
+  const cachedBySlug = new Map();
+  if (fs.existsSync(OUTPUT_PATH)) {
+    try {
+      const cached = JSON.parse(fs.readFileSync(OUTPUT_PATH, "utf8"));
+      for (const r of cached) cachedBySlug.set(r.slug, r);
+      log(`[scrape] cached records: ${cachedBySlug.size}`);
+    } catch (err) {
+      console.warn("[scrape] could not parse existing themes-data.json:", err.message);
+    }
+  }
+
   const targets = LIMIT > 0 ? entries.slice(0, LIMIT) : entries;
   log(`[scrape] ${targets.length}${LIMIT > 0 ? ` (limited from ${entries.length})` : ""} themes to scrape (auth: ${GITHUB_TOKEN ? "yes" : "anonymous"})`);
   if (!GITHUB_TOKEN) {
@@ -578,15 +593,32 @@ async function main() {
 
   const records = [];
   const errors = [];
+  const reusedFromCache = [];
   for (let i = 0; i < results.length; i++) {
-    if (results[i].ok) records.push(results[i].value);
-    else errors.push({ entry: targets[i].name, error: results[i].error.message });
+    if (results[i].ok) {
+      records.push(results[i].value);
+    } else {
+      const entry = targets[i];
+      const { owner, repo } = parseOwnerRepo(entry.url);
+      const slug = entry.is_builtin && entry.path
+        ? deriveSlugFromPath(entry.path)
+        : (entry.overlays_builtin ? deriveSlugFromRepo(repo) + "-" + owner.toLowerCase() : deriveSlugFromRepo(repo));
+      const cached = cachedBySlug.get(slug);
+      if (cached) {
+        records.push(cached);
+        reusedFromCache.push(entry.name);
+      }
+      errors.push({ entry: entry.name, error: results[i].error.message });
+    }
   }
 
   records.sort((a, b) => b.stars - a.stars);
 
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(records, null, 2));
   log(`[scrape] wrote ${records.length} themes → ${OUTPUT_PATH}`);
+  if (reusedFromCache.length > 0) {
+    log(`[scrape] reused ${reusedFromCache.length} cached records for failed scrapes (data preserved)`);
+  }
   if (errors.length > 0) {
     console.warn(`[scrape] ${errors.length} errors:`);
     for (const e of errors) console.warn(`  ${e.entry}: ${e.error}`);
