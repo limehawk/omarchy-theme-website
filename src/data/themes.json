@@ -447,6 +447,10 @@
       "url": "https://github.com/clement-rtfm/glory-antic"
     },
     {
+      "name": "Gojira",
+      "url": "https://github.com/bjornramberg/omarchy-gojira-theme"
+    },
+    {
       "name": "Gold Rush",
       "url": "https://github.com/tahayvr/omarchy-gold-rush-theme"
     },
@@ -847,6 +851,10 @@
     {
       "name": "Rustleaf",
       "url": "https://github.com/tahfizhabib/omarchy-rustleaf-theme"
+    },
+    {
+      "name": "Ryū",
+      "url": "https://github.com/HANCORE-linux/omarchy-ryu-theme"
     },
     {
       "name": "SAGA",
