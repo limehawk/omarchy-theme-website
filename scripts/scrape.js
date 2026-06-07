@@ -62,6 +62,8 @@ function hexToHSL(hex) {
 function computeHueBucket(hex) {
   const { h, s, l } = hexToHSL(hex);
   if (s < 10 || l > 95 || l < 5) return "monochrome";
+  if (h >= 10 && h <= 55 && s <= 65 && l <= 52) return "brown";
+  if (h > 175 && h <= 200 && s > 40) return "cyan";
   if (h <= 15 || h >= 340) return "red";
   if (h <= 40) return "orange";
   if (h <= 65) return "yellow";

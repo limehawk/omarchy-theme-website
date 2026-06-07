@@ -1,9 +1,11 @@
 export const COLOR_BUCKETS = [
   "red",
   "orange",
+  "brown",
   "yellow",
   "green",
   "teal",
+  "cyan",
   "blue",
   "purple",
   "pink",
@@ -13,9 +15,11 @@ export const COLOR_BUCKETS = [
 export const BUCKET_COLORS = {
   red: "#ef4444",
   orange: "#f97316",
+  brown: "#92653a",
   yellow: "#eab308",
   green: "#22c55e",
   teal: "#14b8a6",
+  cyan: "#06b6d4",
   blue: "#3b82f6",
   purple: "#a855f7",
   pink: "#ec4899",
