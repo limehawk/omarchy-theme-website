@@ -480,6 +480,7 @@ async function scrapeTheme(entry, cachedBySlug) {
   // Saves ~7-10 API calls per unchanged theme.
   const cached = cachedBySlug?.get(slug);
   if (cached && cached.github_pushed_at === meta.pushed_at && cached.colors_json !== undefined) {
+    const cachedColors = cached.colors_json ? JSON.parse(cached.colors_json) : null;
     return {
       ...cached,
       name: entry.name,                         // registry might rename
@@ -487,6 +488,7 @@ async function scrapeTheme(entry, cachedBySlug) {
       description: meta.description,            // refresh
       default_branch: meta.default_branch,      // catch branch renames
       canonical_github_url: canonicalGithubUrl, // catch repo renames
+      primary_hue: cachedColors?.accent ? computeHueBucket(cachedColors.accent) : null,
       last_scraped_at: new Date().toISOString(),
       _from_cache: true,
     };
