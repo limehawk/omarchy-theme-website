@@ -9,7 +9,9 @@ export const COLOR_BUCKETS = [
   "blue",
   "purple",
   "pink",
-  "monochrome",
+  "black",
+  "grey",
+  "white",
 ];
 
 export const BUCKET_COLORS = {
@@ -23,7 +25,9 @@ export const BUCKET_COLORS = {
   blue: "#3b82f6",
   purple: "#a855f7",
   pink: "#ec4899",
-  monochrome: "#a3a3a3",
+  black: "#262626",
+  grey: "#a3a3a3",
+  white: "#e5e5e5",
 };
 
 export function cssHex(hex) {
