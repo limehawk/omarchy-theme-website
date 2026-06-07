@@ -364,7 +364,12 @@
     },
     {
       "name": "Eldritch",
+      "dead": true,
       "url": "https://github.com/eldritch-theme/omarchy-eldritch-theme"
+    },
+    {
+      "name": "Eldritch",
+      "url": "https://github.com/OldJobobo/omarchy-eldritch-theme"
     },
     {
       "name": "Elysian",
