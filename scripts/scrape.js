@@ -373,13 +373,15 @@ async function scanLuaFiles(files, owner, repo, pathPrefix) {
 
 // ---------- GitHub API ----------
 
-async function githubFetch(url) {
+async function githubFetch(url, opts = {}) {
   const headers = {
     Accept: "application/vnd.github.v3+json",
     "User-Agent": "omarchy-theme-scraper",
+    ...opts.headers,
   };
   if (GITHUB_TOKEN) headers.Authorization = `Bearer ${GITHUB_TOKEN}`;
-  const res = await fetch(url, { headers });
+  if (opts.body) headers["Content-Type"] = "application/json";
+  const res = await fetch(url, { ...opts, headers });
   if (res.status === 429) {
     const reset = res.headers.get("X-RateLimit-Reset");
     const at = reset ? new Date(parseInt(reset, 10) * 1000).toISOString() : "unknown";
@@ -399,7 +401,11 @@ async function githubFetch(url) {
 
 async function fetchRepoMeta(owner, repo) {
   const res = await githubFetch(`https://api.github.com/repos/${owner}/${repo}`);
-  if (!res.ok) throw new Error(`GitHub API ${res.status}: repos/${owner}/${repo}`);
+  if (!res.ok) {
+    const err = new Error(`GitHub API ${res.status}: repos/${owner}/${repo}`);
+    err.httpStatus = res.status;
+    throw err;
+  }
   const d = await res.json();
   return {
     description: d.description,
@@ -559,6 +565,61 @@ async function runBatched(items, fn, concurrency) {
   return results;
 }
 
+// ---------- dead-repo issue filing ----------
+
+const SITE_REPO = process.env.GITHUB_REPOSITORY || "limehawk/omarchy-theme-website";
+
+async function fileDeadRepoIssues(deadRepos) {
+  if (!GITHUB_TOKEN) {
+    log("[scrape] no GITHUB_TOKEN — skipping issue filing");
+    return;
+  }
+
+  // Ensure the dead-theme label exists
+  const labelRes = await githubFetch(`https://api.github.com/repos/${SITE_REPO}/labels/dead-theme`);
+  if (labelRes.status === 404) {
+    await githubFetch(`https://api.github.com/repos/${SITE_REPO}/labels`, {
+      method: "POST",
+      body: JSON.stringify({ name: "dead-theme", color: "B60205", description: "Theme repo is no longer accessible" }),
+    });
+  }
+
+  // Check existing open issues to avoid duplicates
+  const existingRes = await githubFetch(`https://api.github.com/repos/${SITE_REPO}/issues?labels=dead-theme&state=open&per_page=100`);
+  const existing = existingRes.ok ? await existingRes.json() : [];
+  const existingUrls = new Set(existing.map((i) => i.body).filter(Boolean).flatMap((b) => {
+    const m = b.match(/https:\/\/github\.com\/[^\s)]+/g);
+    return m || [];
+  }));
+
+  for (const dead of deadRepos) {
+    if (existingUrls.has(dead.url)) {
+      log(`[scrape] issue already open for ${dead.entry} — skipping`);
+      continue;
+    }
+
+    const body = `The theme **${dead.entry}** returned HTTP 404 during the nightly scrape.
+
+` +
+      `- **URL:** ${dead.url}
+` +
+      `- **Action needed:** Check if the repo was renamed/moved. Update \`themes.json\` with the new URL or mark as \`"dead": true\` if permanently gone.
+`;
+
+    const createRes = await githubFetch(`https://api.github.com/repos/${SITE_REPO}/issues`, {
+      method: "POST",
+      body: JSON.stringify({ title: `Dead theme repo: ${dead.entry}`, body, labels: ["dead-theme"] }),
+    });
+
+    if (createRes.ok) {
+      const issue = await createRes.json();
+      log(`[scrape] filed issue #${issue.number} for dead repo: ${dead.entry}`);
+    } else {
+      console.warn(`[scrape] failed to file issue for ${dead.entry}: ${createRes.status}`);
+    }
+  }
+}
+
 // ---------- main ----------
 
 async function main() {
@@ -630,7 +691,7 @@ async function main() {
         records.push(cached);
         reusedFromCache.push(entry.name);
       }
-      errors.push({ entry: entry.name, error: results[i].error.message });
+      errors.push({ entry: entry.name, url: entry.url, error: results[i].error.message, httpStatus: results[i].error.httpStatus });
     }
   }
 
@@ -657,6 +718,13 @@ async function main() {
   if (errors.length > 0) {
     console.warn(`[scrape] ${errors.length} errors:`);
     for (const e of errors) console.warn(`  ${e.entry}: ${e.error}`);
+  }
+
+  // File GitHub issues for dead repos (404s only, not transient errors)
+  const deadRepos = errors.filter((e) => e.httpStatus === 404);
+  if (deadRepos.length > 0) {
+    log(`[scrape] ${deadRepos.length} dead repo(s) detected — filing issues`);
+    await fileDeadRepoIssues(deadRepos);
   }
 }
 
