@@ -59,12 +59,19 @@ function hexToHSL(hex) {
   return { h: h * 360, s: s * 100, l: l * 100 };
 }
 
-function computeHueBucket(hex) {
+function computeHueBucket(hex, bgHex) {
   const { h, s, l } = hexToHSL(hex);
   if (s < 10 || l > 95 || l < 5) {
-    if (l < 45) return "black";
-    if (l > 65) return "white";
-    return "grey";
+    if (bgHex) {
+      const bgL = hexToHSL(bgHex).l;
+      if (bgL > 50) return "white";
+      if (l > 50) return "grey";
+      return "black";
+    } else {
+      if (l < 45) return "black";
+      if (l > 65) return "white";
+      return "grey";
+    }
   }
   if (h >= 10 && h <= 55 && s <= 65 && l <= 52) return "brown";
   if (h > 175 && h <= 200 && s > 40) return "cyan";
@@ -492,7 +499,7 @@ async function scrapeTheme(entry, cachedBySlug) {
       description: meta.description,            // refresh
       default_branch: meta.default_branch,      // catch branch renames
       canonical_github_url: canonicalGithubUrl, // catch repo renames
-      primary_hue: cachedColors?.accent ? computeHueBucket(cachedColors.accent) : null,
+      primary_hue: cachedColors?.accent ? computeHueBucket(cachedColors.accent, cachedColors?.background) : null,
       last_scraped_at: new Date().toISOString(),
       _from_cache: true,
     };
@@ -509,7 +516,7 @@ async function scrapeTheme(entry, cachedBySlug) {
     if (alacrittyToml) { colors = parseAlacrittyColors(alacrittyToml); if (colors) colorsSource = "alacritty.toml"; }
   }
 
-  const primaryHue = colors?.accent ? computeHueBucket(colors.accent) : null;
+  const primaryHue = colors?.accent ? computeHueBucket(colors.accent, colors?.background) : null;
   const terminalStyle = await fetchTerminalStyle(owner, repo, pathPrefix);
   const files = await fetchRepoTree(owner, repo, branch);
   const apps = detectApps(files, pathPrefix.replace(/\/$/, ""));
