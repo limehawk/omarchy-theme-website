@@ -67,7 +67,7 @@ function computeHueBucket(hex) {
   if (h <= 65) return "yellow";
   if (h <= 160) return "green";
   if (h <= 195) return "teal";
-  if (h <= 260) return "blue";
+  if (h <= 250) return "blue";
   if (h <= 290) return "purple";
   return "pink";
 }
