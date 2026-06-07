@@ -733,7 +733,11 @@ export function themeDetailPage(theme, { overlayBase, overlayVariants }) {
             ${theme.description ? `<p class="text-sm text-muted-foreground leading-relaxed mt-1">${escapeHtml(theme.description)}</p>` : ""}
           </div>
           ${stars}
-          <div class="border-t border-border/40 pt-4">
+          <div class="border-t border-border/40 pt-4 space-y-3">
+            <a href="/themes/?author=${encodeURIComponent(theme.github_owner)}" class="inline-flex items-center gap-2 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              ${escapeHtml(theme.github_owner)}
+            </a>
             <a href="${attr(theme.github_url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               ${escapeHtml(theme.github_owner)}/${escapeHtml(theme.github_repo)}
