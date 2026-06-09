@@ -317,8 +317,9 @@ export function themeCard(theme) {
       }</div>`
     : "";
 
+  const heroSrc = theme.thumbnail_url ?? theme.preview_url;
   const hero = theme.preview_url
-    ? `<div class="hero-screenshot relative aspect-[16/10] overflow-hidden"><img src="${attr(theme.preview_url)}" alt="${attr(theme.name)}" loading="lazy" class="w-full h-full object-cover"></div>
+    ? `<div class="hero-screenshot relative aspect-[16/10] overflow-hidden"><img src="${attr(heroSrc)}" alt="${attr(theme.name)}" loading="lazy" decoding="async" class="w-full h-full object-cover"></div>
        <div class="hero-terminal relative aspect-[16/10] overflow-hidden">${terminalPreviewCard({ colors, slug: theme.slug, themeName: theme.name })}</div>`
     : `<div class="relative aspect-[16/10] overflow-hidden">${terminalPreviewCard({ colors, slug: theme.slug, themeName: theme.name })}</div>`;
 

@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse as parseTOML } from "smol-toml";
+import sharp from "sharp";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -14,6 +15,8 @@ const OUTPUT_PATH = path.join(ROOT, "src/data/themes-data.json");
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const CONCURRENCY = 5;
 const LIMIT = process.env.LIMIT ? parseInt(process.env.LIMIT, 10) : 0;
+const THUMBS_DIR = path.join(ROOT, "public/thumbs");
+const THUMB_WIDTH = 800;
 
 const log = (...args) => console.log(...args);
 
@@ -580,6 +583,66 @@ async function runBatched(items, fn, concurrency) {
   return results;
 }
 
+// ---------- thumbnail generation ----------
+
+async function generateThumbnail(previewUrl, slug) {
+  const thumbPath = path.join(THUMBS_DIR, `${slug}.webp`);
+  try {
+    const res = await fetch(previewUrl, {
+      headers: { "User-Agent": "omarchy-theme-scraper" },
+      redirect: "follow",
+    });
+    if (!res.ok) {
+      log(`[thumb] ${slug}: HTTP ${res.status} — skipped`);
+      return false;
+    }
+    const buffer = Buffer.from(await res.arrayBuffer());
+    await sharp(buffer)
+      .resize(THUMB_WIDTH, null, { withoutEnlargement: true })
+      .webp({ quality: 80 })
+      .toFile(thumbPath);
+    return true;
+  } catch (err) {
+    log(`[thumb] ${slug}: ${err.message} — skipped`);
+    return false;
+  }
+}
+
+async function generateThumbnails(rawRecords) {
+  fs.mkdirSync(THUMBS_DIR, { recursive: true });
+
+  const toGenerate = rawRecords.filter((r) => {
+    if (!r.preview_url) return false;
+    if (r._from_cache && fs.existsSync(path.join(THUMBS_DIR, `${r.slug}.webp`))) return false;
+    return true;
+  });
+
+  if (toGenerate.length === 0) {
+    log("[thumb] all thumbnails up to date");
+    return;
+  }
+
+  log(`[thumb] generating ${toGenerate.length} thumbnails (${rawRecords.filter((r) => r.preview_url).length - toGenerate.length} cached)`);
+
+  let done = 0;
+  await runBatched(toGenerate, async (record) => {
+    const ok = await generateThumbnail(record.preview_url, record.slug);
+    done++;
+    if (ok) log(`[thumb] (${done}/${toGenerate.length}) ${record.slug}`);
+  }, CONCURRENCY);
+
+  if (LIMIT > 0) return;
+
+  const validSlugs = new Set(rawRecords.filter((r) => r.preview_url).map((r) => r.slug));
+  for (const file of fs.readdirSync(THUMBS_DIR)) {
+    const slug = file.replace(/\.webp$/, "");
+    if (!validSlugs.has(slug)) {
+      fs.unlinkSync(path.join(THUMBS_DIR, file));
+      log(`[thumb] removed orphan: ${file}`);
+    }
+  }
+}
+
 // ---------- dead-repo issue filing ----------
 
 const SITE_REPO = process.env.GITHUB_REPOSITORY || "limehawk/omarchy-theme-website";
@@ -688,13 +751,12 @@ async function main() {
     return record;
   }, CONCURRENCY);
 
-  const records = [];
+  const rawRecords = [];
   const errors = [];
   const reusedFromCache = [];
   for (let i = 0; i < results.length; i++) {
     if (results[i].ok) {
-      const { _from_cache, ...clean } = results[i].value;
-      records.push(clean);
+      rawRecords.push(results[i].value);
     } else {
       const entry = targets[i];
       const { owner, repo } = parseOwnerRepo(entry.url);
@@ -703,12 +765,21 @@ async function main() {
         : (entry.overlays_builtin ? deriveSlugFromRepo(repo) + "-" + owner.toLowerCase() : deriveSlugFromRepo(repo));
       const cached = cachedBySlug.get(slug);
       if (cached) {
-        records.push(cached);
+        rawRecords.push({ ...cached, _from_cache: true });
         reusedFromCache.push(entry.name);
       }
       errors.push({ entry: entry.name, url: entry.url, error: results[i].error.message, httpStatus: results[i].error.httpStatus });
     }
   }
+
+  await generateThumbnails(rawRecords);
+
+  const records = rawRecords.map(({ _from_cache, ...clean }) => {
+    if (clean.preview_url && fs.existsSync(path.join(THUMBS_DIR, `${clean.slug}.webp`))) {
+      clean.thumbnail_url = `/thumbs/${clean.slug}.webp`;
+    }
+    return clean;
+  });
 
   records.sort((a, b) => b.stars - a.stars);
 
