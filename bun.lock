@@ -8,6 +8,7 @@
         "@tailwindcss/cli": "^4",
         "marked": "^18.0.0",
         "sanitize-html": "^2.13.0",
+        "sharp": "^0.34.5",
         "smol-toml": "^1.6.1",
         "tailwindcss": "^4",
         "wrangler": "^4.71.0",
