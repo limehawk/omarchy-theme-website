@@ -19,7 +19,11 @@ jobs:
         with:
           node-version: 24
 
-      - run: npm install
+      - uses: oven-sh/setup-bun@v2
+
+      # Frozen lockfile: install exactly what bun.lock pins, never resolve
+      # fresh semver ranges in CI (supply-chain hardening).
+      - run: bun install --frozen-lockfile
 
       - name: Scrape themes from GitHub
         run: node scripts/scrape.js
