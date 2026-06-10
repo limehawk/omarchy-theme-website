@@ -303,7 +303,7 @@ export function colorPaletteLarge(colors) {
 
 // ---------- theme card ----------
 
-export function themeCard(theme) {
+export function themeCard(theme, { hidden = false } = {}) {
   const colors = parseColors(theme.colors_json);
   const accent = colors?.accent ?? "#4a9eff";
   const brightness = getThemeBrightness(theme.colors_json);
@@ -345,7 +345,7 @@ export function themeCard(theme) {
       </span>`
     : "";
 
-  return `<a data-theme-card
+  return `<a data-theme-card${hidden ? " hidden" : ""}
   data-name="${attr(theme.name)}"
   data-author="${attr(theme.github_owner)}"
   data-hue="${attr(theme.primary_hue ?? "")}"
@@ -537,6 +537,10 @@ export function homePage({ featured, discover, authorSpotlight }) {
 }
 
 export function browsePage({ themes, authors }) {
+  // Bake the default filter state (source=community, sort=stars) into the
+  // HTML so app.js makes no layout changes on a default page load (CLS).
+  const sorted = [...themes].sort((a, b) => b.stars - a.stars);
+  const communityCount = sorted.filter((t) => !t.is_builtin).length;
   const colorButtons = COLOR_BUCKETS.map((bucket) =>
     `<button type="button" name="color" value="${bucket}" title="${bucket}" class="color-dot size-4 rounded-sm shrink-0 transition-all" style="background-color:${BUCKET_COLORS[bucket]}"></button>`
   ).join("");
@@ -547,7 +551,7 @@ export function browsePage({ themes, authors }) {
   const body = `<div class="mx-auto max-w-6xl px-6 py-10 space-y-8">
   <div>
     <h1 class="font-mono text-2xl font-bold tracking-tight text-foreground">themes</h1>
-    <p class="mt-1 font-mono text-sm text-muted-foreground" data-theme-count>${themes.length} theme${themes.length !== 1 ? "s" : ""} available</p>
+    <p class="mt-1 font-mono text-sm text-muted-foreground" data-theme-count>${communityCount} theme${communityCount !== 1 ? "s" : ""} available</p>
   </div>
 
   <div class="lg:sticky lg:top-14 z-30 -mx-6 px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border/40 space-y-4">
@@ -613,7 +617,7 @@ export function browsePage({ themes, authors }) {
   </div>
 
   <div data-theme-grid class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-    ${themes.map(themeCard).join("")}
+    ${sorted.map((t) => themeCard(t, { hidden: Boolean(t.is_builtin) })).join("")}
   </div>
   <div data-theme-empty hidden class="py-20 text-center">
     <p class="font-mono text-sm text-muted-foreground">no themes found</p>
