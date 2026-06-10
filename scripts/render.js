@@ -317,9 +317,20 @@ export function themeCard(theme) {
       }</div>`
     : "";
 
-  const heroSrc = theme.thumbnail_url ?? theme.preview_url;
+  // Card width per breakpoint: 1-col = full width minus page padding,
+  // 2-col = half minus padding+gap, 3-col = fixed ~352px (max-w-6xl grid).
+  const THUMB_SIZES = "(max-width: 640px) calc(100vw - 48px), (max-width: 1024px) calc(50vw - 36px), 352px";
+  const widths = Array.isArray(theme.thumbnail_widths) ? theme.thumbnail_widths : [];
+  let heroImg;
+  if (widths.length > 0) {
+    const fallback = widths.reduce((a, b) => (Math.abs(b - 800) < Math.abs(a - 800) ? b : a));
+    const srcset = widths.map((w) => `/thumbs/${theme.slug}-${w}.webp ${w}w`).join(", ");
+    heroImg = `<img src="${attr(`/thumbs/${theme.slug}-${fallback}.webp`)}" srcset="${attr(srcset)}" sizes="${attr(THUMB_SIZES)}" alt="${attr(theme.name)}" loading="lazy" decoding="async" class="w-full h-full object-cover">`;
+  } else {
+    heroImg = `<img src="${attr(theme.preview_url)}" alt="${attr(theme.name)}" loading="lazy" decoding="async" class="w-full h-full object-cover">`;
+  }
   const hero = theme.preview_url
-    ? `<div class="hero-screenshot relative aspect-[16/10] overflow-hidden"><img src="${attr(heroSrc)}" alt="${attr(theme.name)}" loading="lazy" decoding="async" class="w-full h-full object-cover"></div>
+    ? `<div class="hero-screenshot relative aspect-[16/10] overflow-hidden">${heroImg}</div>
        <div class="hero-terminal relative aspect-[16/10] overflow-hidden">${terminalPreviewCard({ colors, slug: theme.slug, themeName: theme.name })}</div>`
     : `<div class="relative aspect-[16/10] overflow-hidden">${terminalPreviewCard({ colors, slug: theme.slug, themeName: theme.name })}</div>`;
 
