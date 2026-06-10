@@ -16,7 +16,7 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const CONCURRENCY = 5;
 const LIMIT = process.env.LIMIT ? parseInt(process.env.LIMIT, 10) : 0;
 const THUMBS_DIR = path.join(ROOT, "public/thumbs");
-const THUMB_WIDTH = 800;
+const THUMB_WIDTHS = [400, 800, 1200];
 
 const log = (...args) => console.log(...args);
 
@@ -585,8 +585,10 @@ async function runBatched(items, fn, concurrency) {
 
 // ---------- thumbnail generation ----------
 
+// Generates one file per target width (capped at the source width, deduped),
+// named {slug}-{actualWidth}.webp. Returns the list of actual widths so the
+// renderer can emit a truthful srcset.
 async function generateThumbnail(previewUrl, slug) {
-  const thumbPath = path.join(THUMBS_DIR, `${slug}.webp`);
   try {
     const res = await fetch(previewUrl, {
       headers: { "User-Agent": "omarchy-theme-scraper" },
@@ -594,49 +596,60 @@ async function generateThumbnail(previewUrl, slug) {
     });
     if (!res.ok) {
       log(`[thumb] ${slug}: HTTP ${res.status} — skipped`);
-      return false;
+      return null;
     }
     const buffer = Buffer.from(await res.arrayBuffer());
-    await sharp(buffer)
-      .resize(THUMB_WIDTH, null, { withoutEnlargement: true })
-      .webp({ quality: 80 })
-      .toFile(thumbPath);
-    return true;
+    const meta = await sharp(buffer).metadata();
+    const widths = [];
+    for (const target of THUMB_WIDTHS) {
+      const actual = Math.min(target, meta.width ?? target);
+      if (widths.includes(actual)) continue;
+      await sharp(buffer)
+        .resize(actual)
+        .webp({ quality: 80 })
+        .toFile(path.join(THUMBS_DIR, `${slug}-${actual}.webp`));
+      widths.push(actual);
+    }
+    return widths;
   } catch (err) {
     log(`[thumb] ${slug}: ${err.message} — skipped`);
-    return false;
+    return null;
   }
+}
+
+function thumbVariantsExist(record) {
+  return Array.isArray(record.thumbnail_widths) && record.thumbnail_widths.length > 0 &&
+    record.thumbnail_widths.every((w) => fs.existsSync(path.join(THUMBS_DIR, `${record.slug}-${w}.webp`)));
 }
 
 async function generateThumbnails(rawRecords) {
   fs.mkdirSync(THUMBS_DIR, { recursive: true });
 
-  const toGenerate = rawRecords.filter((r) => {
-    if (!r.preview_url) return false;
-    if (r._from_cache && fs.existsSync(path.join(THUMBS_DIR, `${r.slug}.webp`))) return false;
-    return true;
-  });
+  const withPreview = rawRecords.filter((r) => r.preview_url);
+  const toGenerate = withPreview.filter((r) => !(r._from_cache && thumbVariantsExist(r)));
 
-  if (toGenerate.length === 0) {
+  if (toGenerate.length > 0) {
+    log(`[thumb] generating ${toGenerate.length} thumbnails (${withPreview.length - toGenerate.length} cached)`);
+    let done = 0;
+    await runBatched(toGenerate, async (record) => {
+      const widths = await generateThumbnail(record.preview_url, record.slug);
+      if (widths) record.thumbnail_widths = widths;
+      else delete record.thumbnail_widths;
+      done++;
+      if (widths) log(`[thumb] (${done}/${toGenerate.length}) ${record.slug} [${widths.join(",")}]`);
+    }, CONCURRENCY);
+  } else {
     log("[thumb] all thumbnails up to date");
-    return;
   }
-
-  log(`[thumb] generating ${toGenerate.length} thumbnails (${rawRecords.filter((r) => r.preview_url).length - toGenerate.length} cached)`);
-
-  let done = 0;
-  await runBatched(toGenerate, async (record) => {
-    const ok = await generateThumbnail(record.preview_url, record.slug);
-    done++;
-    if (ok) log(`[thumb] (${done}/${toGenerate.length}) ${record.slug}`);
-  }, CONCURRENCY);
 
   if (LIMIT > 0) return;
 
-  const validSlugs = new Set(rawRecords.filter((r) => r.preview_url).map((r) => r.slug));
+  const validFiles = new Set();
+  for (const r of withPreview) {
+    for (const w of r.thumbnail_widths ?? []) validFiles.add(`${r.slug}-${w}.webp`);
+  }
   for (const file of fs.readdirSync(THUMBS_DIR)) {
-    const slug = file.replace(/\.webp$/, "");
-    if (!validSlugs.has(slug)) {
+    if (!validFiles.has(file)) {
       fs.unlinkSync(path.join(THUMBS_DIR, file));
       log(`[thumb] removed orphan: ${file}`);
     }
@@ -775,9 +788,7 @@ async function main() {
   await generateThumbnails(rawRecords);
 
   const records = rawRecords.map(({ _from_cache, ...clean }) => {
-    if (clean.preview_url && fs.existsSync(path.join(THUMBS_DIR, `${clean.slug}.webp`))) {
-      clean.thumbnail_url = `/thumbs/${clean.slug}.webp`;
-    }
+    delete clean.thumbnail_url; // legacy single-width field
     return clean;
   });
 
