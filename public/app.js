@@ -41,7 +41,7 @@
         document.dispatchEvent(new CustomEvent("author-filter", { detail: author }));
       }
     } else {
-      window.location.href = `/themes/?author=${encodeURIComponent(author)}`;
+      window.location.href = `/themes/?author=${encodeURIComponent(author)}&source=all`;
     }
   });
 
@@ -164,7 +164,13 @@
 
   inputs.q?.addEventListener("input", () => { state.q = inputs.q.value; update(); });
   inputs.author?.addEventListener("input", () => { state.author = inputs.author.value; update(); });
-  document.addEventListener("author-filter", (e) => { state.author = e.detail; update(true); });
+  document.addEventListener("author-filter", (e) => {
+    state.author = e.detail;
+    // An author click means "show me everything by this person" — don't let
+    // the default community-only source filter veto builtin authors.
+    state.source = "all";
+    update(true);
+  });
 
   inputs.sort.forEach((b) => b.addEventListener("click", () => { state.sort = b.value; update(true); }));
   inputs.source.forEach((b) => b.addEventListener("click", () => { state.source = b.value; update(true); }));
