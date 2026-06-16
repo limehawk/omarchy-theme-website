@@ -1,0 +1,30 @@
+labels: ["rice"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Show off your desktop! Drop a screenshot, tell us what you're running, and link your dotfiles if you've got them.
+  - type: input
+    id: theme
+    attributes:
+      label: Theme used
+      description: Which theme (or themes) is your setup running?
+      placeholder: e.g. catppuccin-mocha
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: Drag and drop an image here.
+      placeholder: Paste or drop your screenshot...
+    validations:
+      required: true
+  - type: input
+    id: dotfiles
+    attributes:
+      label: Dotfiles link
+      description: Optional — share your config so others can recreate it.
+      placeholder: https://github.com/...
+    validations:
+      required: false

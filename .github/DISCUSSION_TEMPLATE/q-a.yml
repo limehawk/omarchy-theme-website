@@ -1,0 +1,50 @@
+labels: ["theme-help"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Stuck on installing, applying, or customizing a theme? Share the details below so people can help.
+  - type: input
+    id: theme
+    attributes:
+      label: Which theme?
+      description: The theme name (or its GitHub URL).
+      placeholder: e.g. tokyo-night
+    validations:
+      required: false
+  - type: dropdown
+    id: terminal
+    attributes:
+      label: Terminal
+      options:
+        - Ghostty
+        - Kitty
+        - Alacritty
+        - Foot
+        - Other / not sure
+      default: 0
+    validations:
+      required: false
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's happening?
+      description: What did you try, what did you expect, and what actually happened?
+      placeholder: Ran omarchy-theme-install <url>, but the colors didn't change...
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Omarchy / OS version
+      description: Helps narrow things down.
+      placeholder: e.g. Omarchy on Arch, updated this week
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before posting
+      options:
+        - label: I checked the existing Q&A discussions for the same problem
+          required: true
