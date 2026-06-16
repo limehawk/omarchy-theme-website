@@ -1,0 +1,53 @@
+title: "[Request] "
+labels: ["theme-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Want a theme that doesn't exist yet? Describe it here and someone in the community might build it.
+
+        Looking to share a theme you've already made? Use [Submit a Theme](https://github.com/limehawk/omarchy-theme-website/issues/new?template=submit-theme.yml) instead.
+  - type: input
+    id: name
+    attributes:
+      label: Theme name or inspiration
+      description: What would you call it, or what's it based on?
+      placeholder: e.g. "Solarized but warmer", a movie, a brand, another app's palette
+    validations:
+      required: true
+  - type: textarea
+    id: look
+    attributes:
+      label: What should it look like?
+      description: Describe the mood, key colors, and anything specific you have in mind.
+      placeholder: Muted earth tones, low contrast, a soft amber accent...
+    validations:
+      required: true
+  - type: input
+    id: references
+    attributes:
+      label: Reference links
+      description: Palettes, screenshots, or apps to match (optional but helps a lot).
+      placeholder: https://...
+    validations:
+      required: false
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Light or dark?
+      options:
+        - Dark
+        - Light
+        - Both
+      default: 0
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before posting
+      options:
+        - label: I searched existing themes in the gallery and didn't find this
+          required: true
+        - label: I searched open requests and this isn't already requested
+          required: true
