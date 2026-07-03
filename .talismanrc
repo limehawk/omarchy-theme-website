@@ -1,8 +1,0 @@
-fileignoreconfig:
-- filename: bun.lock
-  checksum: e03fb8dc92f696c3a6fe21c4ddc4735baa3d3e45b832e2279ec4e9ca71bd79a7
-- filename: CLAUDE.md
-  checksum: 57c68fbdf621567be739d4967d34cdeff96ea9fd6b1699258b0e209202aec296
-allowed_patterns:
-- key=\{app\}
-version: '1.0'
