@@ -689,10 +689,22 @@ async function fileDeadRepoIssues(deadRepos) {
       continue;
     }
 
+    // Tag the author so they can weigh in — but only if the account still
+    // exists. A repo most often 404s because the account was deleted (renames
+    // 301-redirect and don't reach here), and @mentioning a deleted handle
+    // renders as dead text that notifies no one.
+    const { owner } = parseOwnerRepo(dead.url);
+    const userRes = await githubFetch(`https://api.github.com/users/${owner}`);
+    const authorLine = userRes.ok
+      ? `- **Author:** @${owner} — can you confirm whether this repo moved or was taken down?`
+      : `- **Author:** \`${owner}\` (GitHub account no longer exists)`;
+
     const body = `The theme **${dead.entry}** returned HTTP 404 during the nightly scrape.
 
 ` +
       `- **URL:** ${dead.url}
+` +
+      `${authorLine}
 ` +
       `- **Action needed:** Check if the repo was renamed/moved. Update \`themes.json\` with the new URL or mark as \`"dead": true\` if permanently gone.
 `;
