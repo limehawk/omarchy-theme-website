@@ -787,9 +787,9 @@ export function notFoundPage() {
   <div class="max-w-lg space-y-6">
     <div class="font-mono text-sm text-muted-foreground space-y-1">
       <div>
-        <span class="text-green-400/60">user@omarchy</span><span class="text-muted-foreground">:</span><span class="text-blue-400/60">~</span><span class="text-muted-foreground"> $ </span><span class="text-foreground">cd themes/???</span>
+        <span class="text-muted-foreground">[</span><span class="text-green-400/60">user@omarchy</span><span class="text-blue-400/60"> ~</span><span class="text-muted-foreground">]$ </span><span class="text-foreground">cd themes/404</span>
       </div>
-      <div class="text-red-400/80">bash: cd: themes/???: No such file or directory</div>
+      <div class="text-red-400/80">bash: cd: themes/404: No such file or directory</div>
     </div>
     <h1 class="font-mono text-3xl font-bold tracking-tight text-foreground">404</h1>
     <p class="text-muted-foreground leading-relaxed">This page doesn't exist. Maybe the theme was removed, or the URL is wrong.</p>
