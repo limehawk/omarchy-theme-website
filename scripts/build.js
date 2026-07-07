@@ -48,25 +48,36 @@ function copyRecursive(src, dest) {
 
 // ---------- data selection (ported from src/lib/db.ts) ----------
 
-function getFeaturedThemes(themes, limit = 6) {
-  return themes
-    .filter((t) => t.is_builtin === 0)
-    .sort((a, b) => b.stars - a.stars)
-    .slice(0, limit);
-}
-
-function getRandomThemes(themes, count, exclude) {
-  const candidates = themes.filter((t) => t.is_builtin === 0 && !exclude.has(t.id));
+// Deterministic daily shuffle: same order for a given UTC day, reshuffles each day.
+function dailyShuffle(items) {
   const seed = new Date().toISOString().slice(0, 10);
   let hash = 0;
   for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
-  const shuffled = [...candidates];
+  const shuffled = [...items];
   for (let i = shuffled.length - 1; i > 0; i--) {
     hash = ((hash << 5) - hash + i) | 0;
     const j = (hash >>> 0) % (i + 1);
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-  return shuffled.slice(0, count);
+  return shuffled;
+}
+
+const POPULAR_STAR_THRESHOLD = 50;
+
+function getFeaturedThemes(themes, limit = 6) {
+  const community = themes.filter((t) => t.is_builtin === 0);
+  const pool = community.filter((t) => t.stars > POPULAR_STAR_THRESHOLD);
+  // Shuffle among all "popular" themes so the section rotates daily. If too few
+  // clear the threshold to fill the section, fall back to top themes by stars.
+  const selection = pool.length >= limit
+    ? dailyShuffle(pool)
+    : [...community].sort((a, b) => b.stars - a.stars);
+  return selection.slice(0, limit);
+}
+
+function getRandomThemes(themes, count, exclude) {
+  const candidates = themes.filter((t) => t.is_builtin === 0 && !exclude.has(t.id));
+  return dailyShuffle(candidates).slice(0, count);
 }
 
 function getFeaturedAuthor(themes, exclude) {
