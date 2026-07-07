@@ -659,6 +659,7 @@ async function generateThumbnails(rawRecords) {
 // ---------- dead-repo issue filing ----------
 
 const SITE_REPO = process.env.GITHUB_REPOSITORY || "limehawk/omarchy-theme-website";
+const SITE_URL = "https://omarchytheme.com";
 
 async function fileDeadRepoIssues(deadRepos) {
   if (!GITHUB_TOKEN) {
@@ -703,6 +704,8 @@ async function fileDeadRepoIssues(deadRepos) {
 
 ` +
       `- **URL:** ${dead.url}
+` +
+      `- **Live page:** ${SITE_URL}/themes/${dead.slug}/ (still serving cached data — remove once marked dead)
 ` +
       `${authorLine}
 ` +
@@ -793,7 +796,7 @@ async function main() {
         rawRecords.push({ ...cached, _from_cache: true });
         reusedFromCache.push(entry.name);
       }
-      errors.push({ entry: entry.name, url: entry.url, error: results[i].error.message, httpStatus: results[i].error.httpStatus });
+      errors.push({ entry: entry.name, url: entry.url, slug, error: results[i].error.message, httpStatus: results[i].error.httpStatus });
     }
   }
 
