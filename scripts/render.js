@@ -472,14 +472,16 @@ export function renderReadme(content, owner, repo, branch, pathPrefix = "") {
     ...SANITIZE_OPTS,
     transformTags: {
       ...SANITIZE_OPTS.transformTags,
-      img: (tag, attrs) => ({
-        tagName: "img",
-        attribs: {
-          ...attrs,
-          src: resolveReadmeUrl(attrs.src, owner, repo, branch, pathPrefix),
-          loading: "lazy",
-        },
-      }),
+      img: (tag, attrs) => {
+        const src = resolveReadmeUrl(attrs.src, owner, repo, branch, pathPrefix);
+        // A src-less <img> (malformed README markup) resolves to undefined and
+        // crashes sanitize-html's URL check — drop it rather than emit a broken tag.
+        if (!src) return { tagName: "img", attribs: {} };
+        return {
+          tagName: "img",
+          attribs: { ...attrs, src, loading: "lazy" },
+        };
+      },
     },
   });
 
