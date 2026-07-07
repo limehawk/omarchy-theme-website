@@ -214,6 +214,10 @@
       "url": "https://github.com/scar45/omarchy-c64-theme"
     },
     {
+      "name": "Camille Pissarro",
+      "url": "https://github.com/mattbbia/pissarro-omarchy"
+    },
+    {
       "name": "Caroline Skyline",
       "url": "https://github.com/OldJobobo/omarchy-caroline-skyline-theme"
     },
@@ -326,6 +330,10 @@
     {
       "name": "Desert Twilight",
       "url": "https://github.com/avis3nna/desert-twilight"
+    },
+    {
+      "name": "Dos-Moos",
+      "url": "https://github.com/HANCORE-linux/omarchy-dos-moos-theme"
     },
     {
       "name": "dotrb",
@@ -794,6 +802,10 @@
       "url": "https://github.com/imbypass/omarchy-pandora-theme"
     },
     {
+      "name": "Perkins Harnly",
+      "url": "https://github.com/mattbbia/heritage-palette-omarchy"
+    },
+    {
       "name": "PhosphorOS",
       "url": "https://github.com/OldJobobo/omarchy-phosphor-os-theme"
     },
@@ -831,8 +843,16 @@
       "url": "https://github.com/Ammar36500/omarchy-pokemon-theme"
     },
     {
+      "name": "Railroad Visions",
+      "url": "https://github.com/mattbbia/railroad-visions-omarchy"
+    },
+    {
       "name": "Rainynight",
       "url": "https://github.com/atif-1402/omarchy-rainynight-theme"
+    },
+    {
+      "name": "Ready Player One",
+      "url": "https://github.com/twodogsdave/Ready-Player-One"
     },
     {
       "name": "REDDCS",
@@ -1018,6 +1038,10 @@
     {
       "name": "TheGreek",
       "url": "https://github.com/HANCORE-linux/omarchy-thegreek-theme"
+    },
+    {
+      "name": "Tokyo Day",
+      "url": "https://github.com/kayleg/omarchy-tokyo-day"
     },
     {
       "name": "Tokyoled",
