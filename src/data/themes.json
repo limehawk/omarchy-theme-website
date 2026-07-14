@@ -210,6 +210,10 @@
       "url": "https://github.com/bjornramberg/omarchy-brutalism-theme"
     },
     {
+      "name": "Bulwer",
+      "url": "https://github.com/mattbbia/bulwer-omarchy"
+    },
+    {
       "name": "C64",
       "url": "https://github.com/scar45/omarchy-c64-theme"
     },
@@ -987,6 +991,10 @@
       "url": "https://github.com/atif-1402/omarchy-stillmoon-theme"
     },
     {
+      "name": "Stills in Motion",
+      "url": "https://github.com/mattbbia/stills-in-motion-omarchy"
+    },
+    {
       "name": "Stillwood",
       "url": "https://github.com/shresth-dwivedi/omarchy-stillwood-theme"
     },
@@ -1093,6 +1101,10 @@
     {
       "name": "Vengeance",
       "url": "https://github.com/Grey-007/vengeance"
+    },
+    {
+      "name": "Venice From Above",
+      "url": "https://github.com/mattbbia/venice-from-above-omarchy"
     },
     {
       "name": "Vercel",
