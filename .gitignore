@@ -20,3 +20,9 @@ docs/plans/
 .superpowers/
 .claude/skills/
 repomix-output.md
+
+# bun only — never commit npm lockfiles
+package-lock.json
+npm-shrinkwrap.json
+yarn.lock
+pnpm-lock.yaml

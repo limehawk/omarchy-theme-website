@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.js",
-    "dev": "node scripts/build.js && bunx serve out -p 3000",
-    "serve": "bunx serve out -p 3000",
-    "deploy": "npm run build && npx wrangler pages deploy out/ --project-name=omarchy-theme-website"
+    "dev": "node scripts/build.js && bun x serve out -p 3000",
+    "serve": "bun x serve out -p 3000",
+    "deploy": "bun run build && bun x wrangler pages deploy out/ --project-name=omarchy-theme-website"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4",

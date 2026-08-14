@@ -144,7 +144,7 @@ function runTailwind() {
   log("running tailwindcss");
   const input = path.join(ROOT, "src/styles.css");
   const output = path.join(OUT, "styles.css");
-  execSync(`npx @tailwindcss/cli -i ${input} -o ${output} --minify`, {
+  execSync(`bun x @tailwindcss/cli -i ${input} -o ${output} --minify`, {
     cwd: ROOT,
     stdio: "inherit",
   });
