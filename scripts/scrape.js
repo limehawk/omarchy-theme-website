@@ -6,6 +6,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse as parseTOML } from "smol-toml";
 import sharp from "sharp";
+import {
+  DEAD_AFTER_404S,
+  bump404Strike,
+  isDeadBy404s,
+  load404Strikes,
+  save404Strikes,
+} from "./scrape-404s.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -699,12 +706,12 @@ async function fileDeadRepoIssues(deadRepos) {
       ? `- **Author:** @${owner} — can you confirm whether this repo moved or was taken down?`
       : `- **Author:** \`${owner}\` (GitHub account no longer exists)`;
 
-    const body = `The theme **${dead.entry}** returned HTTP 404 during the nightly scrape.
+    const body = `The theme **${dead.entry}** returned HTTP 404 on ${DEAD_AFTER_404S} consecutive nightly scrapes.
 
 ` +
       `- **URL:** ${dead.url}
 ` +
-      `- **Site:** omitted from the gallery until the repo is reachable again
+      `- **Site:** omitted from the gallery after ${DEAD_AFTER_404S} consecutive 404s — will return if the repo is reachable again
 ` +
       `${authorLine}
 ` +
@@ -782,9 +789,12 @@ async function main() {
   const errors = [];
   const reusedFromCache = [];
   const omittedSlugs = new Set();
+  const strikes = load404Strikes();
   for (let i = 0; i < results.length; i++) {
     if (results[i].ok) {
-      rawRecords.push(results[i].value);
+      const rec = results[i].value;
+      delete strikes[rec.slug];
+      rawRecords.push(rec);
     } else {
       const entry = targets[i];
       const { owner, repo } = parseOwnerRepo(entry.url);
@@ -793,14 +803,23 @@ async function main() {
         : (entry.overlays_builtin ? deriveSlugFromRepo(repo) + "-" + owner.toLowerCase() : deriveSlugFromRepo(repo));
       const cached = cachedBySlug.get(slug);
       const gone = results[i].error.httpStatus === 404;
-      // Transient failures keep last-known data. A 404 means the repo is
-      // actually gone — drop it from the site until it comes back.
-      if (cached && !gone) {
+      if (gone) {
+        // Only consecutive 404s count. Cap at the threshold so nightly
+        // re-checks don't rewrite scrape-404s.json forever.
+        const count = bump404Strike(strikes[slug]);
+        strikes[slug] = count;
+        if (cached && !isDeadBy404s(count)) {
+          rawRecords.push({ ...cached, _from_cache: true });
+          reusedFromCache.push(entry.name);
+          log(`[scrape] ${slug} 404 (${count}/${DEAD_AFTER_404S}) — keeping cached`);
+        } else {
+          omittedSlugs.add(slug);
+          log(`[scrape] omitted ${slug} — repo 404 (${count} consecutive)`);
+        }
+      } else if (cached) {
+        // Transient failure (rate limit, 5xx): keep last-known data, no strike.
         rawRecords.push({ ...cached, _from_cache: true });
         reusedFromCache.push(entry.name);
-      } else if (gone) {
-        omittedSlugs.add(slug);
-        log(`[scrape] omitted ${slug} — repo 404`);
       }
       errors.push({ entry: entry.name, url: entry.url, slug, error: results[i].error.message, httpStatus: results[i].error.httpStatus });
     }
@@ -820,11 +839,14 @@ async function main() {
   if (LIMIT > 0) {
     const touchedSlugs = new Set(records.map((r) => r.slug));
     for (const cached of cachedBySlug.values()) {
-      if (!touchedSlugs.has(cached.slug) && !omittedSlugs.has(cached.slug)) records.push(cached);
+      if (!touchedSlugs.has(cached.slug) && !omittedSlugs.has(cached.slug) && !isDeadBy404s(strikes[cached.slug])) {
+        records.push(cached);
+      }
     }
     log(`[scrape] LIMIT mode — merged ${cachedBySlug.size - touchedSlugs.size - omittedSlugs.size} unchanged cached records into output`);
   }
 
+  save404Strikes(strikes);
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(records, null, 2));
   log(`[scrape] wrote ${records.length} themes → ${OUTPUT_PATH}`);
   if (skipped > 0) {
@@ -841,8 +863,8 @@ async function main() {
     for (const e of errors) console.warn(`  ${e.entry}: ${e.error}`);
   }
 
-  // File GitHub issues for dead repos (404s only, not transient errors)
-  const deadRepos = errors.filter((e) => e.httpStatus === 404);
+  // File GitHub issues only after the consecutive-404 threshold.
+  const deadRepos = errors.filter((e) => e.httpStatus === 404 && isDeadBy404s(strikes[e.slug]));
   if (deadRepos.length > 0) {
     log(`[scrape] ${deadRepos.length} dead repo(s) detected — filing issues`);
     await fileDeadRepoIssues(deadRepos);

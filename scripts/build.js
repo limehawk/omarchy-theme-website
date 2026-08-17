@@ -8,6 +8,7 @@ import {
   themeDetailPage,
   notFoundPage,
 } from "./render.js";
+import { isDeadBy404s, load404Strikes } from "./scrape-404s.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -117,6 +118,14 @@ function omitDeadThemes(themes) {
   return themes.filter((t) => !deadUrls.has(normalizeGithubUrl(t.github_url)));
 }
 
+// Hide themes that have 404'd DEAD_AFTER_404S nights in a row. The scraper
+// keeps cached data for the first two misses so a single GitHub blip
+// doesn't take a page down.
+function omitDownThemes(themes) {
+  const strikes = load404Strikes();
+  return themes.filter((t) => !isDeadBy404s(strikes[t.slug]));
+}
+
 function getOverlaysOf(themes, builtinSlug) {
   return themes.filter((t) => t.overlays_builtin === builtinSlug);
 }
@@ -176,7 +185,7 @@ function main() {
   ensureDir(OUT);
 
   log("read themes-data.json");
-  const themes = omitDeadThemes(JSON.parse(fs.readFileSync(DATA, "utf8")));
+  const themes = omitDownThemes(omitDeadThemes(JSON.parse(fs.readFileSync(DATA, "utf8"))));
   log(`${themes.length} themes`);
 
   log("copy public/");
