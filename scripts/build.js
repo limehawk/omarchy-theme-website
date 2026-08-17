@@ -66,6 +66,13 @@ function dailyShuffle(items) {
 
 const POPULAR_STAR_THRESHOLD = 50;
 
+function getNewestThemes(themes, limit = 6) {
+  return themes
+    .filter((t) => t.is_builtin === 0)
+    .sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")))
+    .slice(0, limit);
+}
+
 function getFeaturedThemes(themes, limit = 6) {
   const community = themes.filter((t) => t.is_builtin === 0);
   const pool = community.filter((t) => t.stars > POPULAR_STAR_THRESHOLD);
@@ -195,12 +202,13 @@ function main() {
   if (fs.existsSync(favicon)) fs.copyFileSync(favicon, path.join(OUT, "favicon.ico"));
 
   log("render home");
+  const newest = getNewestThemes(themes, 6);
   const featured = getFeaturedThemes(themes, 6);
   const featuredIds = new Set(featured.map((t) => t.id));
   const discover = getRandomThemes(themes, 6, featuredIds);
   const discoverIds = new Set([...featuredIds, ...discover.map((t) => t.id)]);
   const authorSpotlight = getFeaturedAuthor(themes, discoverIds);
-  writeFile("index.html", homePage({ featured, discover, authorSpotlight }));
+  writeFile("index.html", homePage({ newest, featured, discover, authorSpotlight }));
 
   log("render browse");
   const authors = [...new Set(themes.map((t) => t.github_owner))].sort((a, b) => a.localeCompare(b));

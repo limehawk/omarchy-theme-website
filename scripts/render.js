@@ -490,7 +490,7 @@ export function renderReadme(content, owner, repo, branch, pathPrefix = "") {
 
 // ---------- pages ----------
 
-export function homePage({ featured, discover, authorSpotlight }) {
+export function homePage({ newest, featured, discover, authorSpotlight }) {
   const heroButtons = `<div class="flex flex-wrap items-center gap-3 pt-2">
     <a href="/themes/" class="btn-primary inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">browse themes <span aria-hidden="true">→</span></a>
     <a href="https://github.com/limehawk/omarchy-theme-website/issues/new?template=submit-theme.yml" target="_blank" rel="noopener noreferrer" class="btn-outline inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">contribute a theme</a>
@@ -527,6 +527,7 @@ export function homePage({ featured, discover, authorSpotlight }) {
       ${heroButtons}
     </div>
   </section>
+  ${section("new themes", newest ?? [], "/themes/?sort=newest")}
   ${section("popular themes", featured, "/themes/")}
   ${section("discover", discover, "/themes/")}
   ${authorSection}
