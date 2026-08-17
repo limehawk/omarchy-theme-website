@@ -10,15 +10,15 @@
     "deploy": "bun run build && bun x wrangler pages deploy out/ --project-name=omarchy-theme-website"
   },
   "devDependencies": {
-    "@tailwindcss/cli": "^4",
-    "marked": "^18.0.0",
-    "sanitize-html": "^2.13.0",
-    "sharp": "^0.35.0",
-    "smol-toml": "^1.6.1",
-    "tailwindcss": "^4",
-    "wrangler": "^4.71.0"
+    "@tailwindcss/cli": "^4.3.3",
+    "marked": "^18.0.9",
+    "sanitize-html": "^2.17.7",
+    "sharp": "^0.35.3",
+    "smol-toml": "^1.8.0",
+    "tailwindcss": "^4.3.3",
+    "wrangler": "^4.123.0"
   },
   "dependencies": {
-    "@sentry/cloudflare": "^10.68.0"
+    "@sentry/cloudflare": "^10.70.0"
   }
 }
