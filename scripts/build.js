@@ -14,6 +14,7 @@ const ROOT = path.resolve(__dirname, "..");
 const OUT = path.join(ROOT, "out");
 const PUBLIC = path.join(ROOT, "public");
 const DATA = path.join(ROOT, "src/data/themes-data.json");
+const REGISTRY = path.join(ROOT, "src/data/themes.json");
 const SITE_URL = "https://omarchytheme.com";
 
 const log = (msg) => console.log(`[build] ${msg}`);
@@ -99,6 +100,23 @@ function getFeaturedAuthor(themes, exclude) {
   return { author, themes: themesForAuthor.sort((a, b) => b.stars - a.stars).slice(0, 6) };
 }
 
+function normalizeGithubUrl(url) {
+  return (url || "").replace(/\/$/, "").toLowerCase();
+}
+
+// Drop themes whose registry entry is marked dead, even if a stale scrape
+// record is still sitting in themes-data.json.
+function omitDeadThemes(themes) {
+  const registry = JSON.parse(fs.readFileSync(REGISTRY, "utf8"));
+  const deadUrls = new Set(
+    (registry.curated || [])
+      .filter((t) => t.dead)
+      .map((t) => normalizeGithubUrl(t.url)),
+  );
+  if (deadUrls.size === 0) return themes;
+  return themes.filter((t) => !deadUrls.has(normalizeGithubUrl(t.github_url)));
+}
+
 function getOverlaysOf(themes, builtinSlug) {
   return themes.filter((t) => t.overlays_builtin === builtinSlug);
 }
@@ -158,7 +176,7 @@ function main() {
   ensureDir(OUT);
 
   log("read themes-data.json");
-  const themes = JSON.parse(fs.readFileSync(DATA, "utf8"));
+  const themes = omitDeadThemes(JSON.parse(fs.readFileSync(DATA, "utf8")));
   log(`${themes.length} themes`);
 
   log("copy public/");

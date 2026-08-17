@@ -659,7 +659,6 @@ async function generateThumbnails(rawRecords) {
 // ---------- dead-repo issue filing ----------
 
 const SITE_REPO = process.env.GITHUB_REPOSITORY || "limehawk/omarchy-theme-website";
-const SITE_URL = "https://omarchytheme.com";
 
 async function fileDeadRepoIssues(deadRepos) {
   if (!GITHUB_TOKEN) {
@@ -705,11 +704,11 @@ async function fileDeadRepoIssues(deadRepos) {
 ` +
       `- **URL:** ${dead.url}
 ` +
-      `- **Live page:** ${SITE_URL}/themes/${dead.slug}/ (still serving cached data — remove once marked dead)
+      `- **Site:** omitted from the gallery until the repo is reachable again
 ` +
       `${authorLine}
 ` +
-      `- **Action needed:** Check if the repo was renamed/moved. Update \`themes.json\` with the new URL or mark as \`"dead": true\` if permanently gone.
+      `- **Action needed:** Check if the repo was renamed/moved. Update \`themes.json\` with the new URL, or mark as \`"dead": true\` if permanently gone.
 `;
 
     const createRes = await githubFetch(`https://api.github.com/repos/${SITE_REPO}/issues`, {
@@ -782,6 +781,7 @@ async function main() {
   const rawRecords = [];
   const errors = [];
   const reusedFromCache = [];
+  const omittedSlugs = new Set();
   for (let i = 0; i < results.length; i++) {
     if (results[i].ok) {
       rawRecords.push(results[i].value);
@@ -792,9 +792,15 @@ async function main() {
         ? deriveSlugFromPath(entry.path)
         : (entry.overlays_builtin ? deriveSlugFromRepo(repo) + "-" + owner.toLowerCase() : deriveSlugFromRepo(repo));
       const cached = cachedBySlug.get(slug);
-      if (cached) {
+      const gone = results[i].error.httpStatus === 404;
+      // Transient failures keep last-known data. A 404 means the repo is
+      // actually gone — drop it from the site until it comes back.
+      if (cached && !gone) {
         rawRecords.push({ ...cached, _from_cache: true });
         reusedFromCache.push(entry.name);
+      } else if (gone) {
+        omittedSlugs.add(slug);
+        log(`[scrape] omitted ${slug} — repo 404`);
       }
       errors.push({ entry: entry.name, url: entry.url, slug, error: results[i].error.message, httpStatus: results[i].error.httpStatus });
     }
@@ -814,9 +820,9 @@ async function main() {
   if (LIMIT > 0) {
     const touchedSlugs = new Set(records.map((r) => r.slug));
     for (const cached of cachedBySlug.values()) {
-      if (!touchedSlugs.has(cached.slug)) records.push(cached);
+      if (!touchedSlugs.has(cached.slug) && !omittedSlugs.has(cached.slug)) records.push(cached);
     }
-    log(`[scrape] LIMIT mode — merged ${cachedBySlug.size - touchedSlugs.size} unchanged cached records into output`);
+    log(`[scrape] LIMIT mode — merged ${cachedBySlug.size - touchedSlugs.size - omittedSlugs.size} unchanged cached records into output`);
   }
 
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(records, null, 2));
@@ -826,6 +832,9 @@ async function main() {
   }
   if (reusedFromCache.length > 0) {
     log(`[scrape] reused ${reusedFromCache.length} cached records for failed scrapes (data preserved)`);
+  }
+  if (omittedSlugs.size > 0) {
+    log(`[scrape] omitted ${omittedSlugs.size} theme(s) whose repos 404'd`);
   }
   if (errors.length > 0) {
     console.warn(`[scrape] ${errors.length} errors:`);
