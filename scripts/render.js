@@ -289,16 +289,15 @@ const COLOR_ORDER = [
 
 export function colorPaletteLarge(colors) {
   const items = COLOR_ORDER.filter((k) => colors[k]).map((k) => {
-    const hex = colors[k];
-    return `<div class="flex items-center gap-2.5">
-  <div class="rounded-sm border border-white/10 shrink-0 size-6" style="background-color:${escapeHtml(cssHex(hex))}" title="${attr(`${k}: ${hex}`)}"></div>
-  <div class="min-w-0">
-    <p class="font-mono text-xs text-muted-foreground truncate">${escapeHtml(k.replace("_", " "))}</p>
-    <p class="font-mono text-[10px] text-muted-foreground/50">${escapeHtml(hex)}</p>
-  </div>
+    const hex = cssHex(colors[k]);
+    const label = k.replaceAll("_", " ");
+    return `<div class="flex items-center gap-3 min-w-0">
+  <span class="inline-block size-[1.125rem] rounded-md border border-white/15 shrink-0" style="background-color:${escapeHtml(hex)}" title="${attr(`${label}: ${hex}`)}" aria-hidden="true"></span>
+  <span class="font-mono text-xs text-foreground/80 truncate flex-1">${escapeHtml(label)}</span>
+  <code class="font-mono text-[10px] text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded shrink-0">${escapeHtml(hex)}</code>
 </div>`;
   }).join("");
-  return `<div class="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">${items}</div>`;
+  return `<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-2.5">${items}</div>`;
 }
 
 // ---------- theme card ----------
@@ -408,6 +407,31 @@ function resolveReadmeUrl(src, owner, repo, branch, pathPrefix) {
   return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${fullPath}`;
 }
 
+// README color chips (readme-swatches, placehold.co, hex-only alt text)
+// become a CSS square instead of a full-width image.
+function normalizeSwatchHex(raw) {
+  if (!raw) return null;
+  const h = String(raw).replace(/^#/, "");
+  if (!/^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$|^[0-9a-fA-F]{8}$/.test(h)) return null;
+  return `#${h.toLowerCase()}`;
+}
+
+export function swatchHexFromImg(src = "", alt = "") {
+  const altMatch = String(alt).trim().match(/^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b/);
+  if (altMatch) return normalizeSwatchHex(altMatch[1]);
+  const s = String(src);
+  let m;
+  if ((m = s.match(/readme-swatches\.vercel\.app\/(?:#)?([0-9a-fA-F]{3,8})/i))) return normalizeSwatchHex(m[1]);
+  if ((m = s.match(/placehold\.co\/\d+x\d+\/([0-9a-fA-F]{3,8})/i))) return normalizeSwatchHex(m[1]);
+  if ((m = s.match(/via\.placeholder\.com\/\d+(?:x\d+)?\/([0-9a-fA-F]{3,8})/i))) return normalizeSwatchHex(m[1]);
+  return null;
+}
+
+function swatchChip(hex) {
+  const h = cssHex(hex);
+  return `<span class="readme-swatch inline-block align-middle size-[1.125rem] rounded-md border border-white/15 shrink-0" style="background-color:${escapeHtml(h)}" title="${attr(h)}" aria-hidden="true"></span>`;
+}
+
 const SANITIZE_OPTS = {
   allowedTags: [
     "h1","h2","h3","h4","h5","h6",
@@ -421,10 +445,19 @@ const SANITIZE_OPTS = {
     img: ["src", "alt", "title", "width", "height"],
     code: ["class"],
     pre: ["class"],
-    span: ["class"],
+    span: ["class", "style", "title"],
     div: ["class"],
-    th: ["align"],
-    td: ["align"],
+    table: ["class"],
+    thead: ["class"],
+    tbody: ["class"],
+    tr: ["class"],
+    th: ["align", "class"],
+    td: ["align", "class"],
+  },
+  allowedStyles: {
+    span: {
+      "background-color": [/^#[0-9a-fA-F]{3,8}$/i],
+    },
   },
   allowedSchemes: ["http", "https", "mailto", "data"],
   transformTags: {
@@ -439,6 +472,8 @@ export function renderReadme(content, owner, repo, branch, pathPrefix = "") {
   const renderer = new marked.Renderer();
   renderer.image = function ({ href, title, text }) {
     const resolved = resolveReadmeUrl(href, owner, repo, branch, pathPrefix);
+    const hex = swatchHexFromImg(resolved, text);
+    if (hex) return swatchChip(hex);
     const titleAttr = title ? ` title="${escapeHtml(title)}"` : "";
     return `<img src="${attr(resolved)}" alt="${attr(text)}" loading="lazy" class="rounded-lg max-w-full h-auto my-2"${titleAttr}>`;
   };
@@ -461,9 +496,9 @@ export function renderReadme(content, owner, repo, branch, pathPrefix = "") {
     return `<blockquote class="border-l-2 border-border/60 pl-4 italic text-muted-foreground/80">${this.parser.parse(tokens)}</blockquote>`;
   };
   renderer.table = function ({ header, rows }) {
-    const headHtml = header.map((cell) => `<th class="border border-border/40 px-3 py-1.5 text-left text-foreground font-medium bg-muted/30">${this.parser.parseInline(cell.tokens)}</th>`).join("");
-    const bodyHtml = rows.map((row) => `<tr>${row.map((cell) => `<td class="border border-border/40 px-3 py-1.5">${this.parser.parseInline(cell.tokens)}</td>`).join("")}</tr>`).join("");
-    return `<div class="overflow-x-auto"><table class="w-full text-xs font-mono border-collapse"><thead><tr>${headHtml}</tr></thead><tbody>${bodyHtml}</tbody></table></div>`;
+    const headHtml = header.map((cell) => `<th class="px-3 py-2 text-left text-muted-foreground font-medium align-middle whitespace-nowrap">${this.parser.parseInline(cell.tokens)}</th>`).join("");
+    const bodyHtml = rows.map((row) => `<tr>${row.map((cell) => `<td class="px-3 py-2 align-middle">${this.parser.parseInline(cell.tokens)}</td>`).join("")}</tr>`).join("");
+    return `<div class="overflow-x-auto"><table class="text-xs font-mono border-separate border-spacing-x-4 border-spacing-y-1">${headHtml ? `<thead><tr>${headHtml}</tr></thead>` : ""}<tbody>${bodyHtml}</tbody></table></div>`;
   };
 
   const rawHtml = marked.parse(content, { renderer, gfm: true, breaks: false });
@@ -474,6 +509,17 @@ export function renderReadme(content, owner, repo, branch, pathPrefix = "") {
       ...SANITIZE_OPTS.transformTags,
       img: (tag, attrs) => {
         const src = resolveReadmeUrl(attrs.src, owner, repo, branch, pathPrefix);
+        const hex = swatchHexFromImg(src, attrs.alt);
+        if (hex) {
+          return {
+            tagName: "span",
+            attribs: {
+              class: "readme-swatch inline-block align-middle size-[1.125rem] rounded-md border border-white/15 shrink-0",
+              style: `background-color:${cssHex(hex)}`,
+              title: cssHex(hex),
+            },
+          };
+        }
         // A src-less <img> (malformed README markup) resolves to undefined and
         // crashes sanitize-html's URL check — drop it rather than emit a broken tag.
         if (!src) return { tagName: "img", attribs: {} };
@@ -485,7 +531,7 @@ export function renderReadme(content, owner, repo, branch, pathPrefix = "") {
     },
   });
 
-  return `<div class="space-y-4 text-sm text-muted-foreground leading-relaxed break-words">${sanitized}</div>`;
+  return `<div class="readme-body space-y-4 text-sm text-muted-foreground leading-relaxed break-words">${sanitized}</div>`;
 }
 
 // ---------- pages ----------

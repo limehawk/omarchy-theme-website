@@ -155,6 +155,19 @@
     box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--foreground);
     transform: scale(1.1);
   }
+
+  .readme-body table {
+    border-collapse: separate;
+    border-spacing: 1rem 0.4rem;
+  }
+  .readme-body td:has(> .readme-swatch:only-child) {
+    width: 1.75rem;
+    padding-right: 0.25rem;
+    padding-left: 0;
+  }
+  .readme-body td:has(> .readme-swatch:only-child) + td {
+    padding-left: 0.25rem;
+  }
 }
 
 /* Hide the browser's native search-input clear button — we render our own */
