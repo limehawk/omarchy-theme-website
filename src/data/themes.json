@@ -230,12 +230,20 @@
       "url": "https://github.com/OldJobobo/omarchy-caroline-skyline-theme"
     },
     {
+      "name": "Castle On A Lake",
+      "url": "https://github.com/shmall03/omarchy-castle-on-a-lake-theme"
+    },
+    {
       "name": "Catppu Mocha",
       "url": "https://github.com/ankur311sudo/Catppu_Mocha"
     },
     {
       "name": "Catppuccin Dark",
       "url": "https://github.com/Luquatic/omarchy-catppuccin-dark"
+    },
+    {
+      "name": "Catppuccin Frappé",
+      "url": "https://github.com/mikemayuare/omarchy-catppuccin-frappe"
     },
     {
       "name": "Catppuccin Mocha",
@@ -342,6 +350,10 @@
     {
       "name": "Desert Twilight",
       "url": "https://github.com/avis3nna/desert-twilight"
+    },
+    {
+      "name": "Diablo Dreams",
+      "url": "https://github.com/twodogsdave/omarchy-diablo-dreams-theme"
     },
     {
       "name": "Dos-Moos",
@@ -483,6 +495,10 @@
     {
       "name": "Ghost Pastel",
       "url": "https://github.com/row-huh/omarchy-ghost-pastel-theme"
+    },
+    {
+      "name": "Giants",
+      "url": "https://github.com/twodogsdave/omarchy-giants-theme"
     },
     {
       "name": "Glory Antic",
@@ -661,6 +677,14 @@
       "url": "https://github.com/atif-1402/omarchy-latchdark-theme"
     },
     {
+      "name": "LCARS",
+      "url": "https://github.com/LioHeimberg/omarchy-lcars-theme"
+    },
+    {
+      "name": "Leybound",
+      "url": "https://github.com/diangogav/omarchy-leybound-theme"
+    },
+    {
       "name": "Lilly",
       "url": "https://github.com/JJDizz1L/lilly"
     },
@@ -683,6 +707,10 @@
     {
       "name": "Mac Transparent",
       "url": "https://github.com/notzeman/Omarchy-Mac-Transparent-theme"
+    },
+    {
+      "name": "macOS Classic",
+      "url": "https://github.com/huacnlee/omarchy-macos-classic-theme"
     },
     {
       "name": "Manga",
@@ -794,6 +822,22 @@
       "url": "https://github.com/janhesters/omarchy-night-owl-theme"
     },
     {
+      "name": "Noctua",
+      "url": "https://github.com/othavi0/omarchy-noctua-theme"
+    },
+    {
+      "name": "Nous",
+      "url": "https://github.com/notkisk/omarchy-nous-theme"
+    },
+    {
+      "name": "Nous Research Purple",
+      "url": "https://github.com/notkisk/Omarchy-nous-research-purple"
+    },
+    {
+      "name": "Nujabes",
+      "url": "https://github.com/HalmyLyseas/omarchy-nujabes-theme"
+    },
+    {
       "name": "NYC",
       "url": "https://github.com/WillyV3/omarchy-nyc-theme"
     },
@@ -877,6 +921,10 @@
     {
       "name": "Pokemon",
       "url": "https://github.com/Ammar36500/omarchy-pokemon-theme"
+    },
+    {
+      "name": "Quattro Sunset",
+      "url": "https://github.com/thenailedone/omarchy-quattro-sunset-theme"
     },
     {
       "name": "Railroad Visions",
@@ -1131,6 +1179,10 @@
       "url": "https://github.com/perfektnacht/omarchy-velocity-theme"
     },
     {
+      "name": "Velora",
+      "url": "https://github.com/shoxjaxon-atabayev/omarchy-velora-theme"
+    },
+    {
       "name": "Velvet Night",
       "url": "https://github.com/HANCORE-linux/omarchy-velvetnight-theme"
     },
@@ -1194,6 +1246,10 @@
     {
       "name": "Yuugure",
       "url": "https://github.com/ItsABigIgloo/omarchy-yuugure-theme"
+    },
+    {
+      "name": "Zonda Zoom",
+      "url": "https://github.com/twodogsdave/omarchy-zonda-zoom-theme"
     }
   ],
   "builtin": [
