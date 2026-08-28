@@ -1,6 +1,10 @@
 {
   "curated": [
     {
+      "name": "2 Haxorz",
+      "url": "https://github.com/nixfred/omarchy-2-haxorz-theme"
+    },
+    {
       "name": "Aamis",
       "url": "https://github.com/vyrx-dev/omarchy-aamis-theme"
     },
@@ -613,6 +617,10 @@
       "url": "https://github.com/RiO7MAKK3R/omarchy-infernium-dark-theme"
     },
     {
+      "name": "Inkblade",
+      "url": "https://github.com/imcmurray/omarchy-inkblade-theme"
+    },
+    {
       "name": "InkyPinky",
       "url": "https://github.com/HANCORE-linux/omarchy-inkypinky-theme"
     },
@@ -727,6 +735,10 @@
     {
       "name": "Mars",
       "url": "https://github.com/steve-lohmeyer/omarchy-mars-theme"
+    },
+    {
+      "name": "Matrix",
+      "url": "https://github.com/BVisagie/omarchy-matrix-theme"
     },
     {
       "name": "Mechanoonna",
