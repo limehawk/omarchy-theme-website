@@ -315,6 +315,17 @@ function findPreviewImage(files, readme, owner, repo, branch, pathPrefix) {
     }
   }
 
+  const bgPrefix = prefix ? `${prefix}/backgrounds/` : "backgrounds/";
+  const wallpapers = [...files]
+    .filter((file) => (
+      file.startsWith(bgPrefix)
+      && IMAGE_EXTENSIONS.test(file)
+      && !file.slice(bgPrefix.length).includes("/")
+      && !SKIP_KEYWORDS.test(file.slice(bgPrefix.length))
+    ))
+    .sort();
+  if (wallpapers.length) return rawUrl(wallpapers[0]);
+
   return null;
 }
 
