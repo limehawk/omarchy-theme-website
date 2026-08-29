@@ -753,6 +753,10 @@
       "url": "https://github.com/OldJobobo/omarchy-miasma-theme"
     },
     {
+      "name": "Middle Earth",
+      "url": "https://github.com/LioHeimberg/omarchy-middle-earth-theme"
+    },
+    {
       "name": "Midnight",
       "url": "https://github.com/JaxonWright/omarchy-midnight-theme"
     },
@@ -763,6 +767,10 @@
     {
       "name": "MilkMatcha Light",
       "url": "https://github.com/hipsterusername/omarchy-milkmatcha-light-theme"
+    },
+    {
+      "name": "Mini JCW",
+      "url": "https://github.com/davydotcom/omarchy-mini-jcw-theme"
     },
     {
       "name": "Monochrome",
@@ -824,6 +832,10 @@
     {
       "name": "Neovoid",
       "url": "https://github.com/RiO7MAKK3R/omarchy-neovoid-theme"
+    },
+    {
+      "name": "Neptune Blue",
+      "url": "https://github.com/davydotcom/omarchy-neptune-blue-theme"
     },
     {
       "name": "NES",
