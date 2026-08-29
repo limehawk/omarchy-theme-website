@@ -178,6 +178,7 @@
     },
     {
       "name": "Blood Moon",
+      "dead": true,
       "url": "https://github.com/mehulrathod-0666/omarchy-blood-moon-theme"
     },
     {
@@ -239,6 +240,7 @@
     },
     {
       "name": "Catppu Mocha",
+      "dead": true,
       "url": "https://github.com/ankur311sudo/Catppu_Mocha"
     },
     {
@@ -550,6 +552,7 @@
     },
     {
       "name": "Gruvu",
+      "dead": true,
       "url": "https://github.com/ankur311sudo/gruvu"
     },
     {
