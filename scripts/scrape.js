@@ -510,8 +510,10 @@ async function scrapeTheme(entry, cachedBySlug) {
   // security scan) and just refresh the fast-moving fields (stars,
   // description, last_scraped_at) from the meta call we already paid for.
   // Saves ~7-10 API calls per unchanged theme.
+  // If preview_url is still missing, do a full scrape anyway so findPreviewImage
+  // can pick up a backgrounds/ wallpaper (or a newly added preview.png).
   const cached = cachedBySlug?.get(slug);
-  if (cached && cached.github_pushed_at === meta.pushed_at && cached.colors_json !== undefined) {
+  if (cached && cached.github_pushed_at === meta.pushed_at && cached.colors_json !== undefined && cached.preview_url) {
     const cachedColors = cached.colors_json ? JSON.parse(cached.colors_json) : null;
     return {
       ...cached,
