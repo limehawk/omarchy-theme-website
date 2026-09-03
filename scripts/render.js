@@ -788,7 +788,7 @@ export function themeDetailPage(theme, { overlayBase, overlayVariants }) {
       ${previewSection}
       ${readmeSection}
     </div>
-    <aside class="space-y-6">
+    <aside class="space-y-6 order-first lg:order-none">
       <div class="sticky top-20 space-y-6">
         <div class="space-y-3">
         <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">about</h2>
