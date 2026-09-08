@@ -14,6 +14,7 @@ nohup.out
 
 # Local-only files
 CLAUDE.md
+AGENTS.md
 .mcp.json
 .talismanrc
 docs/plans/
