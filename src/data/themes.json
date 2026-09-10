@@ -248,7 +248,7 @@
       "url": "https://github.com/Luquatic/omarchy-catppuccin-dark"
     },
     {
-      "name": "Catppuccin Frappé",
+      "name": "Catppuccin Frapp\u00e9",
       "url": "https://github.com/mikemayuare/omarchy-catppuccin-frappe"
     },
     {
@@ -302,6 +302,10 @@
     {
       "name": "Crimson Gold",
       "url": "https://github.com/knappkevin/omarchy-crimson-gold-theme"
+    },
+    {
+      "name": "Cyberphunk",
+      "url": "https://github.com/derejealemu/omarchy-cyberphunk-theme"
     },
     {
       "name": "Cyberpunk",
@@ -579,6 +583,14 @@
       "url": "https://github.com/JonasAllenCodes/omarchy-hakkar-green-better-contrast-theme"
     },
     {
+      "name": "Hardlight",
+      "url": "https://github.com/randallyash/omarchy-hardlight-theme"
+    },
+    {
+      "name": "Hearthgrove",
+      "url": "https://github.com/randallyash/omarchy-hearthgrove-theme"
+    },
+    {
       "name": "Helios",
       "url": "https://github.com/LeblancAlex/omarchy-helios-theme"
     },
@@ -639,7 +651,7 @@
       "url": "https://github.com/moerdowo/omarchy-kitt-theme"
     },
     {
-      "name": "Kansō",
+      "name": "Kans\u014d",
       "url": "https://github.com/HANCORE-linux/omarchy-kanso-theme"
     },
     {
@@ -1041,7 +1053,7 @@
       "url": "https://github.com/tahfizhabib/omarchy-rustleaf-theme"
     },
     {
-      "name": "Ryū",
+      "name": "Ry\u016b",
       "url": "https://github.com/HANCORE-linux/omarchy-ryu-theme"
     },
     {
@@ -1075,6 +1087,10 @@
     {
       "name": "Shuiro",
       "url": "https://github.com/Grenish/omarchy-shuiro-theme"
+    },
+    {
+      "name": "Signature",
+      "url": "https://github.com/mshareef-git/omarchy-signature-theme"
     },
     {
       "name": "Snow",
@@ -1209,6 +1225,10 @@
       "name": "Torrentz Hydra",
       "dead": true,
       "url": "https://github.com/monoooki/omarchy-torrentz-hydra-theme"
+    },
+    {
+      "name": "Turner",
+      "url": "https://github.com/simoz/omarchy-turner-theme"
     },
     {
       "name": "Tycho",
