@@ -407,6 +407,21 @@ function resolveReadmeUrl(src, owner, repo, branch, pathPrefix) {
   return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${fullPath}`;
 }
 
+/** Resolve relative README <a href> targets off the gallery origin.
+ *  Images/binaries → raw.githubusercontent.com; other paths → github.com blob. */
+function resolveReadmeHref(src, owner, repo, branch, pathPrefix) {
+  if (!src) return src;
+  if (/^(https?:)?\/\//.test(src) || src.startsWith("mailto:") || src.startsWith("#") || src.startsWith("data:")) {
+    return src;
+  }
+  const clean = src.replace(/^\.\//, "");
+  const fullPath = pathPrefix ? `${pathPrefix}/${clean}` : clean;
+  if (/\.(png|jpe?g|gif|webp|svg|avif|mp4|webm|pdf|ico)$/i.test(fullPath)) {
+    return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${fullPath}`;
+  }
+  return `https://github.com/${owner}/${repo}/blob/${branch}/${fullPath}`;
+}
+
 // README color chips (readme-swatches, placehold.co, hex-only alt text)
 // become a CSS square instead of a full-width image.
 function normalizeSwatchHex(raw) {
@@ -477,6 +492,12 @@ export function renderReadme(content, owner, repo, branch, pathPrefix = "") {
     const titleAttr = title ? ` title="${escapeHtml(title)}"` : "";
     return `<img src="${attr(resolved)}" alt="${attr(text)}" loading="lazy" class="rounded-lg max-w-full h-auto my-2"${titleAttr}>`;
   };
+  renderer.link = function ({ href, title, tokens }) {
+    const text = this.parser.parseInline(tokens);
+    const resolved = resolveReadmeHref(href, owner, repo, branch, pathPrefix);
+    const titleAttr = title ? ` title="${escapeHtml(title)}"` : "";
+    return `<a href="${attr(resolved)}"${titleAttr}>${text}</a>`;
+  };
   renderer.heading = function ({ tokens, depth }) {
     const text = this.parser.parseInline(tokens);
     const cls = {
@@ -507,6 +528,15 @@ export function renderReadme(content, owner, repo, branch, pathPrefix = "") {
     ...SANITIZE_OPTS,
     transformTags: {
       ...SANITIZE_OPTS.transformTags,
+      a: (tag, attrs) => ({
+        tagName: "a",
+        attribs: {
+          ...attrs,
+          href: resolveReadmeHref(attrs.href, owner, repo, branch, pathPrefix),
+          target: "_blank",
+          rel: "noopener noreferrer",
+        },
+      }),
       img: (tag, attrs) => {
         const src = resolveReadmeUrl(attrs.src, owner, repo, branch, pathPrefix);
         const hex = swatchHexFromImg(src, attrs.alt);
