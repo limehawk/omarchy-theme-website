@@ -346,6 +346,7 @@ export function themeCard(theme, { hidden = false } = {}) {
 
   return `<a data-theme-card${hidden ? " hidden" : ""}
   data-name="${attr(theme.name)}"
+  data-search="${attr(searchText(theme))}"
   data-author="${attr(theme.github_owner)}"
   data-hue="${attr(theme.primary_hue ?? "")}"
   data-brightness="${attr(brightness)}"
@@ -384,6 +385,14 @@ export function installCommand(githubUrl) {
     </button>
   </div>
 </div>`;
+}
+
+// Unique words from name, slug, description and README, so "find a theme"
+// matches things like "oled" that only appear in a repo's README.
+function searchText(theme) {
+  const raw = `${theme.name} ${theme.slug} ${theme.description ?? ""} ${theme.readme_text ?? ""}`;
+  const words = raw.toLowerCase().replace(/https?:\/\/\S+/g, " ").split(/[^a-z0-9]+/);
+  return [...new Set(words.filter((w) => w.length > 2))].join(" ");
 }
 
 // ---------- README markdown ----------

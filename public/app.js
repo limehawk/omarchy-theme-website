@@ -136,7 +136,7 @@
       }
       if (state.brightness && card.dataset.brightness !== state.brightness) return false;
       if (state.author && !card.dataset.author.toLowerCase().includes(state.author.toLowerCase())) return false;
-      if (state.q && !card.dataset.name.toLowerCase().includes(lower)) return false;
+      if (state.q && !card.dataset.search.includes(lower)) return false;
       return true;
     });
 
