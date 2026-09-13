@@ -706,6 +706,7 @@ export function browsePage({ themes, authors }) {
   </div>
 
   <div data-theme-grid class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div data-search-divider hidden class="col-span-full font-mono text-xs text-muted-foreground border-t border-border/40 pt-4 mt-2">also mentioned in descriptions and READMEs</div>
     ${sorted.map((t) => themeCard(t, { hidden: Boolean(t.is_builtin) })).join("")}
   </div>
   <div data-theme-empty hidden class="py-20 text-center">

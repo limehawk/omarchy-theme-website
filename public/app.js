@@ -176,6 +176,7 @@
     let visible = 0;
     const terms = state.q.toLowerCase().split(/\s+/).filter(Boolean);
     const scores = new Map();
+    const named = new Set(); // every term hit the theme name, exact or fuzzy
     const passing = cards.filter((card) => {
       const isBuiltin = card.dataset.builtin === "1";
       if (state.source === "community" && isBuiltin) return false;
@@ -190,12 +191,15 @@
         const s = score(card, terms);
         if (!s) return false;
         scores.set(card, s);
+        if (terms.every((t) => scoreTerm(card, t) >= 5)) named.add(card);
       }
       return true;
     });
 
     const order = state.sort;
     passing.sort((a, b) => {
+      const byName = named.has(b) - named.has(a);
+      if (byName) return byName;
       const diff = (scores.get(b) || 0) - (scores.get(a) || 0);
       if (diff) return diff;
       if (order === "name") return a.dataset.name.localeCompare(b.dataset.name);
@@ -210,6 +214,13 @@
       if (show) visible++;
     });
     passing.forEach((card, i) => { card.style.order = i; });
+
+    // Name matches keep their own tight list; everything else sits under a divider.
+    const divider = grid.querySelector("[data-search-divider]");
+    if (divider) {
+      divider.hidden = !(named.size > 0 && named.size < passing.length);
+      divider.style.order = named.size;
+    }
 
     grid.classList.toggle("view-terminal", state.view === "terminal");
     if (countEl) countEl.textContent = `${visible} theme${visible !== 1 ? "s" : ""} available`;
