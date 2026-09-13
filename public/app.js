@@ -41,7 +41,7 @@
         document.dispatchEvent(new CustomEvent("author-filter", { detail: author }));
       }
     } else {
-      window.location.href = `/themes/?author=${encodeURIComponent(author)}&source=all`;
+      window.location.href = `/themes/?author=${encodeURIComponent(author)}`;
     }
   });
 
@@ -112,8 +112,8 @@
 
   const state = {
     q: "",
-    sort: "stars",
-    source: "community",
+    sort: "newest",
+    source: "all",
     brightness: "",
     color: [],
     author: "",
@@ -123,8 +123,8 @@
   function readURL() {
     const p = new URLSearchParams(location.search);
     state.q = p.get("q") ?? "";
-    state.sort = p.get("sort") ?? "stars";
-    state.source = p.get("source") ?? "community";
+    state.sort = p.get("sort") ?? "newest";
+    state.source = p.get("source") ?? "all";
     state.brightness = p.get("brightness") ?? "";
     state.color = p.getAll("color");
     state.author = p.get("author") ?? "";
@@ -134,8 +134,8 @@
   function writeURL() {
     const p = new URLSearchParams();
     if (state.q) p.set("q", state.q);
-    if (state.sort !== "stars") p.set("sort", state.sort);
-    if (state.source !== "community") p.set("source", state.source);
+    if (state.sort !== "newest") p.set("sort", state.sort);
+    if (state.source !== "all") p.set("source", state.source);
     if (state.brightness) p.set("brightness", state.brightness);
     state.color.forEach((c) => p.append("color", c));
     if (state.author) p.set("author", state.author);
@@ -233,8 +233,7 @@
   inputs.author?.addEventListener("input", () => { state.author = inputs.author.value; update(); });
   document.addEventListener("author-filter", (e) => {
     state.author = e.detail;
-    // An author click means "show me everything by this person" — don't let
-    // the default community-only source filter veto builtin authors.
+    // An author click means "show me everything by this person", whatever source pill is set.
     state.source = "all";
     update(true);
   });

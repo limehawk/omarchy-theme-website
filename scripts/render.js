@@ -302,7 +302,7 @@ export function colorPaletteLarge(colors) {
 
 // ---------- theme card ----------
 
-export function themeCard(theme, { hidden = false } = {}) {
+export function themeCard(theme) {
   const colors = parseColors(theme.colors_json);
   const accent = colors?.accent ?? "#4a9eff";
   const brightness = getThemeBrightness(theme.colors_json);
@@ -344,7 +344,7 @@ export function themeCard(theme, { hidden = false } = {}) {
       </span>`
     : "";
 
-  return `<a data-theme-card${hidden ? " hidden" : ""}
+  return `<a data-theme-card
   data-name="${attr(theme.name)}"
   data-desc="${attr((theme.description ?? "").toLowerCase())}"
   data-search="${attr(searchText(theme))}"
@@ -613,8 +613,8 @@ export function homePage({ newest, featured, discover, authorSpotlight }) {
       ${heroButtons}
     </div>
   </section>
-  ${section("new themes", newest ?? [], "/themes/?sort=newest")}
-  ${section("popular themes", featured, "/themes/")}
+  ${section("new themes", newest ?? [], "/themes/")}
+  ${section("popular themes", featured, "/themes/?sort=stars")}
   ${section("discover", discover, "/themes/")}
   ${authorSection}
   <section class="pb-20 text-center">
@@ -626,10 +626,11 @@ export function homePage({ newest, featured, discover, authorSpotlight }) {
 }
 
 export function browsePage({ themes, authors }) {
-  // Bake the default filter state (source=community, sort=stars) into the
+  // Bake the default filter state (source=all, sort=newest) into the
   // HTML so app.js makes no layout changes on a default page load (CLS).
-  const sorted = [...themes].sort((a, b) => b.stars - a.stars);
-  const communityCount = sorted.filter((t) => !t.is_builtin).length;
+  const pushedAt = (t) => new Date(t.github_pushed_at ?? t.created_at).getTime();
+  const sorted = [...themes].sort((a, b) => pushedAt(b) - pushedAt(a));
+  const count = sorted.length;
   const colorButtons = COLOR_BUCKETS.map((bucket) =>
     `<button type="button" name="color" value="${bucket}" title="${bucket}" class="color-dot size-4 rounded-sm shrink-0 transition-all" style="background-color:${BUCKET_COLORS[bucket]}"></button>`
   ).join("");
@@ -640,7 +641,7 @@ export function browsePage({ themes, authors }) {
   const body = `<div class="mx-auto max-w-6xl px-6 py-10 space-y-8">
   <div>
     <h1 class="font-mono text-2xl font-bold tracking-tight text-foreground">themes</h1>
-    <p class="mt-1 font-mono text-sm text-muted-foreground" data-theme-count>${communityCount} theme${communityCount !== 1 ? "s" : ""} available</p>
+    <p class="mt-1 font-mono text-sm text-muted-foreground" data-theme-count>${count} theme${count !== 1 ? "s" : ""} available</p>
   </div>
 
   <div class="lg:sticky lg:top-14 z-30 -mx-6 px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border/40 space-y-4">
@@ -707,7 +708,7 @@ export function browsePage({ themes, authors }) {
 
   <div data-theme-grid class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
     <div data-search-divider hidden class="col-span-full font-mono text-xs text-muted-foreground border-t border-border/40 pt-4 mt-2">also mentioned in descriptions and READMEs</div>
-    ${sorted.map((t) => themeCard(t, { hidden: Boolean(t.is_builtin) })).join("")}
+    ${sorted.map((t) => themeCard(t)).join("")}
   </div>
   <div data-theme-empty hidden class="py-20 text-center">
     <p class="font-mono text-sm text-muted-foreground">no themes found</p>
