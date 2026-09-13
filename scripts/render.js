@@ -346,6 +346,7 @@ export function themeCard(theme, { hidden = false } = {}) {
 
   return `<a data-theme-card${hidden ? " hidden" : ""}
   data-name="${attr(theme.name)}"
+  data-desc="${attr((theme.description ?? "").toLowerCase())}"
   data-search="${attr(searchText(theme))}"
   data-author="${attr(theme.github_owner)}"
   data-hue="${attr(theme.primary_hue ?? "")}"

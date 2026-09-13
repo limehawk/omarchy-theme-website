@@ -50,6 +50,55 @@
   if (!grid) return;
 
   const cards = Array.from(grid.querySelectorAll("[data-theme-card]"));
+  // Split once per card so fuzzy matching doesn't re-tokenize on every keystroke.
+  cards.forEach((card) => {
+    card.words = {
+      name: card.dataset.name.toLowerCase().split(/[^a-z0-9]+/),
+      desc: card.dataset.desc.split(" "),
+      readme: card.dataset.search.split(" "),
+    };
+  });
+
+  // True if word is within one edit (insert, delete, substitute, or adjacent swap) of term.
+  function near(word, term) {
+    const d = word.length - term.length;
+    if (d < -1 || d > 1) return false;
+    let i = 0, j = 0, edits = 0;
+    while (i < word.length && j < term.length) {
+      if (word[i] === term[j]) { i++; j++; continue; }
+      if (++edits > 1) return false;
+      if (d === 1) i++;
+      else if (d === -1) j++;
+      else if (word[i] === term[j + 1] && word[i + 1] === term[j]) { i += 2; j += 2; }
+      else { i++; j++; }
+    }
+    return edits + (word.length - i) + (term.length - j) <= 1;
+  }
+
+  // 0 = no match. Higher = better: name beats description beats README,
+  // and an exact substring beats a fuzzy (one-typo) hit at the same level.
+  function scoreTerm(card, term) {
+    const w = card.words;
+    if (card.dataset.name.toLowerCase().includes(term)) return 6;
+    if (card.dataset.desc.includes(term)) return 4;
+    if (w.readme.some((x) => x.startsWith(term))) return 2; // prefix, so "red" skips "shared"
+    if (term.length < 4) return 0; // fuzzy on short terms matches everything
+    if (w.name.some((x) => near(x, term))) return 5;
+    if (w.desc.some((x) => near(x, term))) return 3;
+    if (w.readme.some((x) => near(x, term))) return 1;
+    return 0;
+  }
+
+  // Every term must match; the score is the sum so multi-word queries rank naturally.
+  function score(card, terms) {
+    let total = 0;
+    for (const t of terms) {
+      const s = scoreTerm(card, t);
+      if (!s) return 0;
+      total += s;
+    }
+    return total;
+  }
   const countEl = document.querySelector("[data-theme-count]");
   const inputs = {
     q: document.querySelector('[name="q"]'),
@@ -125,7 +174,8 @@
 
   function applyFilters() {
     let visible = 0;
-    const lower = state.q.toLowerCase();
+    const terms = state.q.toLowerCase().split(/\s+/).filter(Boolean);
+    const scores = new Map();
     const passing = cards.filter((card) => {
       const isBuiltin = card.dataset.builtin === "1";
       if (state.source === "community" && isBuiltin) return false;
@@ -136,12 +186,18 @@
       }
       if (state.brightness && card.dataset.brightness !== state.brightness) return false;
       if (state.author && !card.dataset.author.toLowerCase().includes(state.author.toLowerCase())) return false;
-      if (state.q && !card.dataset.search.includes(lower)) return false;
+      if (terms.length) {
+        const s = score(card, terms);
+        if (!s) return false;
+        scores.set(card, s);
+      }
       return true;
     });
 
     const order = state.sort;
     passing.sort((a, b) => {
+      const diff = (scores.get(b) || 0) - (scores.get(a) || 0);
+      if (diff) return diff;
       if (order === "name") return a.dataset.name.localeCompare(b.dataset.name);
       if (order === "newest") return (+b.dataset.pushed || 0) - (+a.dataset.pushed || 0);
       return (+b.dataset.stars || 0) - (+a.dataset.stars || 0);
