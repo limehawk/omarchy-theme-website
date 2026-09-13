@@ -103,6 +103,7 @@ function footer() {
       <div class="flex items-center justify-end gap-6 sm:flex-1">
         <a href="https://omarchy.org/" target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">omarchy</a>
         <a href="https://github.com/limehawk/omarchy-theme-website/issues/new?template=submit-theme.yml" target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">contribute a theme</a>
+        <a href="https://github.com/limehawk/omarchy-theme-website/discussions/new?category=theme-requests" target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">request a theme</a>
       </div>
     </div>
     <p class="text-center text-[10px] text-muted-foreground/60 leading-relaxed">
@@ -580,6 +581,7 @@ export function homePage({ newest, featured, discover, authorSpotlight }) {
   const heroButtons = `<div class="flex flex-wrap items-center gap-3 pt-2">
     <a href="/themes/" class="btn-primary inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">browse themes <span aria-hidden="true">→</span></a>
     <a href="https://github.com/limehawk/omarchy-theme-website/issues/new?template=submit-theme.yml" target="_blank" rel="noopener noreferrer" class="btn-outline inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">contribute a theme</a>
+    <a href="https://github.com/limehawk/omarchy-theme-website/discussions/new?category=theme-requests" target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">or request one</a>
   </div>`;
 
   const section = (title, themes, viewAll) => themes.length === 0 ? "" : `<section class="pb-20">
@@ -710,8 +712,9 @@ export function browsePage({ themes, authors }) {
     <div data-search-divider hidden class="col-span-full font-mono text-xs text-muted-foreground border-t border-border/40 pt-4 mt-2">also mentioned in descriptions and READMEs</div>
     ${sorted.map((t) => themeCard(t)).join("")}
   </div>
-  <div data-theme-empty hidden class="py-20 text-center">
+  <div data-theme-empty hidden class="py-20 text-center space-y-3">
     <p class="font-mono text-sm text-muted-foreground">no themes found</p>
+    <a data-request-link href="https://github.com/limehawk/omarchy-theme-website/discussions/new?category=theme-requests" target="_blank" rel="noopener noreferrer" class="btn-outline inline-flex items-center gap-2 font-mono text-xs px-3 h-8 rounded-md">request a theme <span aria-hidden="true">→</span></a>
   </div>
 </div>`;
 

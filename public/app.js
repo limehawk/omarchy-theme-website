@@ -227,6 +227,12 @@
 
     const empty = document.querySelector("[data-theme-empty]");
     if (empty) empty.hidden = visible !== 0;
+    const req = document.querySelector("[data-request-link]");
+    if (req && visible === 0) {
+      const u = new URL(req.href);
+      if (state.q) u.searchParams.set("title", state.q); else u.searchParams.delete("title");
+      req.href = u.toString();
+    }
   }
 
   inputs.q?.addEventListener("input", () => { state.q = inputs.q.value; update(); });
