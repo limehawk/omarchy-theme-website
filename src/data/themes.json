@@ -248,7 +248,7 @@
       "url": "https://github.com/Luquatic/omarchy-catppuccin-dark"
     },
     {
-      "name": "Catppuccin Frapp\u00e9",
+      "name": "Catppuccin Frappé",
       "url": "https://github.com/mikemayuare/omarchy-catppuccin-frappe"
     },
     {
@@ -323,6 +323,10 @@
     {
       "name": "Darcula",
       "url": "https://github.com/noahljungberg/omarchy-darcula-theme"
+    },
+    {
+      "name": "Dark Voyage",
+      "url": "https://github.com/paulnunezm/omarchy-dark-voyage-theme"
     },
     {
       "name": "Dark XP",
@@ -428,6 +432,10 @@
     {
       "name": "Ember n Ash",
       "url": "https://github.com/Hydradevx/omarchy-ember-n-ash-theme"
+    },
+    {
+      "name": "Enter The Matrix",
+      "url": "https://github.com/tymurbogach/omarchy-enter-the-matrix-theme"
     },
     {
       "name": "Eva-01",
@@ -587,6 +595,10 @@
       "url": "https://github.com/randallyash/omarchy-hardlight-theme"
     },
     {
+      "name": "Haven",
+      "url": "https://github.com/simoz/omarchy-haven-theme"
+    },
+    {
       "name": "Hearthgrove",
       "url": "https://github.com/randallyash/omarchy-hearthgrove-theme"
     },
@@ -651,7 +663,7 @@
       "url": "https://github.com/moerdowo/omarchy-kitt-theme"
     },
     {
-      "name": "Kans\u014d",
+      "name": "Kansō",
       "url": "https://github.com/HANCORE-linux/omarchy-kanso-theme"
     },
     {
@@ -697,6 +709,10 @@
     {
       "name": "Lakes & Light",
       "url": "https://github.com/mattbbia/lakes-and-light"
+    },
+    {
+      "name": "Lanterns",
+      "url": "https://github.com/jwhall/omarchy-lanterns-theme"
     },
     {
       "name": "Last Horizon",
@@ -1061,7 +1077,7 @@
       "url": "https://github.com/tahfizhabib/omarchy-rustleaf-theme"
     },
     {
-      "name": "Ry\u016b",
+      "name": "Ryū",
       "url": "https://github.com/HANCORE-linux/omarchy-ryu-theme"
     },
     {
@@ -1267,6 +1283,10 @@
     {
       "name": "Van Gogh",
       "url": "https://github.com/Nirmal314/omarchy-van-gogh-theme"
+    },
+    {
+      "name": "Vast Snow Mountains",
+      "url": "https://github.com/Linar46/omarchy-vast-snow-mountains-theme"
     },
     {
       "name": "Velocity",
