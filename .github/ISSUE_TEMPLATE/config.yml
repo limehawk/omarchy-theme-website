@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Email
+    url: mailto:help@omarchytheme.com
+    about: Questions about the gallery — help@omarchytheme.com
   - name: Omarchy Documentation
     url: https://omarchy.org
     about: Learn more about Omarchy
