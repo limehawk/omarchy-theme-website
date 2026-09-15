@@ -20,8 +20,5 @@
     "smol-toml": "^1.8.0",
     "tailwindcss": "^4.3.3",
     "wrangler": "^4.123.0"
-  },
-  "dependencies": {
-    "@sentry/cloudflare": "^10.70.0"
   }
 }
