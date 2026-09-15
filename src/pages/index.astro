@@ -1,0 +1,82 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ThemeCard from "../components/ThemeCard.astro";
+import { loadLiveThemes, homeSections } from "../lib/themes.js";
+
+const themes = loadLiveThemes();
+const { newest, featured, discover, authorSpotlight } = homeSections(themes);
+---
+<Layout title="home" path="/">
+  <div class="mx-auto max-w-6xl px-6">
+    <section class="py-20 sm:py-28">
+      <div class="max-w-2xl space-y-6">
+        <h1 class="font-mono text-3xl sm:text-4xl font-bold tracking-tight text-foreground">discover omarchy themes</h1>
+        <p class="text-base sm:text-lg text-muted-foreground leading-relaxed">
+          Browse and install terminal color schemes for
+          <a href="https://omarchy.org/" target="_blank" rel="noopener noreferrer" class="text-foreground underline underline-offset-4 decoration-foreground/30 hover:decoration-foreground/60 transition-colors">Omarchy</a>,
+          the opinionated Linux desktop environment from Basecamp.
+          One command to transform your terminal.
+        </p>
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <a href="/themes/" class="btn-primary inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">browse themes <span aria-hidden="true">→</span></a>
+          <a href="https://github.com/limehawk/omarchy-theme-website/issues/new?template=submit-theme.yml" target="_blank" rel="noopener noreferrer" class="btn-outline inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">contribute a theme</a>
+          <a href="https://github.com/limehawk/omarchy-theme-website/discussions/new?category=theme-requests" target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">or request one</a>
+        </div>
+      </div>
+    </section>
+
+    {newest.length > 0 && (
+      <section class="pb-20">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">new themes</h2>
+          <a href="/themes/" class="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">view all →</a>
+        </div>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {newest.map((t) => <ThemeCard theme={t} />)}
+        </div>
+      </section>
+    )}
+
+    {featured.length > 0 && (
+      <section class="pb-20">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">popular themes</h2>
+          <a href="/themes/?sort=stars" class="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">view all →</a>
+        </div>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {featured.map((t) => <ThemeCard theme={t} />)}
+        </div>
+      </section>
+    )}
+
+    {discover.length > 0 && (
+      <section class="pb-20">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">discover</h2>
+          <a href="/themes/" class="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">view all →</a>
+        </div>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {discover.map((t) => <ThemeCard theme={t} />)}
+        </div>
+      </section>
+    )}
+
+    {authorSpotlight && (
+      <section class="pb-20">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">
+            author spotlight — <a href={`/themes/?author=${encodeURIComponent(authorSpotlight.author)}`} class="text-foreground hover:underline underline-offset-4">{authorSpotlight.author}</a>
+          </h2>
+          <a href={`/themes/?author=${encodeURIComponent(authorSpotlight.author)}`} class="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">view all →</a>
+        </div>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {authorSpotlight.themes.map((t) => <ThemeCard theme={t} />)}
+        </div>
+      </section>
+    )}
+
+    <section class="pb-20 text-center">
+      <a href="/themes/" class="btn-primary inline-flex items-center gap-2 font-mono px-3 h-8 rounded-md">browse all themes <span aria-hidden="true">→</span></a>
+    </section>
+  </div>
+</Layout>

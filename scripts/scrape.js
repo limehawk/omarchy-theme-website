@@ -13,6 +13,7 @@ import {
   load404Strikes,
   save404Strikes,
 } from "./scrape-404s.js";
+import { computeHueBucket, cssHex } from "./colors.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -50,55 +51,6 @@ function parseOwnerRepo(url) {
 
 // ---------- color helpers ----------
 
-function hexToHSL(hex) {
-  hex = hex.replace(/^(#|0x|0X)/, "");
-  const r = parseInt(hex.substring(0, 2), 16) / 255;
-  const g = parseInt(hex.substring(2, 4), 16) / 255;
-  const b = parseInt(hex.substring(4, 6), 16) / 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  const l = (max + min) / 2;
-  if (max === min) return { h: 0, s: 0, l: l * 100 };
-  const d = max - min;
-  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-  let h;
-  switch (max) {
-    case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-    case g: h = ((b - r) / d + 2) / 6; break;
-    default: h = ((r - g) / d + 4) / 6;
-  }
-  return { h: h * 360, s: s * 100, l: l * 100 };
-}
-
-function computeHueBucket(hex, bgHex) {
-  const { h, s, l } = hexToHSL(hex);
-  if (s < 10 || l > 95 || l < 5) {
-    if (bgHex) {
-      const bgL = hexToHSL(bgHex).l;
-      if (bgL > 50) return "white";
-      if (l > 50) return "grey";
-      return "black";
-    } else {
-      if (l < 45) return "black";
-      if (l > 65) return "white";
-      return "grey";
-    }
-  }
-  if (h >= 10 && h <= 55 && s <= 65 && l <= 52) return "brown";
-  if (h > 175 && h <= 200 && s > 40) return "cyan";
-  if (h <= 15 || h >= 340) return "red";
-  if (h <= 40) return "orange";
-  if (h <= 65) return "yellow";
-  if (h <= 160) return "green";
-  if (h <= 195) return "teal";
-  if (h <= 250) return "blue";
-  if (h <= 290) return "purple";
-  return "pink";
-}
-
-function normalizeHex(value) {
-  return value.startsWith("0x") || value.startsWith("0X") ? "#" + value.slice(2) : value;
-}
-
 const EXPECTED_COLOR_KEYS = [
   "accent", "cursor", "foreground", "background",
   "selection_foreground", "selection_background",
@@ -110,7 +62,7 @@ function parseColors(tomlContent) {
     const parsed = parseTOML(tomlContent);
     const colors = {};
     for (const key of EXPECTED_COLOR_KEYS) {
-      if (typeof parsed[key] === "string") colors[key] = normalizeHex(parsed[key]);
+      if (typeof parsed[key] === "string") colors[key] = cssHex(parsed[key]);
     }
     return colors.accent ? colors : null;
   } catch { return null; }
@@ -131,21 +83,21 @@ function parseAlacrittyColors(tomlContent) {
     const section = parsed.colors;
     if (!section) return null;
     const colors = {};
-    if (section.primary?.background) colors.background = normalizeHex(section.primary.background);
-    if (section.primary?.foreground) colors.foreground = normalizeHex(section.primary.foreground);
-    if (section.cursor?.cursor) colors.cursor = normalizeHex(section.cursor.cursor);
-    if (section.selection?.background) colors.selection_background = normalizeHex(section.selection.background);
+    if (section.primary?.background) colors.background = cssHex(section.primary.background);
+    if (section.primary?.foreground) colors.foreground = cssHex(section.primary.foreground);
+    if (section.cursor?.cursor) colors.cursor = cssHex(section.cursor.cursor);
+    if (section.selection?.background) colors.selection_background = cssHex(section.selection.background);
     if (section.selection?.text && section.selection.text !== "CellForeground") {
-      colors.selection_foreground = normalizeHex(section.selection.text);
+      colors.selection_foreground = cssHex(section.selection.text);
     }
     if (section.normal) {
       for (const [n, k] of Object.entries(ALACRITTY_NORMAL_MAP)) {
-        if (section.normal[n]) colors[k] = normalizeHex(section.normal[n]);
+        if (section.normal[n]) colors[k] = cssHex(section.normal[n]);
       }
     }
     if (section.bright) {
       for (const [n, k] of Object.entries(ALACRITTY_BRIGHT_MAP)) {
-        if (section.bright[n]) colors[k] = normalizeHex(section.bright[n]);
+        if (section.bright[n]) colors[k] = cssHex(section.bright[n]);
       }
     }
     if (!colors.accent) colors.accent = colors.color4 ?? colors.color5 ?? colors.foreground ?? "";

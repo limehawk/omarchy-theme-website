@@ -1,0 +1,17 @@
+---
+import { installCmd } from "../lib/site.js";
+const { githubUrl } = Astro.props;
+const gitUrl = githubUrl.endsWith(".git") ? githubUrl : `${githubUrl}.git`;
+const cmd = installCmd(githubUrl);
+---
+<div data-install-command={cmd} class="bg-black/40 p-4 font-mono text-sm cursor-pointer hover:bg-black/55 hover:border-white/15 transition-all rounded-xl border border-border/40">
+  <div class="flex items-start gap-3">
+    <div class="flex-1 min-w-0">
+      <div><span class="text-green-400/60 select-none mr-2">$</span><span class="text-foreground/90 font-medium">omarchy-theme-install</span></div>
+      <div class="text-muted-foreground text-xs pl-5 mt-1 break-all">{gitUrl}</div>
+    </div>
+    <button data-install-copy type="button" aria-label="Copy install command" class="size-7 inline-flex items-center justify-center rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors">
+      <span data-install-icon><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
+    </button>
+  </div>
+</div>

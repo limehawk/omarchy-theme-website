@@ -1,9 +1,7 @@
 @import "tailwindcss";
 
-@source "../scripts/**/*.js";
-@source "../public/**/*.js";
-@source "../out/**/*.html";
-@source "../out/**/*";
+@source "./**/*.{astro,js}";
+@source "../scripts/colors.js";
 
 @font-face {
   font-family: "Symbols Nerd Font";

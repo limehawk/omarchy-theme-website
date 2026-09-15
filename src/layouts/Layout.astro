@@ -1,0 +1,39 @@
+---
+import "../styles.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { pageTitle, canonicalUrl, DEFAULT_DESCRIPTION, SITE_URL } from "../lib/site.js";
+
+const { title, description, path, ogImage } = Astro.props;
+const fullTitle = pageTitle(title);
+const desc = description ?? DEFAULT_DESCRIPTION;
+const canonical = canonicalUrl(path);
+const og = ogImage ?? `${SITE_URL}/og-default.png`;
+---
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{fullTitle}</title>
+<meta name="description" content={desc}>
+<link rel="canonical" href={canonical}>
+<link rel="icon" href="/favicon.ico">
+<meta property="og:type" content="website">
+<meta property="og:title" content={fullTitle}>
+<meta property="og:description" content={desc}>
+<meta property="og:url" content={canonical}>
+<meta property="og:site_name" content="Omarchy Themes">
+<meta property="og:image" content={og}>
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Workbench&display=swap" rel="stylesheet">
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col">
+<Header />
+<main class="flex-1"><slot /></main>
+<Footer />
+<script src="../client/app.js"></script>
+</body>
+</html>

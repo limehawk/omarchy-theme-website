@@ -1,0 +1,140 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import InstallCommand from "../../components/InstallCommand.astro";
+import { parseColors } from "../../../scripts/colors.js";
+import { themeStaticPaths, readmePathPrefix } from "../../lib/themes.js";
+import { renderReadme } from "../../lib/readme.js";
+import { terminalPreviewLarge } from "../../lib/terminal.js";
+import { colorPaletteLarge } from "../../lib/palette.js";
+import { securityHtml } from "../../lib/security.js";
+
+export function getStaticPaths() {
+  return themeStaticPaths();
+}
+
+const { theme, overlayBase, overlayVariants } = Astro.props;
+const colors = parseColors(theme.colors_json);
+const apps = theme.apps_json ? JSON.parse(theme.apps_json) : [];
+const termStyle = theme.terminal_style_json ? JSON.parse(theme.terminal_style_json) : null;
+const branch = theme.default_branch ?? "main";
+const pathPrefix = readmePathPrefix(theme);
+const palette = colors ? colorPaletteLarge(colors) : "";
+const preview = colors ? terminalPreviewLarge({ colors, slug: theme.slug, themeName: theme.name, termStyle }) : "";
+const readme = theme.readme_text
+  ? renderReadme(theme.readme_text, theme.github_owner, theme.github_repo, branch, pathPrefix)
+  : "";
+const warnings = securityHtml(theme);
+const description = theme.description ?? `Preview and install the ${theme.name} color scheme for Omarchy.`;
+---
+<Layout title={theme.name} description={description} path={`/themes/${theme.slug}/`}>
+  <div class="mx-auto max-w-6xl px-6 py-10">
+    <nav class="mb-8 font-mono text-xs flex items-center gap-2 text-muted-foreground">
+      <a href="/themes/" class="hover:text-foreground transition-colors">themes</a>
+      <span aria-hidden="true">/</span>
+      <span class="text-foreground">{theme.name}</span>
+    </nav>
+    <div class="grid gap-10 lg:grid-cols-[1fr_340px]">
+      <div class="space-y-8 min-w-0">
+        {colors && (
+          <div class="space-y-3">
+            <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">color palette</h2>
+            <div class="border border-border/40 rounded-xl bg-card p-6" set:html={palette} />
+          </div>
+        )}
+        {preview && (
+          <div class="space-y-3">
+            <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">preview</h2>
+            <Fragment set:html={preview} />
+          </div>
+        )}
+        {readme && (
+          <div class="space-y-3">
+            <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">readme</h2>
+            <div class="border border-border/40 rounded-xl bg-card p-6" set:html={readme} />
+          </div>
+        )}
+      </div>
+      <aside class="space-y-6 order-first lg:order-none">
+        <div class="sticky top-20 space-y-6">
+          <div class="space-y-3">
+            <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">about</h2>
+            <div class="border border-border/40 rounded-xl bg-card p-5 space-y-4">
+              <div>
+                <h2 class="font-mono text-lg font-medium">{theme.name}</h2>
+                {theme.description && (
+                  <p class="text-sm text-muted-foreground leading-relaxed mt-1">{theme.description}</p>
+                )}
+              </div>
+              {theme.stars > 0 && (
+                <span class="badge font-mono gap-1.5 inline-flex items-center">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 8.5 22 9.3 17 14 18 21 12 17.8 6 21 7 14 2 9.3 9 8.5 12 2"/></svg>
+                  {theme.stars}
+                </span>
+              )}
+              <div class="border-t border-border/40 pt-4 space-y-3">
+                <a href={`/themes/?author=${encodeURIComponent(theme.github_owner)}`} class="inline-flex items-center gap-2 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  {theme.github_owner}
+                </a>
+                <a href={theme.github_url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  {theme.github_owner}/{theme.github_repo}
+                </a>
+              </div>
+            </div>
+          </div>
+          {overlayBase && (
+            <div class="border border-border/40 rounded-xl bg-card p-5 space-y-3 text-sm">
+              <div class="flex items-center gap-2 font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                enhances builtin
+              </div>
+              <p class="text-muted-foreground leading-relaxed">
+                This theme overlays the builtin <a href={`/themes/${overlayBase.slug}/`} class="text-foreground hover:underline">{overlayBase.name}</a>. Files it provides take precedence — anything missing falls back to the builtin.
+              </p>
+              {overlayVariants.length > 0 && (
+                <div class="border-t border-border/40 pt-3">
+                  <p class="font-mono text-xs text-muted-foreground mb-2">other variants</p>
+                  <div class="flex flex-wrap gap-1.5">
+                    {overlayVariants.map((v) => (
+                      <a href={`/themes/${v.slug}/`} class="badge-outline font-mono text-xs">{v.name}</a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {theme.is_builtin === 1 && overlayVariants.length > 0 && (
+            <div class="border border-border/40 rounded-xl bg-card p-5 space-y-3 text-sm">
+              <div class="flex items-center gap-2 font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                community variants
+              </div>
+              <p class="text-muted-foreground leading-relaxed">These community themes enhance this builtin with custom files.</p>
+              <div class="flex flex-wrap gap-1.5">
+                {overlayVariants.map((v) => (
+                  <a href={`/themes/${v.slug}/`} class="badge-outline font-mono text-xs">{v.name}</a>
+                ))}
+              </div>
+            </div>
+          )}
+          {apps.length > 0 && (
+            <div class="space-y-2">
+              <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">supported apps</h2>
+              <div class="flex flex-wrap gap-1.5">
+                {apps.sort().map((a) => (
+                  <span class="badge-outline font-mono text-xs">{a}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          <div class="space-y-2">
+            <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">install</h2>
+            <InstallCommand githubUrl={theme.github_url} />
+          </div>
+          {warnings && <Fragment set:html={warnings} />}
+        </div>
+      </aside>
+    </div>
+  </div>
+</Layout>

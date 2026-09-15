@@ -85,3 +85,28 @@ export function hexToRgba(hex, alpha) {
   const b = parseInt(h.slice(4, 6), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
+
+export function computeHueBucket(hex, bgHex) {
+  const { h, s, l } = hexToHsl(hex);
+  if (s < 10 || l > 95 || l < 5) {
+    if (bgHex) {
+      const bgL = hexToHsl(bgHex).l;
+      if (bgL > 50) return "white";
+      if (l > 50) return "grey";
+      return "black";
+    }
+    if (l < 45) return "black";
+    if (l > 65) return "white";
+    return "grey";
+  }
+  if (h >= 10 && h <= 55 && s <= 65 && l <= 52) return "brown";
+  if (h > 175 && h <= 200 && s > 40) return "cyan";
+  if (h <= 15 || h >= 340) return "red";
+  if (h <= 40) return "orange";
+  if (h <= 65) return "yellow";
+  if (h <= 160) return "green";
+  if (h <= 195) return "teal";
+  if (h <= 250) return "blue";
+  if (h <= 290) return "purple";
+  return "pink";
+}

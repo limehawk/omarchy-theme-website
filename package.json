@@ -4,13 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build.js",
-    "dev": "node scripts/build.js && bun x serve out -p 3000",
+    "build": "astro build",
+    "dev": "astro dev --port 3000",
+    "preview": "astro preview --port 3000",
     "serve": "bun x serve out -p 3000",
+    "test": "bun test",
     "deploy": "bun run build && bun x wrangler pages deploy out/ --project-name=omarchy-theme-website"
   },
   "devDependencies": {
-    "@tailwindcss/cli": "^4.3.3",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.3.2",
     "marked": "^18.0.9",
     "sanitize-html": "^2.17.7",
     "sharp": "^0.35.3",

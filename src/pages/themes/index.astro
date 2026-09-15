@@ -1,0 +1,96 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import ThemeCard from "../../components/ThemeCard.astro";
+import { COLOR_BUCKETS, BUCKET_COLORS } from "../../../scripts/colors.js";
+import { loadLiveThemes, browseThemes } from "../../lib/themes.js";
+
+const themes = browseThemes(loadLiveThemes());
+const count = themes.length;
+---
+<Layout
+  title="Browse Themes"
+  description="Browse all Omarchy themes — community and builtin terminal color schemes."
+  path="/themes/"
+>
+  <div class="mx-auto max-w-6xl px-6 py-10 space-y-8">
+    <div>
+      <h1 class="font-mono text-2xl font-bold tracking-tight text-foreground">themes</h1>
+      <p class="mt-1 font-mono text-sm text-muted-foreground" data-theme-count>{count} theme{count !== 1 ? "s" : ""} available</p>
+    </div>
+
+    <div class="lg:sticky lg:top-14 z-30 -mx-6 px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border/40 space-y-4">
+      <div class="flex flex-col sm:flex-row gap-3">
+        <div class="flex-1 relative">
+          <input type="search" name="q" placeholder="find a theme..." autocomplete="off" class="w-full font-mono text-sm pl-3 pr-8 h-9 rounded-md border border-border/60 bg-input/40 focus:outline-none focus:ring-1 focus:ring-ring">
+          <button type="button" data-clear="q" hidden class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors font-mono text-sm leading-none size-5 inline-flex items-center justify-center rounded hover:bg-foreground/10" aria-label="Clear theme search">×</button>
+        </div>
+        <div class="w-48 relative">
+          <input type="search" name="author" placeholder="find an author..." autocomplete="off" class="w-full font-mono text-sm pl-3 pr-8 h-9 rounded-md border border-border/60 bg-input/40 focus:outline-none focus:ring-1 focus:ring-ring">
+          <button type="button" data-clear="author" hidden class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors font-mono text-sm leading-none size-5 inline-flex items-center justify-center rounded hover:bg-foreground/10" aria-label="Clear author search">×</button>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-start gap-x-6 gap-y-3">
+        <div class="space-y-1.5">
+          <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">source</span>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" name="source" value="all" class="pill">all</button>
+            <button type="button" name="source" value="community" class="pill">community</button>
+            <button type="button" name="source" value="builtin" class="pill">builtin</button>
+          </div>
+        </div>
+        <div class="space-y-1.5">
+          <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">brightness</span>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" name="brightness" value="" class="pill">all</button>
+            <button type="button" name="brightness" value="dark" class="pill">dark</button>
+            <button type="button" name="brightness" value="light" class="pill">light</button>
+          </div>
+        </div>
+        <div class="space-y-1.5">
+          <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">view</span>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" name="view" value="" class="pill">screenshots</button>
+            <button type="button" name="view" value="terminal" class="pill">terminal</button>
+          </div>
+        </div>
+        <div class="space-y-1.5">
+          <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">sort</span>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" name="sort" value="stars" class="pill">stars</button>
+            <button type="button" name="sort" value="name" class="pill">name</button>
+            <button type="button" name="sort" value="newest" class="pill">newest</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hidden lg:block space-y-1.5">
+        <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">color</span>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" data-color-all class="pill">all</button>
+          {COLOR_BUCKETS.map((bucket) => (
+            <button type="button" name="color" value={bucket} title={bucket} class="color-dot size-4 rounded-sm shrink-0 transition-all" style={`background-color:${BUCKET_COLORS[bucket]}`}></button>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:hidden sticky top-14 z-30 -mx-6 px-6 py-3 bg-background/80 backdrop-blur-md border-b border-border/40">
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" data-color-all class="pill">all</button>
+        {COLOR_BUCKETS.map((bucket) => (
+          <button type="button" name="color" value={bucket} title={bucket} class="color-dot size-4 rounded-sm shrink-0 transition-all" style={`background-color:${BUCKET_COLORS[bucket]}`}></button>
+        ))}
+      </div>
+    </div>
+
+    <div data-theme-grid class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div data-search-divider hidden class="col-span-full font-mono text-xs text-muted-foreground border-t border-border/40 pt-4 mt-2">also mentioned in descriptions and READMEs</div>
+      {themes.map((t) => <ThemeCard theme={t} />)}
+    </div>
+    <div data-theme-empty hidden class="py-20 text-center space-y-3">
+      <p class="font-mono text-sm text-muted-foreground">no themes found</p>
+      <a data-request-link href="https://github.com/limehawk/omarchy-theme-website/discussions/new?category=theme-requests" target="_blank" rel="noopener noreferrer" class="btn-outline inline-flex items-center gap-2 font-mono text-xs px-3 h-8 rounded-md">request a theme <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
+</Layout>

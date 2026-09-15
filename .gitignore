@@ -1,6 +1,7 @@
 node_modules/
 /out/
 /build
+.astro/
 .DS_Store
 *.pem
 npm-debug.log*
