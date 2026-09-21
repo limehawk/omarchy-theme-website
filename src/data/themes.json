@@ -1,6 +1,10 @@
 {
   "curated": [
     {
+      "name": "1800",
+      "url": "https://github.com/simoz/omarchy-1800-theme"
+    },
+    {
       "name": "2 Haxorz",
       "url": "https://github.com/nixfred/omarchy-2-haxorz-theme"
     },
@@ -51,6 +55,10 @@
     {
       "name": "Anonymous",
       "url": "https://github.com/j4v3l/omarchy-anonymous-theme"
+    },
+    {
+      "name": "Another World",
+      "url": "https://github.com/simoz/omarchy-another-world-theme"
     },
     {
       "name": "Apocalypse",
@@ -133,12 +141,16 @@
       "url": "https://github.com/Hydradevx/omarchy-azure-glow-theme"
     },
     {
-      "name": "Batman",
-      "url": "https://github.com/OldJobobo/omarchy-batman-theme"
-    },
-    {
       "name": "Bad Hand",
       "url": "https://github.com/bjornramberg/omarchy-bad-hand-theme"
+    },
+    {
+      "name": "Banish",
+      "url": "https://github.com/HANCORE-linux/omarchy-banish-theme"
+    },
+    {
+      "name": "Batman",
+      "url": "https://github.com/OldJobobo/omarchy-batman-theme"
     },
     {
       "name": "Batou",
@@ -161,10 +173,6 @@
       "url": "https://github.com/OldJobobo/omarchy-biscuit-de-mar-dark-theme"
     },
     {
-      "name": "Bocchi",
-      "url": "https://github.com/dinxsec/omarchy-bocchi-theme"
-    },
-    {
       "name": "Black Arch",
       "url": "https://github.com/ankur311sudo/black_arch"
     },
@@ -177,17 +185,16 @@
       "url": "https://github.com/HANCORE-linux/omarchy-blackmoney-theme"
     },
     {
-      "name": "Blood Moon",
-      "dead": true,
-      "url": "https://github.com/mehulrathod-0666/omarchy-blood-moon-theme"
-    },
-    {
       "name": "Blackturq",
       "url": "https://github.com/HANCORE-linux/omarchy-blackturq-theme"
     },
     {
       "name": "Blackwall",
       "url": "https://github.com/rlind3r/omarchy-blackwall-theme"
+    },
+    {
+      "name": "Blade Runner",
+      "url": "https://github.com/BVisagie/omarchy-blade-runner-theme"
     },
     {
       "name": "Bliss",
@@ -197,6 +204,11 @@
     {
       "name": "Bliss",
       "url": "https://github.com/twodogsdave/omarchy-bliss-theme"
+    },
+    {
+      "name": "Blood Moon",
+      "dead": true,
+      "url": "https://github.com/mehulrathod-0666/omarchy-blood-moon-theme"
     },
     {
       "name": "Blue Man On Crane",
@@ -209,6 +221,10 @@
     {
       "name": "BlueRidge",
       "url": "https://github.com/hipsterusername/omarchy-blueridge-dark-theme"
+    },
+    {
+      "name": "Bocchi",
+      "url": "https://github.com/dinxsec/omarchy-bocchi-theme"
     },
     {
       "name": "Boring",
@@ -248,7 +264,7 @@
       "url": "https://github.com/Luquatic/omarchy-catppuccin-dark"
     },
     {
-      "name": "Catppuccin Frappé",
+      "name": "Catppuccin Frapp\u00e9",
       "url": "https://github.com/mikemayuare/omarchy-catppuccin-frappe"
     },
     {
@@ -304,6 +320,18 @@
       "url": "https://github.com/knappkevin/omarchy-crimson-gold-theme"
     },
     {
+      "name": "Cthulhu Colour Out Of Space",
+      "url": "https://github.com/sonderbydk/omarchy-cthulhu-colour-out-of-space-theme"
+    },
+    {
+      "name": "Cthulhu Deep One",
+      "url": "https://github.com/sonderbydk/omarchy-cthulhu-deep-one-theme"
+    },
+    {
+      "name": "Cthulhu Rlyeh",
+      "url": "https://github.com/sonderbydk/omarchy-cthulhu-rlyeh-theme"
+    },
+    {
       "name": "Cyberphunk",
       "url": "https://github.com/derejealemu/omarchy-cyberphunk-theme"
     },
@@ -323,6 +351,10 @@
     {
       "name": "Darcula",
       "url": "https://github.com/noahljungberg/omarchy-darcula-theme"
+    },
+    {
+      "name": "Dark Magic",
+      "url": "https://github.com/davidsmorais/omarchy-dark-magic-theme"
     },
     {
       "name": "Dark Voyage",
@@ -357,14 +389,6 @@
       "url": "https://github.com/jbnunn/omarchy-delorean-theme"
     },
     {
-      "name": "Dionysus",
-      "url": "https://github.com/joeyvigil/omarchy-dionysus-theme"
-    },
-    {
-      "name": "Dolomites",
-      "url": "https://github.com/LeblancAlex/omarchy-dolomites-theme"
-    },
-    {
       "name": "Demon",
       "url": "https://github.com/HANCORE-linux/omarchy-demon-theme"
     },
@@ -375,6 +399,14 @@
     {
       "name": "Diablo Dreams",
       "url": "https://github.com/twodogsdave/omarchy-diablo-dreams-theme"
+    },
+    {
+      "name": "Dionysus",
+      "url": "https://github.com/joeyvigil/omarchy-dionysus-theme"
+    },
+    {
+      "name": "Dolomites",
+      "url": "https://github.com/LeblancAlex/omarchy-dolomites-theme"
     },
     {
       "name": "Dos-Moos",
@@ -522,6 +554,10 @@
       "url": "https://github.com/row-huh/omarchy-ghost-pastel-theme"
     },
     {
+      "name": "Ghostwire",
+      "url": "https://github.com/vispobish01-netizen/omarchy-ghostwire-theme"
+    },
+    {
       "name": "Giants",
       "url": "https://github.com/twodogsdave/omarchy-giants-theme"
     },
@@ -591,6 +627,14 @@
       "url": "https://github.com/JonasAllenCodes/omarchy-hakkar-green-better-contrast-theme"
     },
     {
+      "name": "Harbor",
+      "url": "https://github.com/HANCORE-linux/omarchy-harbor-theme"
+    },
+    {
+      "name": "Harbor Dark",
+      "url": "https://github.com/HANCORE-linux/omarchy-harbordark-theme"
+    },
+    {
       "name": "Hardlight",
       "url": "https://github.com/randallyash/omarchy-hardlight-theme"
     },
@@ -605,14 +649,6 @@
     {
       "name": "Helios",
       "url": "https://github.com/LeblancAlex/omarchy-helios-theme"
-    },
-    {
-      "name": "Harbor",
-      "url": "https://github.com/HANCORE-linux/omarchy-harbor-theme"
-    },
-    {
-      "name": "Harbor Dark",
-      "url": "https://github.com/HANCORE-linux/omarchy-harbordark-theme"
     },
     {
       "name": "Hex",
@@ -663,7 +699,7 @@
       "url": "https://github.com/moerdowo/omarchy-kitt-theme"
     },
     {
-      "name": "Kansō",
+      "name": "Kans\u014d",
       "url": "https://github.com/HANCORE-linux/omarchy-kanso-theme"
     },
     {
@@ -679,16 +715,16 @@
       "url": "https://github.com/celsobenedetti/omarchy-koda"
     },
     {
-      "name": "KTM 390 Enduro R",
-      "url": "https://github.com/twodogsdave/KTM-390-Enduro-R"
-    },
-    {
       "name": "Koyanagi",
       "url": "https://github.com/YutaKoyanagi10/omarchy-koyanagi-theme"
     },
     {
       "name": "Krishna",
       "url": "https://github.com/tanishenigma/omarchy-krishna-theme"
+    },
+    {
+      "name": "KTM 390 Enduro R",
+      "url": "https://github.com/twodogsdave/KTM-390-Enduro-R"
     },
     {
       "name": "Kurayami",
@@ -815,6 +851,10 @@
       "url": "https://github.com/davydotcom/omarchy-mini-jcw-theme"
     },
     {
+      "name": "Monarchy",
+      "url": "https://github.com/MistaMyke/omarchy-monarchy-theme"
+    },
+    {
       "name": "Monochrome",
       "url": "https://github.com/Swarnim114/omarchy-monochrome-theme"
     },
@@ -894,6 +934,10 @@
     {
       "name": "Night Owl",
       "url": "https://github.com/janhesters/omarchy-night-owl-theme"
+    },
+    {
+      "name": "Nightwire",
+      "url": "https://github.com/MayberryDT/omarchy-nightwire-theme"
     },
     {
       "name": "Noctua",
@@ -988,6 +1032,14 @@
       "url": "https://github.com/leweyse/omarchy-pmndrs-theme"
     },
     {
+      "name": "Pokemon",
+      "url": "https://github.com/Ammar36500/omarchy-pokemon-theme"
+    },
+    {
+      "name": "Portal",
+      "url": "https://github.com/trevritchie/omarchy-portal-theme"
+    },
+    {
       "name": "Pretty CVNT",
       "dead": true,
       "url": "https://github.com/WalkerMillgress/omarchy-pretty-cvnt-theme"
@@ -1007,10 +1059,6 @@
     {
       "name": "Purplewave",
       "url": "https://github.com/dotsilva/omarchy-purplewave-theme"
-    },
-    {
-      "name": "Pokemon",
-      "url": "https://github.com/Ammar36500/omarchy-pokemon-theme"
     },
     {
       "name": "Quattro Sunset",
@@ -1077,7 +1125,7 @@
       "url": "https://github.com/tahfizhabib/omarchy-rustleaf-theme"
     },
     {
-      "name": "Ryū",
+      "name": "Ry\u016b",
       "url": "https://github.com/HANCORE-linux/omarchy-ryu-theme"
     },
     {
@@ -1251,6 +1299,10 @@
       "url": "https://github.com/monoooki/omarchy-torrentz-hydra-theme"
     },
     {
+      "name": "Turbonite",
+      "url": "https://github.com/HANCORE-linux/omarchy-turbonite-theme"
+    },
+    {
       "name": "Turner",
       "url": "https://github.com/simoz/omarchy-turner-theme"
     },
@@ -1261,10 +1313,6 @@
     {
       "name": "Type17",
       "url": "https://github.com/atif-1402/omarchy-type17-theme"
-    },
-    {
-      "name": "Turbonite",
-      "url": "https://github.com/HANCORE-linux/omarchy-turbonite-theme"
     },
     {
       "name": "Untitled",
