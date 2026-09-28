@@ -89,6 +89,10 @@
       "url": "https://github.com/bjarneo/omarchy-ash-theme"
     },
     {
+      "name": "Asphalt Legends",
+      "url": "https://github.com/AlxWolfenstein97/omarchy-asphalt-legends-theme"
+    },
+    {
       "name": "Astrochy",
       "url": "https://github.com/Nanjiifr/omarchy-astrochy-theme"
     },
@@ -239,6 +243,10 @@
       "url": "https://github.com/mattbbia/bulwer-omarchy"
     },
     {
+      "name": "C.A.G.E.D.",
+      "url": "https://github.com/AlxWolfenstein97/omarchy-half-life-caged-theme"
+    },
+    {
       "name": "C64",
       "url": "https://github.com/scar45/omarchy-c64-theme"
     },
@@ -304,6 +312,10 @@
       "url": "https://github.com/defer/omarchy-corporate-theme"
     },
     {
+      "name": "Counter-Strike",
+      "url": "https://github.com/AlxWolfenstein97/omarchy-counter-strike-theme"
+    },
+    {
       "name": "Covenant",
       "url": "https://github.com/dotsilva/omarchy-covenant-theme"
     },
@@ -330,6 +342,10 @@
     {
       "name": "Cthulhu Rlyeh",
       "url": "https://github.com/sonderbydk/omarchy-cthulhu-rlyeh-theme"
+    },
+    {
+      "name": "Cyber Shadow",
+      "url": "https://github.com/AlxWolfenstein97/omarchy-cyber-shadow-theme"
     },
     {
       "name": "Cyberphunk",
@@ -407,6 +423,14 @@
     {
       "name": "Dolomites",
       "url": "https://github.com/LeblancAlex/omarchy-dolomites-theme"
+    },
+    {
+      "name": "Doom 2016",
+      "url": "https://github.com/AlxWolfenstein97/omarchy-doom-2016-theme"
+    },
+    {
+      "name": "Doom Eternal",
+      "url": "https://github.com/AlxWolfenstein97/omarchy-doom-eternal-theme"
     },
     {
       "name": "Dos-Moos",
@@ -651,6 +675,10 @@
       "url": "https://github.com/LeblancAlex/omarchy-helios-theme"
     },
     {
+      "name": "HEV Suit",
+      "url": "https://github.com/AlxWolfenstein97/omarchy-hev-suit-theme"
+    },
+    {
       "name": "Hex",
       "url": "https://github.com/OldJobobo/omarchy-hex-theme"
     },
@@ -703,8 +731,20 @@
       "url": "https://github.com/HANCORE-linux/omarchy-kanso-theme"
     },
     {
+      "name": "Kato Megumi",
+      "url": "https://github.com/SoujiOkita98/omarchy-kato-megumi-theme"
+    },
+    {
+      "name": "Kato Megumi Dark",
+      "url": "https://github.com/SoujiOkita98/omarchy-kato-megumi-dark-theme"
+    },
+    {
       "name": "Kawasaki Foundry",
       "url": "https://github.com/komagata/omarchy-kawasaki-foundry-theme"
+    },
+    {
+      "name": "Killer Instinct",
+      "url": "https://github.com/AlxWolfenstein97/omarchy-killer-instinct-theme"
     },
     {
       "name": "Kimiko",
@@ -825,6 +865,10 @@
     {
       "name": "Memento Mori",
       "url": "https://github.com/hipsterusername/omarchy-memento-mori-theme"
+    },
+    {
+      "name": "Metal Gear Rising",
+      "url": "https://github.com/AlxWolfenstein97/omarchy-metal-gear-rising-theme"
     },
     {
       "name": "Miasma",
@@ -992,6 +1036,10 @@
       "url": "https://github.com/jlopezxs/omarchy-one-dark-pro-darker-theme"
     },
     {
+      "name": "Operation Galuga",
+      "url": "https://github.com/AlxWolfenstein97/omarchy-operation-galuga-theme"
+    },
+    {
       "name": "Outpost",
       "url": "https://github.com/simoz/omarchy-outpost-theme"
     },
@@ -1014,6 +1062,10 @@
     {
       "name": "Perkins Harnly",
       "url": "https://github.com/mattbbia/heritage-palette-omarchy"
+    },
+    {
+      "name": "Permafrost",
+      "url": "https://github.com/MayberryDT/omarchy-permafrost-theme"
     },
     {
       "name": "PhosphorOS",
@@ -1233,6 +1285,14 @@
       "url": "https://github.com/shresth-dwivedi/omarchy-stillwood-theme"
     },
     {
+      "name": "Street Fighter 6",
+      "url": "https://github.com/AlxWolfenstein97/omarchy-street-fighter-6-theme"
+    },
+    {
+      "name": "Study",
+      "url": "https://github.com/MayberryDT/omarchy-study-theme"
+    },
+    {
       "name": "Sunkissed",
       "url": "https://github.com/loeclos/omarchy-sunkissed-theme"
     },
@@ -1278,8 +1338,16 @@
       "url": "https://github.com/brianstarke/omarchy-terafox-theme"
     },
     {
+      "name": "Terminator 2D: NO FATE",
+      "url": "https://github.com/AlxWolfenstein97/omarchy-terminator-2d-no-fate-theme"
+    },
+    {
       "name": "Terramour",
       "url": "https://github.com/atif-1402/omarchy-terramour-theme"
+    },
+    {
+      "name": "The Stanley Parable",
+      "url": "https://github.com/AlxWolfenstein97/omarchy-stanley-parable-theme"
     },
     {
       "name": "TheGreek",
@@ -1313,6 +1381,10 @@
     {
       "name": "Type17",
       "url": "https://github.com/atif-1402/omarchy-type17-theme"
+    },
+    {
+      "name": "Ultra Street Fighter IV",
+      "url": "https://github.com/AlxWolfenstein97/omarchy-ultra-street-fighter-iv-theme"
     },
     {
       "name": "Untitled",
