@@ -8,6 +8,14 @@
 
 ![omarchytheme.com browse page](browse-screenshot.png)
 
+## URLs
+
+| | |
+|--|--|
+| **Production** | https://omarchytheme.com |
+| **Dev** | https://omarchy-theme-website.pages.dev |
+| **Host** | Cloudflare Pages |
+
 ## Features
 
 - **Color filtering** — browse themes by hue: red, orange, yellow, green, teal, blue, purple, pink, or monochrome
