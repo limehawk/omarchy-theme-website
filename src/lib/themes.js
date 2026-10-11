@@ -2,6 +2,7 @@ import themesData from "../data/themes-data.json" with { type: "json" };
 import registry from "../data/themes.json" with { type: "json" };
 import strikes from "../data/scrape-404s.json" with { type: "json" };
 import { isDeadBy404s } from "../../scripts/scrape-404s.js";
+import { isOled, parseColors } from "../../scripts/colors.js";
 
 const POPULAR_STAR_THRESHOLD = 50;
 
@@ -125,7 +126,8 @@ export function homeSections(themes) {
   const discover = getRandomThemes(themes, 6, featuredIds);
   const discoverIds = new Set([...featuredIds, ...discover.map((t) => t.id)]);
   const authorSpotlight = getFeaturedAuthor(themes, discoverIds);
-  return { newest, featured, discover, authorSpotlight };
+  const oled = dailyShuffle(themes.filter((t) => !discoverIds.has(t.id) && isOled(parseColors(t.colors_json)))).slice(0, 6);
+  return { newest, featured, discover, oled, authorSpotlight };
 }
 
 export function browseThemes(themes) {

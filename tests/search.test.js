@@ -65,3 +65,13 @@ test("source=builtin keeps only builtin themes", () => {
   expect(passing.length).toBeGreaterThan(0);
   expect(passing.every((c) => c.isBuiltin)).toBe(true);
 });
+
+test("brightness=oled keeps only true-black themes, color matches any of a theme's hues", () => {
+  const cards = themes.map(themeToFilterCard);
+  const base = { q: "", sort: "newest", source: "all", color: [], brightness: "", author: "" };
+  const oled = filterAndSort(cards, { ...base, brightness: "oled" }).passing;
+  expect(oled.length).toBeGreaterThan(0);
+  expect(oled.every((c) => c.oled && c.brightness === "dark")).toBe(true);
+  const purple = filterAndSort(cards, { ...base, color: ["purple"] }).passing;
+  expect(purple.some((c) => c.slug === "catppuccin-mocha")).toBe(true);
+});

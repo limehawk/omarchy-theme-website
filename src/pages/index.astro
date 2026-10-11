@@ -4,7 +4,7 @@ import ThemeCard from "../components/ThemeCard.astro";
 import { loadLiveThemes, homeSections } from "../lib/themes.js";
 
 const themes = loadLiveThemes();
-const { newest, featured, discover, authorSpotlight } = homeSections(themes);
+const { newest, featured, discover, oled, authorSpotlight } = homeSections(themes);
 ---
 <Layout title="home" path="/">
   <div class="mx-auto max-w-6xl px-6">
@@ -57,6 +57,18 @@ const { newest, featured, discover, authorSpotlight } = homeSections(themes);
         </div>
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {discover.map((t) => <ThemeCard theme={t} />)}
+        </div>
+      </section>
+    )}
+
+    {oled.length > 0 && (
+      <section class="pb-20">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="font-mono text-xs text-muted-foreground uppercase tracking-wider">true black — oled</h2>
+          <a href="/themes/?brightness=oled" class="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">view all →</a>
+        </div>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {oled.map((t) => <ThemeCard theme={t} />)}
         </div>
       </section>
     )}

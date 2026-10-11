@@ -1,4 +1,4 @@
-import { getThemeBrightness } from "../../scripts/colors.js";
+import { getThemeBrightness, isOled, parseColors, themeHues } from "../../scripts/colors.js";
 
 export function searchText(theme) {
   const raw = `${theme.name} ${theme.slug} ${theme.description ?? ""} ${theme.readme_text ?? ""}`;
@@ -32,12 +32,20 @@ export function fieldsFromDataset(dataset) {
   };
 }
 
+export function cardColorFacets(theme) {
+  const colors = parseColors(theme.colors_json);
+  return {
+    hues: themeHues(colors, theme.colors_source === "alacritty.toml"),
+    oled: isOled(colors),
+  };
+}
+
 export function themeToFilterCard(theme) {
   return {
+    ...cardColorFacets(theme),
     name: theme.name,
     slug: theme.slug,
     isBuiltin: theme.is_builtin === 1,
-    hue: theme.primary_hue ?? "",
     brightness: getThemeBrightness(theme.colors_json),
     author: theme.github_owner,
     stars: theme.stars,
@@ -91,9 +99,10 @@ export function filterAndSort(cards, state) {
     if (state.source === "community" && card.isBuiltin) return false;
     if (state.source === "builtin" && !card.isBuiltin) return false;
     if (state.color?.length > 0) {
-      if (!card.hue || !state.color.includes(card.hue)) return false;
+      if (!card.hues.some((h) => state.color.includes(h))) return false;
     }
-    if (state.brightness && card.brightness !== state.brightness) return false;
+    if (state.brightness === "oled") { if (!card.oled) return false; }
+    else if (state.brightness && card.brightness !== state.brightness) return false;
     if (state.author && !card.author.toLowerCase().includes(state.author.toLowerCase())) return false;
     if (terms.length) {
       const s = score(card.fields, terms);
