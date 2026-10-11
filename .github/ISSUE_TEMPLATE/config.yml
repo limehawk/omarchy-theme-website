@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Request a theme
+    url: https://github.com/limehawk/omarchy-theme-website/discussions/categories/theme-requests
+    about: Want a theme that doesn't exist yet? Ask in Theme requests.
   - name: Email
     url: mailto:help@omarchytheme.com
     about: Questions about the gallery — help@omarchytheme.com

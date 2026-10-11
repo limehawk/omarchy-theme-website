@@ -30,6 +30,10 @@ Have a theme you'd like listed? [Open a submission](https://github.com/limehawk/
 
 Your repo needs a `colors.toml` at the root with the standard Omarchy color keys. A `preview.png` and `README.md` are recommended. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
+## Request a Theme
+
+Want a theme that doesn't exist yet? Ask in [Theme requests](https://github.com/limehawk/omarchy-theme-website/discussions/categories/theme-requests).
+
 ## Disclaimer
 
 omarchytheme.com is an independent community site, not affiliated with or endorsed by the Omarchy project or 37signals.
