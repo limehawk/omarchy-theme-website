@@ -30,6 +30,25 @@ export const BUCKET_COLORS = {
   white: "#e5e5e5",
 };
 
+// Omarchy 4 themes name their colors (red, bright_red, muted, ...) where older themes list ANSI color0..color15.
+// Fill any missing legacy key from its name, using Omarchy's own mapping, so both kinds of theme show a full palette.
+const OMARCHY_NAMED_KEYS = {
+  color0: ["background"], color1: ["red"], color2: ["green"], color3: ["yellow"], color4: ["blue"],
+  color5: ["magenta", "purple"], color6: ["cyan"], color7: ["foreground"], color8: ["muted", "dark_foreground"],
+  color9: ["bright_red"], color10: ["bright_green"], color11: ["bright_yellow"], color12: ["bright_blue"],
+  color13: ["bright_magenta", "bright_purple"], color14: ["bright_cyan"], color15: ["bright_foreground"],
+  cursor: ["bright_foreground"], selection_background: ["selection"], selection_foreground: ["bright_foreground"],
+};
+
+export function withLegacyKeys(theme) {
+  const out = { ...theme };
+  for (const [key, names] of Object.entries(OMARCHY_NAMED_KEYS)) {
+    const name = names.find((n) => typeof theme[n] === "string");
+    if (typeof out[key] !== "string" && name) out[key] = theme[name];
+  }
+  return out;
+}
+
 export function cssHex(hex) {
   return hex.startsWith("0x") || hex.startsWith("0X") ? "#" + hex.slice(2) : hex;
 }

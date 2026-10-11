@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { getThemeBrightness, isOled, parseColors, themeHues } from "../scripts/colors.js";
+import { getThemeBrightness, isOled, parseColors, themeHues, withLegacyKeys } from "../scripts/colors.js";
 import { loadLiveThemes } from "../src/lib/themes.js";
 
 test("hue of a single vivid accent", () => {
@@ -44,4 +44,28 @@ test("real theme colors_json drives the same helpers", () => {
   expect(getThemeBrightness(light.colors_json)).toBe("light");
   expect(themeHues(parseColors(dark.colors_json))).toContain("blue");
   expect(isOled(parseColors(themes.find((t) => t.slug === "vantablack").colors_json))).toBe(true);
+});
+
+test("Omarchy 4 named colors fill the ANSI palette", () => {
+  const c = withLegacyKeys({
+    background: "#000000", foreground: "#E6D5B8", accent: "#FFA630", muted: "#3A3026", selection: "#2E2112",
+    red: "#D4573B", green: "#9AA35A", yellow: "#E3B341", blue: "#B0A08A", magenta: "#C9876A", cyan: "#A39A6E",
+    bright_red: "#E8775C", bright_green: "#B3BB78", bright_yellow: "#F0C866", bright_blue: "#C9BBA5",
+    bright_magenta: "#DDA084", bright_cyan: "#BDB487", bright_foreground: "#F5EBD8",
+  });
+  expect(c.color0).toBe("#000000");
+  expect(c.color1).toBe("#D4573B");
+  expect(c.color7).toBe("#E6D5B8");
+  expect(c.color8).toBe("#3A3026");
+  expect(c.color13).toBe("#DDA084");
+  expect(c.color15).toBe("#F5EBD8");
+  expect(c.cursor).toBe("#F5EBD8");
+  expect(c.selection_background).toBe("#2E2112");
+});
+
+test("legacy ANSI keys are kept as written", () => {
+  const c = withLegacyKeys({ background: "#101010", color0: "#202020", color1: "#ff0000", red: "#00ff00", purple: "#aa00aa" });
+  expect(c.color0).toBe("#202020");
+  expect(c.color1).toBe("#ff0000");
+  expect(c.color5).toBe("#aa00aa");
 });

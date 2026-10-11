@@ -13,7 +13,7 @@ import {
   load404Strikes,
   save404Strikes,
 } from "./scrape-404s.js";
-import { themeHues, cssHex } from "./colors.js";
+import { themeHues, cssHex, withLegacyKeys } from "./colors.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -59,7 +59,7 @@ const EXPECTED_COLOR_KEYS = [
 
 function parseColors(tomlContent) {
   try {
-    const parsed = parseTOML(tomlContent);
+    const parsed = withLegacyKeys(parseTOML(tomlContent));
     const colors = {};
     for (const key of EXPECTED_COLOR_KEYS) {
       if (typeof parsed[key] === "string") colors[key] = cssHex(parsed[key]);
