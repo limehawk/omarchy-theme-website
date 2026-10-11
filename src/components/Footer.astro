@@ -1,23 +1,28 @@
+---
+const linkClass = "whitespace-nowrap font-mono text-xs text-muted-foreground hover:text-foreground transition-colors";
+---
 <footer class="border-t border-border/50 mt-auto">
-  <div class="mx-auto max-w-6xl px-6 py-8 flex flex-col gap-6">
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-      <p class="font-mono text-xs text-muted-foreground sm:flex-1">
+  <div class="mx-auto max-w-6xl px-6 py-8 flex flex-col gap-5">
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <p class="font-mono text-xs text-muted-foreground whitespace-nowrap">
         <a href="/" class="hover:text-foreground transition-colors">omarchy themes</a>
       </p>
-      <a href="https://limehawk.io" target="_blank" rel="noopener noreferrer" class="group flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors">
-        <span class="text-xs uppercase tracking-[0.3em] font-thin">A</span>
-        <span class="text-2xl text-green-500 group-hover:text-green-400 transition-colors" style="font-family: 'Workbench', system-ui;">LIMEHAWK</span>
-        <span class="text-xs uppercase tracking-[0.3em] font-thin">Project</span>
-      </a>
-      <div class="flex items-center justify-end gap-6 sm:flex-1">
-        <a href="mailto:help@omarchytheme.com" class="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">help@omarchytheme.com</a>
-        <a href="https://omarchy.org/" target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">omarchy</a>
-        <a href="https://github.com/limehawk/omarchy-theme-website/issues/new?template=submit-theme.yml" target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">contribute a theme</a>
-        <a href="https://github.com/limehawk/omarchy-theme-website/discussions/new?category=theme-requests" target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors">request a theme</a>
-      </div>
+      <nav class="flex flex-wrap items-center gap-x-6 gap-y-2 md:flex-nowrap" aria-label="Footer">
+        <a href="mailto:help@omarchytheme.com" class={linkClass}>help@omarchytheme.com</a>
+        <a href="https://omarchy.org/" target="_blank" rel="noopener noreferrer" class={linkClass}>omarchy</a>
+        <a href="https://github.com/limehawk/omarchy-theme-website/issues/new?template=submit-theme.yml" target="_blank" rel="noopener noreferrer" class={linkClass}>contribute a theme</a>
+        <a href="https://github.com/limehawk/omarchy-theme-website/discussions/new?category=theme-requests" target="_blank" rel="noopener noreferrer" class={linkClass}>request a theme</a>
+      </nav>
     </div>
-    <p class="text-center text-[10px] text-muted-foreground/60 leading-relaxed">
-      This is an independent community site, not affiliated with or endorsed by the Omarchy project, 37signals, Hyprland, or Arch Linux. All trademarks belong to their respective owners.
-    </p>
+    <div class="flex flex-col gap-3 border-t border-border/30 pt-5 md:flex-row md:items-center md:justify-between md:gap-8">
+      <p class="max-w-2xl text-[10px] text-muted-foreground/60 leading-relaxed">
+        This is an independent community site, not affiliated with or endorsed by the Omarchy project, 37signals, Hyprland, or Arch Linux. All trademarks belong to their respective owners.
+      </p>
+      <a href="https://limehawk.io" target="_blank" rel="noopener noreferrer" class="group flex shrink-0 items-center gap-1.5 whitespace-nowrap font-mono text-[10px] text-muted-foreground/70 hover:text-foreground transition-colors">
+        <span>a</span>
+        <span class="text-sm text-green-500/70 group-hover:text-green-400 transition-colors" style="font-family: 'Workbench', system-ui;">LIMEHAWK</span>
+        <span>project</span>
+      </a>
+    </div>
   </div>
 </footer>
