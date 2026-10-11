@@ -417,6 +417,19 @@ async function fetchRepoTree(owner, repo, branch) {
   return new Set(d.tree.filter((e) => e.type === "blob").map((e) => e.path));
 }
 
+// Any file at the theme root with "readme" in its name, any case
+// (README.md, Readme.md, readme.markdown, README). Prefer markdown, then shortest name.
+function findReadmePath(files, pathPrefix) {
+  const hits = [...files].filter((p) => {
+    if (!p.startsWith(pathPrefix)) return false;
+    const rest = p.slice(pathPrefix.length);
+    return !rest.includes("/") && rest.toLowerCase().includes("readme");
+  });
+  const isMd = (p) => /\.(md|markdown)$/i.test(p);
+  hits.sort((a, b) => (isMd(b) - isMd(a)) || a.length - b.length);
+  return hits[0] ?? null;
+}
+
 async function fetchTerminalStyle(owner, repo, pathPrefix) {
   let style = null, source;
   const ghostty = await fetchFileContent(owner, repo, `${pathPrefix}ghostty.conf`);
@@ -465,7 +478,7 @@ async function scrapeTheme(entry, cachedBySlug) {
   // If preview_url is still missing, do a full scrape anyway so findPreviewImage
   // can pick up a backgrounds/ wallpaper (or a newly added preview.png).
   const cached = cachedBySlug?.get(slug);
-  if (cached && cached.github_pushed_at === meta.pushed_at && cached.colors_json !== undefined && cached.preview_url) {
+  if (cached && cached.github_pushed_at === meta.pushed_at && cached.colors_json !== undefined && cached.preview_url && cached.readme_text) {
     const cachedColors = cached.colors_json ? JSON.parse(cached.colors_json) : null;
     return {
       ...cached,
@@ -501,8 +514,8 @@ async function scrapeTheme(entry, cachedBySlug) {
   const vscodeWarnings = await scanVscodeExtension(files, owner, repo, pathPrefix.replace(/\/$/, ""));
   const allWarnings = [...fileWarnings, ...luaWarnings, ...vscodeWarnings];
 
-  const readme = await fetchFileContent(owner, repo, `${pathPrefix}README.md`)
-    ?? await fetchFileContent(owner, repo, `${pathPrefix}readme.md`);
+  const readmePath = findReadmePath(files, pathPrefix);
+  const readme = readmePath ? await fetchFileContent(owner, repo, readmePath) : null;
 
   const previewUrl = findPreviewImage(files, readme, owner, repo, branch, pathPrefix);
 
