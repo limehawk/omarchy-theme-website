@@ -153,6 +153,14 @@
       "url": "https://github.com/HANCORE-linux/omarchy-banish-theme"
     },
     {
+      "name": "Barbie",
+      "url": "https://github.com/BBIEPavkov/omarchy-barbie-theme"
+    },
+    {
+      "name": "Barbie Malibu",
+      "url": "https://github.com/BBIEPavkov/omarchy-barbie-malibu-theme"
+    },
+    {
       "name": "Batman",
       "url": "https://github.com/OldJobobo/omarchy-batman-theme"
     },
@@ -272,12 +280,16 @@
       "url": "https://github.com/Luquatic/omarchy-catppuccin-dark"
     },
     {
-      "name": "Catppuccin Frapp\u00e9",
+      "name": "Catppuccin Frappé",
       "url": "https://github.com/mikemayuare/omarchy-catppuccin-frappe"
     },
     {
       "name": "Catppuccin Mocha",
       "url": "https://github.com/KidDogDad/omarchy-catppuccin-mocha-theme"
+    },
+    {
+      "name": "Cats From The Hood",
+      "url": "https://github.com/wieisdebaas/omarchy-cats-from-the-hood-theme"
     },
     {
       "name": "Cattpuccin Glass",
@@ -310,6 +322,14 @@
     {
       "name": "Corporate",
       "url": "https://github.com/defer/omarchy-corporate-theme"
+    },
+    {
+      "name": "Cosmic Cat",
+      "url": "https://github.com/wieisdebaas/omarchy-cosmic-cat-theme"
+    },
+    {
+      "name": "Cosmic Cat Light",
+      "url": "https://github.com/wieisdebaas/omarchy-cosmic-cat-light-theme"
     },
     {
       "name": "Counter-Strike",
@@ -399,6 +419,10 @@
     {
       "name": "Deckard",
       "url": "https://github.com/OldJobobo/omarchy-deckard-theme"
+    },
+    {
+      "name": "DedSec",
+      "url": "https://github.com/NostrDanish/omarchy-dedsec-theme"
     },
     {
       "name": "Delete",
@@ -739,7 +763,7 @@
       "url": "https://github.com/moerdowo/omarchy-kitt-theme"
     },
     {
-      "name": "Kans\u014d",
+      "name": "Kansō",
       "url": "https://github.com/HANCORE-linux/omarchy-kanso-theme"
     },
     {
@@ -1197,7 +1221,7 @@
       "url": "https://github.com/tahfizhabib/omarchy-rustleaf-theme"
     },
     {
-      "name": "Ry\u016b",
+      "name": "Ryū",
       "url": "https://github.com/HANCORE-linux/omarchy-ryu-theme"
     },
     {
