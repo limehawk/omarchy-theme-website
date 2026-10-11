@@ -13,7 +13,7 @@ import {
   load404Strikes,
   save404Strikes,
 } from "./scrape-404s.js";
-import { computeHueBucket, cssHex } from "./colors.js";
+import { themeHues, cssHex } from "./colors.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -487,7 +487,7 @@ async function scrapeTheme(entry, cachedBySlug) {
       description: meta.description,            // refresh
       default_branch: meta.default_branch,      // catch branch renames
       canonical_github_url: canonicalGithubUrl, // catch repo renames
-      primary_hue: cachedColors?.accent ? computeHueBucket(cachedColors.accent, cachedColors?.background) : null,
+      primary_hue: themeHues(cachedColors, cached.colors_source === "alacritty.toml")[0] ?? null,
       last_scraped_at: new Date().toISOString(),
       _from_cache: true,
     };
@@ -504,7 +504,7 @@ async function scrapeTheme(entry, cachedBySlug) {
     if (alacrittyToml) { colors = parseAlacrittyColors(alacrittyToml); if (colors) colorsSource = "alacritty.toml"; }
   }
 
-  const primaryHue = colors?.accent ? computeHueBucket(colors.accent, colors?.background) : null;
+  const primaryHue = themeHues(colors, colorsSource === "alacritty.toml")[0] ?? null;
   const terminalStyle = await fetchTerminalStyle(owner, repo, pathPrefix);
   const files = await fetchRepoTree(owner, repo, branch);
   const apps = detectApps(files, pathPrefix.replace(/\/$/, ""));

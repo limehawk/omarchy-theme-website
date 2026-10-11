@@ -1,12 +1,13 @@
 ---
 import { parseColors, getThemeBrightness } from "../../scripts/colors.js";
-import { searchText } from "../lib/search.js";
+import { cardColorFacets, searchText } from "../lib/search.js";
 import { terminalPreviewCard } from "../lib/terminal.js";
 
 const { theme } = Astro.props;
 const colors = parseColors(theme.colors_json);
 const accent = colors?.accent ?? "#4a9eff";
 const brightness = getThemeBrightness(theme.colors_json);
+const { hues, oled } = cardColorFacets(theme);
 const pushed = new Date(theme.github_pushed_at ?? theme.created_at).getTime();
 const THUMB_SIZES = "(max-width: 640px) calc(100vw - 48px), (max-width: 1024px) calc(50vw - 36px), 352px";
 const widths = Array.isArray(theme.thumbnail_widths) ? theme.thumbnail_widths : [];
@@ -17,8 +18,9 @@ const terminal = terminalPreviewCard({ colors, slug: theme.slug, themeName: them
   data-desc={(theme.description ?? "").toLowerCase()}
   data-search={searchText(theme)}
   data-author={theme.github_owner}
-  data-hue={theme.primary_hue ?? ""}
+  data-hue={hues.join(" ")}
   data-brightness={brightness}
+  data-oled={oled ? "1" : "0"}
   data-stars={theme.stars}
   data-pushed={pushed}
   data-builtin={theme.is_builtin}
