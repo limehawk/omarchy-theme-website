@@ -7,6 +7,7 @@ import { renderReadme } from "../../lib/readme.js";
 import { terminalPreviewLarge } from "../../lib/terminal.js";
 import { colorPaletteLarge } from "../../lib/palette.js";
 import { securityHtml } from "../../lib/security.js";
+import { themeOgImage } from "../../lib/og.js";
 
 export function getStaticPaths() {
   return themeStaticPaths();
@@ -26,7 +27,12 @@ const readme = theme.readme_text
 const warnings = securityHtml(theme);
 const description = theme.description ?? `Preview and install the ${theme.name} color scheme for Omarchy.`;
 ---
-<Layout title={theme.name} description={description} path={`/themes/${theme.slug}/`}>
+<Layout
+  title={theme.name}
+  description={description}
+  path={`/themes/${theme.slug}/`}
+  ogImage={themeOgImage(theme)}
+  ogImageAlt={`${theme.name} theme for Omarchy`}>
   <div class="mx-auto max-w-6xl px-6 py-10">
     <nav class="mb-8 font-mono text-xs flex items-center gap-2 text-muted-foreground">
       <a href="/themes/" class="hover:text-foreground transition-colors">themes</a>

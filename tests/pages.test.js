@@ -4,7 +4,9 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadLiveThemes, themeStaticPaths } from "../src/lib/themes.js";
-import { canonicalUrl, installCmd, pageTitle } from "../src/lib/site.js";
+import { canonicalUrl, installCmd, pageTitle, SITE_URL } from "../src/lib/site.js";
+import { OG_DEFAULT, OG_HEIGHT, OG_WIDTH, themeOgImage } from "../src/lib/og.js";
+import sharp from "sharp";
 import { DEAD_AFTER_404S, load404Strikes } from "../scripts/scrape-404s.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -24,6 +26,13 @@ function canonicalOf(html) {
   if (!m) return "";
   const href = m[0].match(/href=["']([^"']+)["']/i);
   return href ? href[1] : "";
+}
+
+function ogImageOf(html) {
+  const m = html.match(/<meta[^>]*property=["']og:image["'][^>]*>/i);
+  if (!m) return "";
+  const content = m[0].match(/content=["']([^"']*)["']/i);
+  return content ? content[1] : "";
 }
 
 function descriptionOf(html) {
@@ -121,4 +130,28 @@ test("sitemap and robots list the live URLs", () => {
   expect(sitemap).toContain("https://omarchytheme.com/themes/");
   expect(sitemap).toContain(`https://omarchytheme.com/themes/${theme.slug}/`);
   expect(sitemap).not.toContain("https://omarchytheme.com/themes/blood-moon/");
+});
+
+test("every page's og:image is a built 1200x630 image", async () => {
+  const live = loadLiveThemes();
+  const withThumb = live.find((t) => themeOgImage(t));
+  const withoutThumb = live.find((t) => !themeOgImage(t));
+  const pages = ["index.html", "themes/index.html", `themes/${withThumb.slug}/index.html`];
+  if (withoutThumb) pages.push(`themes/${withoutThumb.slug}/index.html`);
+
+  expect(ogImageOf(readOut("index.html"))).toBe(OG_DEFAULT);
+  expect(ogImageOf(readOut(`themes/${withThumb.slug}/index.html`))).toBe(themeOgImage(withThumb));
+  if (withoutThumb) expect(ogImageOf(readOut(`themes/${withoutThumb.slug}/index.html`))).toBe(OG_DEFAULT);
+
+  for (const page of pages) {
+    const url = ogImageOf(readOut(page));
+    expect(url.startsWith(`${SITE_URL}/`)).toBe(true);
+    const file = path.join(OUT, url.slice(SITE_URL.length + 1));
+    expect(existsSync(file)).toBe(true);
+    const meta = await sharp(file).metadata();
+    expect([meta.width, meta.height]).toEqual([OG_WIDTH, OG_HEIGHT]);
+  }
+  for (const t of live.filter((t) => themeOgImage(t))) {
+    expect(existsSync(path.join(OUT, "og", `${t.slug}.jpg`))).toBe(true);
+  }
 });
