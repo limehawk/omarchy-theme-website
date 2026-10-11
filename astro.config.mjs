@@ -5,16 +5,18 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadLiveThemes } from "./src/lib/themes.js";
 import { sitemapXml, ROBOTS_TXT } from "./src/lib/site.js";
+import { writeThemeOgImages } from "./src/lib/og.js";
 
 function writeSeoFiles() {
   return {
     name: "write-seo-files",
     hooks: {
-      "astro:build:done": ({ dir }) => {
+      "astro:build:done": async ({ dir }) => {
         const out = fileURLToPath(dir);
         const themes = loadLiveThemes();
         fs.writeFileSync(path.join(out, "sitemap.xml"), sitemapXml(themes));
         fs.writeFileSync(path.join(out, "robots.txt"), ROBOTS_TXT);
+        await writeThemeOgImages(themes, fileURLToPath(new URL("./public", import.meta.url)), out);
       },
     },
   };

@@ -2,13 +2,15 @@
 import "../styles.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import { pageTitle, canonicalUrl, DEFAULT_DESCRIPTION, SITE_URL } from "../lib/site.js";
+import { pageTitle, canonicalUrl, DEFAULT_DESCRIPTION } from "../lib/site.js";
+import { OG_DEFAULT, OG_WIDTH, OG_HEIGHT } from "../lib/og.js";
 
-const { title, description, path, ogImage } = Astro.props;
+const { title, description, path, ogImage, ogImageAlt } = Astro.props;
 const fullTitle = pageTitle(title);
 const desc = description ?? DEFAULT_DESCRIPTION;
 const canonical = canonicalUrl(path);
-const og = ogImage ?? `${SITE_URL}/og-default.png`;
+const og = ogImage ?? OG_DEFAULT;
+const ogAlt = ogImage ? ogImageAlt ?? fullTitle : "Omarchy Themes";
 ---
 <!DOCTYPE html>
 <html lang="en" class="dark">
@@ -19,13 +21,18 @@ const og = ogImage ?? `${SITE_URL}/og-default.png`;
 <meta name="description" content={desc}>
 <link rel="canonical" href={canonical}>
 <link rel="icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content={fullTitle}>
 <meta property="og:description" content={desc}>
 <meta property="og:url" content={canonical}>
 <meta property="og:site_name" content="Omarchy Themes">
 <meta property="og:image" content={og}>
+<meta property="og:image:width" content={String(OG_WIDTH)}>
+<meta property="og:image:height" content={String(OG_HEIGHT)}>
+<meta property="og:image:alt" content={ogAlt}>
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content={og}>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Workbench&display=swap" rel="stylesheet">
