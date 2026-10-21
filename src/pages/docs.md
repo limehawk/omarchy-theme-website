@@ -73,7 +73,11 @@ A missing theme or path returns status `404` with a JSON problem body:
 
 ## Versioning
 
-The major version is in the path: `/api/v1/`. New fields can appear in v1 at any time, so ignore fields you do not know. A breaking change will ship as `/api/v2/`, and v1 will keep working for at least six months after that.
+The major version is in the path: `/api/v1/`. New fields can appear in v1 at any time, so ignore fields you do not know. A breaking change will ship as `/api/v2/`.
+
+### Deprecation and sunset policy
+
+When a version is deprecated, every response from it carries a `Deprecation` header (RFC 9745) and a `Sunset` header (RFC 8594) with the date it stops working, at least six months later. We also note it here and in [/llms.txt](/llms.txt). No version is deprecated today.
 
 ## Rate limits
 

@@ -183,7 +183,8 @@ export const OPENAPI = {
     description:
       "Static JSON, rebuilt daily from GitHub. No key or auth. Responses are cached at the edge, so poll at most once an hour. " +
       "Versioning: the major version is in the URL path (/api/v1/). Additive changes, such as new fields, ship within v1. " +
-      "A breaking change ships as /api/v2/, and v1 keeps working for at least six months after that.",
+      "A breaking change ships as /api/v2/. Deprecation policy: a deprecated version sends Deprecation (RFC 9745) and Sunset (RFC 8594) headers " +
+      "and keeps working for at least six months. No version is deprecated today.",
     contact: { name: "Omarchy Themes", email: "help@omarchytheme.com", url: `${SITE_URL}/contact/` },
     license: { name: "MIT", identifier: "MIT" },
   },
