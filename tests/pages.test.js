@@ -132,6 +132,31 @@ test("sitemap and robots list the live URLs", () => {
   expect(sitemap).not.toContain("https://omarchytheme.com/themes/blood-moon/");
 });
 
+test("agents get Markdown mirrors, a JSON API, and its OpenAPI description", () => {
+  const live = loadLiveThemes();
+  const theme = live.find((t) => t.slug === "catppuccin") ?? live[0];
+  expect(readOut("index.md")).toStartWith("# Omarchy Themes");
+  expect(readOut(`themes/${theme.slug}/index.md`)).toContain(installCmd(theme.github_url));
+  for (const page of ["about", "contact", "privacy", "docs"]) {
+    const md = readOut(`${page}/index.md`);
+    expect(md).toStartWith("# ");
+    expect(md.length).toBeGreaterThan(500);
+    expect(readOut(`${page}/index.html`)).toContain(`href="/${page}/index.md"`);
+  }
+  expect(readOut("index.html")).toContain('type="text/markdown" href="/index.md"');
+  expect(readOut("index.html")).toContain("application/ld+json");
+  expect(readOut("llms.txt")).toContain("## When to use");
+
+  const api = JSON.parse(readOut("api/v1/themes.json"));
+  expect(api.count).toBe(live.length);
+  expect(JSON.parse(readOut(`api/v1/themes/${theme.slug}.json`)).install_command).toBe(installCmd(theme.github_url));
+
+  const spec = JSON.parse(readOut("openapi.json"));
+  const ops = Object.values(spec.paths).flatMap((p) => Object.values(p));
+  expect(ops.map((o) => o.operationId)).toEqual(["listThemes", "getTheme"]);
+  expect(readOut("sitemap.xml")).toContain(`${SITE_URL}/docs/`);
+});
+
 test("every page's og:image is a built 1200x630 image", async () => {
   const live = loadLiveThemes();
   const withThumb = live.find((t) => themeOgImage(t));

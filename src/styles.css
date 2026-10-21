@@ -186,3 +186,20 @@ input[type="search"]::-webkit-search-decoration {
   50% { opacity: 0.3; }
 }
 .animate-pulse { animation: pulse-cursor 1.2s ease-in-out infinite; }
+
+/* About, contact, privacy, and docs pages (Markdown in src/pages) */
+.prose-page { line-height: 1.7; color: var(--muted-foreground); }
+.prose-page h1 { font-family: var(--font-mono); font-size: 1.875rem; font-weight: 700; color: var(--foreground); margin-bottom: 1.5rem; }
+.prose-page h2 { font-family: var(--font-mono); font-size: 1.125rem; font-weight: 600; color: var(--foreground); margin: 2.5rem 0 0.75rem; }
+.prose-page h3 { font-family: var(--font-mono); font-weight: 600; color: var(--foreground); margin: 1.5rem 0 0.5rem; }
+.prose-page p, .prose-page ul, .prose-page pre, .prose-page table { margin-bottom: 1rem; }
+.prose-page ul { list-style: disc; padding-left: 1.25rem; }
+.prose-page li { margin-bottom: 0.25rem; }
+.prose-page a { color: var(--foreground); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in oklab, var(--foreground) 30%, transparent); }
+.prose-page a:hover { text-decoration-color: var(--foreground); }
+.prose-page strong { color: var(--foreground); }
+.prose-page code { overflow-wrap: anywhere; font-family: var(--font-mono); font-size: 0.875em; color: var(--foreground); }
+.prose-page pre { font-family: var(--font-mono); font-size: 0.8125rem; background: rgb(0 0 0 / 0.4); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1rem; overflow-x: auto; }
+.prose-page table { display: block; overflow-x: auto; }
+.prose-page th, .prose-page td { text-align: left; padding: 0.25rem 1rem 0.25rem 0; border-bottom: 1px solid var(--border); }
+.prose-page th { color: var(--foreground); }

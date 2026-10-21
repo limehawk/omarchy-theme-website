@@ -2,11 +2,12 @@
 import Layout from "../layouts/Layout.astro";
 import ThemeCard from "../components/ThemeCard.astro";
 import { loadLiveThemes, homeSections } from "../lib/themes.js";
+import { SITE_JSON_LD } from "../lib/site.js";
 
 const themes = loadLiveThemes();
 const { newest, featured, discover, oled, authorSpotlight } = homeSections(themes);
 ---
-<Layout title="home" path="/">
+<Layout title="home" path="/" jsonLd={SITE_JSON_LD}>
   <div class="mx-auto max-w-6xl px-6">
     <section class="py-20 sm:py-28">
       <div class="max-w-2xl space-y-6">
