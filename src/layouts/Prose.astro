@@ -1,0 +1,7 @@
+---
+import Layout from "./Layout.astro";
+const { frontmatter, url } = Astro.props;
+---
+<Layout title={frontmatter.title} description={frontmatter.description} path={url.endsWith("/") ? url : `${url}/`}>
+  <article class="prose-page mx-auto max-w-3xl px-6 py-16 sm:py-24"><slot /></article>
+</Layout>
