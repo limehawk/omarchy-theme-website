@@ -93,12 +93,13 @@ export function llmsTxt(themes) {
 
 - A user runs Omarchy and wants a new look: find a theme by name, color, or popularity, then give them the \`omarchy-theme-install\` command from the theme's page or the API.
 - A user asks for a theme like an editor scheme they already use (Catppuccin, Gruvbox, Nord, Tokyo Night): search the catalog by name.
-- A user wants a dark, light, OLED, or single-hue palette: filter \`/api/v1/themes.json\` by \`primary_hue\` or by the \`background\` color.
+- A user wants a dark, light, OLED, or single-hue palette: call \`/api/v1/themes.json?hue=blue\`, or filter the full list by the \`background\` color.
 - Do not use it for Omarchy itself (installing, configuring, troubleshooting). Use https://omarchy.org/ for that.
 
 ## How to call it
 
 - \`GET ${SITE_URL}/api/v1/themes.json\`: every theme with its install command and colors. No key, no auth.
+- \`GET ${SITE_URL}/api/v1/themes.json?q=nord&hue=blue&limit=5\`: search by name, slug, or author, filter by hue, cap the count.
 - \`GET ${SITE_URL}/api/v1/themes/{slug}.json\`: one theme.
 - Every page also answers \`Accept: text/markdown\`, or append \`index.md\` to its URL.
 
@@ -194,11 +195,36 @@ export const OPENAPI = {
     "/api/v1/themes.json": {
       get: {
         operationId: "listThemes",
-        summary: "List every theme",
-        description: "Returns all listed themes, most-starred first, with install commands and full palettes.",
+        summary: "List or search themes",
+        description:
+          "Returns themes most-starred first, with install commands and full palettes. With no parameters it returns every theme. " +
+          "Filters combine: q matches name, slug, or author; hue matches primary_hue.",
+        parameters: [
+          {
+            name: "q",
+            in: "query",
+            required: false,
+            description: "Case-insensitive text to find in the theme name, slug, or author, for example nord.",
+            schema: { type: "string", minLength: 1 },
+          },
+          {
+            name: "hue",
+            in: "query",
+            required: false,
+            description: "Only themes whose primary_hue matches, for example blue, red, green, purple, or grey.",
+            schema: { type: "string", minLength: 1 },
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            description: "Return at most this many themes.",
+            schema: { type: "integer", minimum: 1, maximum: 500 },
+          },
+        ],
         responses: {
           200: {
-            description: "All themes.",
+            description: "Matching themes.",
             content: {
               "application/json": {
                 schema: {
@@ -212,6 +238,7 @@ export const OPENAPI = {
               },
             },
           },
+          400: errorResponse("A parameter is out of range, such as limit=0."),
         },
       },
     },
