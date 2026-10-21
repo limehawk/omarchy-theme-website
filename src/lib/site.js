@@ -19,6 +19,7 @@ export const SITE_JSON_LD = {
       "@type": "Organization",
       "@id": `${SITE_URL}/#organization`,
       name: "Limehawk",
+      description: "IT company in Knoxville, Tennessee that builds and runs Omarchy Themes, a free community gallery of Omarchy desktop themes.",
       url: "https://limehawk.io",
       email: "help@omarchytheme.com",
       sameAs: ["https://github.com/limehawk"],

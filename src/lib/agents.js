@@ -22,7 +22,7 @@ export function themeRecord(t) {
     preview_url: t.preview_url ?? null,
     page_url: `${SITE_URL}/themes/${t.slug}/`,
     markdown_url: `${SITE_URL}/themes/${t.slug}/index.md`,
-    api_url: `${SITE_URL}/api/themes/${t.slug}.json`,
+    api_url: `${SITE_URL}/api/v1/themes/${t.slug}.json`,
     updated_at: t.github_pushed_at ?? t.updated_at,
   };
 }
@@ -59,7 +59,7 @@ export function browseMarkdown(themes) {
   const sorted = [...themes].sort((a, b) => a.name.localeCompare(b.name));
   return `# All Omarchy themes
 
-${themes.length} themes, A to Z. Each page has the install command, the full color palette, and the theme's README. The same list is available as JSON at ${SITE_URL}/api/themes.json.
+${themes.length} themes, A to Z. Each page has the install command, the full color palette, and the theme's README. The same list is available as JSON at ${SITE_URL}/api/v1/themes.json.
 
 ${sorted.map(themeLine).join("\n")}
 `;
@@ -93,13 +93,13 @@ export function llmsTxt(themes) {
 
 - A user runs Omarchy and wants a new look: find a theme by name, color, or popularity, then give them the \`omarchy-theme-install\` command from the theme's page or the API.
 - A user asks for a theme like an editor scheme they already use (Catppuccin, Gruvbox, Nord, Tokyo Night): search the catalog by name.
-- A user wants a dark, light, OLED, or single-hue palette: filter \`/api/themes.json\` by \`primary_hue\` or by the \`background\` color.
+- A user wants a dark, light, OLED, or single-hue palette: filter \`/api/v1/themes.json\` by \`primary_hue\` or by the \`background\` color.
 - Do not use it for Omarchy itself (installing, configuring, troubleshooting). Use https://omarchy.org/ for that.
 
 ## How to call it
 
-- \`GET ${SITE_URL}/api/themes.json\`: every theme with its install command and colors. No key, no auth.
-- \`GET ${SITE_URL}/api/themes/{slug}.json\`: one theme.
+- \`GET ${SITE_URL}/api/v1/themes.json\`: every theme with its install command and colors. No key, no auth.
+- \`GET ${SITE_URL}/api/v1/themes/{slug}.json\`: one theme.
 - Every page also answers \`Accept: text/markdown\`, or append \`index.md\` to its URL.
 
 ## Docs
@@ -167,9 +167,11 @@ const themeSchema = {
   },
 };
 
+// Schemas are inlined rather than $ref'd so function-calling tools that skip
+// $ref resolution still see typed responses.
 const errorResponse = (description) => ({
   description,
-  content: { "application/problem+json": { schema: { $ref: "#/components/schemas/Problem" } } },
+  content: { "application/problem+json": { schema: problemSchema } },
 });
 
 export const OPENAPI = {
@@ -179,14 +181,16 @@ export const OPENAPI = {
     version: "1.0.0",
     summary: "Read-only catalog of community themes for the Omarchy Linux desktop.",
     description:
-      "Static JSON, rebuilt daily from GitHub. No key or auth. Responses are cached at the edge, so poll at most once an hour.",
+      "Static JSON, rebuilt daily from GitHub. No key or auth. Responses are cached at the edge, so poll at most once an hour. " +
+      "Versioning: the major version is in the URL path (/api/v1/). Additive changes, such as new fields, ship within v1. " +
+      "A breaking change ships as /api/v2/, and v1 keeps working for at least six months after that.",
     contact: { name: "Omarchy Themes", email: "help@omarchytheme.com", url: `${SITE_URL}/contact/` },
     license: { name: "MIT", identifier: "MIT" },
   },
   externalDocs: { url: `${SITE_URL}/docs/` },
   servers: [{ url: SITE_URL }],
   paths: {
-    "/api/themes.json": {
+    "/api/v1/themes.json": {
       get: {
         operationId: "listThemes",
         summary: "List every theme",
@@ -201,7 +205,7 @@ export const OPENAPI = {
                   required: ["count", "themes"],
                   properties: {
                     count: { type: "integer" },
-                    themes: { type: "array", items: { $ref: "#/components/schemas/Theme" } },
+                    themes: { type: "array", items: themeSchema },
                   },
                 },
               },
@@ -210,7 +214,7 @@ export const OPENAPI = {
         },
       },
     },
-    "/api/themes/{slug}.json": {
+    "/api/v1/themes/{slug}.json": {
       get: {
         operationId: "getTheme",
         summary: "Get one theme",
@@ -225,7 +229,7 @@ export const OPENAPI = {
           },
         ],
         responses: {
-          200: { description: "The theme.", content: { "application/json": { schema: { $ref: "#/components/schemas/Theme" } } } },
+          200: { description: "The theme.", content: { "application/json": { schema: themeSchema } } },
           404: errorResponse("No theme has this slug."),
         },
       },
@@ -238,7 +242,7 @@ export const OPENAPI = {
 export const API_CATALOG = {
   linkset: [
     {
-      anchor: `${SITE_URL}/api/`,
+      anchor: `${SITE_URL}/api/v1/`,
       "service-desc": [{ href: `${SITE_URL}/openapi.json`, type: "application/vnd.oai.openapi+json" }],
       "service-doc": [{ href: `${SITE_URL}/docs/`, type: "text/html" }],
     },

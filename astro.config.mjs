@@ -22,10 +22,10 @@ function writeAgentFiles(out, themes) {
   write(out, "llms.txt", llmsTxt(themes));
   write(out, "openapi.json", OPENAPI);
   write(out, ".well-known/api-catalog", API_CATALOG);
-  write(out, "api/themes.json", { count: themes.length, themes: byStars.map(themeRecord) });
+  write(out, "api/v1/themes.json", { count: themes.length, themes: byStars.map(themeRecord) });
   for (const t of themes) {
     write(out, `themes/${t.slug}/index.md`, themeMarkdown(t));
-    write(out, `api/themes/${t.slug}.json`, themeRecord(t));
+    write(out, `api/v1/themes/${t.slug}.json`, themeRecord(t));
   }
   for (const page of PROSE_PAGES) {
     const src = fs.readFileSync(new URL(`./src/pages/${page}.md`, import.meta.url), "utf8");

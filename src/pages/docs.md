@@ -18,13 +18,13 @@ The Omarchy Themes API is a free, read-only JSON copy of the theme catalog. Use 
 
 | Method | Path | Operation | Returns |
 | --- | --- | --- | --- |
-| GET | `/api/themes.json` | `listThemes` | Every theme, most stars first |
-| GET | `/api/themes/{slug}.json` | `getTheme` | One theme |
+| GET | `/api/v1/themes.json` | `listThemes` | Every theme, most stars first |
+| GET | `/api/v1/themes/{slug}.json` | `getTheme` | One theme |
 
 ### List every theme
 
 ```bash
-curl https://omarchytheme.com/api/themes.json
+curl https://omarchytheme.com/api/v1/themes.json
 ```
 
 ```json
@@ -49,7 +49,7 @@ Each theme has `slug`, `name`, `description`, `author`, `repository`, `stars`, `
 ### Get one theme
 
 ```bash
-curl https://omarchytheme.com/api/themes/catppuccin.json
+curl https://omarchytheme.com/api/v1/themes/catppuccin.json
 ```
 
 The slug is the last part of the theme's page URL. For `https://omarchytheme.com/themes/catppuccin/` it is `catppuccin`.
@@ -66,14 +66,18 @@ A missing theme or path returns status `404` with a JSON problem body:
   "title": "Not found",
   "status": 404,
   "code": "not_found",
-  "detail": "No API resource at /api/themes/nope.json.",
-  "resolution": "List themes at /api/themes.json and use a slug from that list."
+  "detail": "No API resource at /api/v1/themes/nope.json.",
+  "resolution": "List themes at /api/v1/themes.json and use a slug from that list."
 }
 ```
 
+## Versioning
+
+The major version is in the path: `/api/v1/`. New fields can appear in v1 at any time, so ignore fields you do not know. A breaking change will ship as `/api/v2/`, and v1 will keep working for at least six months after that.
+
 ## Rate limits
 
-The API is static files on a CDN, so we do not count your requests. Please keep to the fair-use policy in the `RateLimit-Policy` header on every API response: 60 requests a minute. The data changes once a day, so caching `/api/themes.json` for an hour is plenty. If we ever do throttle you, you will get status `429` with a `Retry-After` header.
+The API is static files on a CDN, so we do not count your requests. Please keep to the fair-use limit that every API response states in its `RateLimit-Policy` and `X-RateLimit-Limit` headers: 60 requests a minute. The data changes once a day, so caching `/api/v1/themes.json` for an hour is plenty. If we ever do throttle you, you will get status `429` with a `Retry-After` header.
 
 ## Markdown pages
 

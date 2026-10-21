@@ -147,9 +147,9 @@ test("agents get Markdown mirrors, a JSON API, and its OpenAPI description", () 
   expect(readOut("index.html")).toContain("application/ld+json");
   expect(readOut("llms.txt")).toContain("## When to use");
 
-  const api = JSON.parse(readOut("api/themes.json"));
+  const api = JSON.parse(readOut("api/v1/themes.json"));
   expect(api.count).toBe(live.length);
-  expect(JSON.parse(readOut(`api/themes/${theme.slug}.json`)).install_command).toBe(installCmd(theme.github_url));
+  expect(JSON.parse(readOut(`api/v1/themes/${theme.slug}.json`)).install_command).toBe(installCmd(theme.github_url));
 
   const spec = JSON.parse(readOut("openapi.json"));
   const ops = Object.values(spec.paths).flatMap((p) => Object.values(p));

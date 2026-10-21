@@ -12,7 +12,6 @@
 /api/*
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=3600
-  RateLimit-Policy: "fair-use";q=60;w=60
 
 /openapi.json
   Access-Control-Allow-Origin: *
