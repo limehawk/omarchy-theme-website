@@ -111,7 +111,8 @@ export function terminalPreviewLarge({ colors, slug, themeName, termStyle }) {
   const cardBg = opacity < 1 ? hexToRgba(colors.background ?? "#1a1a2e", opacity) : (colors.background ?? "#1a1a2e");
   const cardRadius = termStyle?.rounding;
   const innerPadding = termStyle?.padding;
-  const termFont = termStyle?.font_family;
+  // Goes inside a quoted CSS string; a quote or ";" from the author's config would break out of it.
+  const termFont = /^[\w .+-]{1,64}$/.test(termStyle?.font_family ?? "") ? termStyle.font_family : undefined;
   const cursorStyle = termStyle?.cursor_style ?? "block";
   const fg = colors.foreground ?? "#ccc";
   const accent = colors.color2 ?? colors.accent ?? "#50fa7b";

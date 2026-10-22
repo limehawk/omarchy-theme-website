@@ -49,8 +49,14 @@ export function withLegacyKeys(theme) {
   return out;
 }
 
+// Theme colors come from authors' repos and land in style attributes, so anything
+// but a plain hex color is dropped: "#fff;position:fixed" would add CSS declarations.
+const HEX_COLOR = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+
 export function cssHex(hex) {
-  return hex.startsWith("0x") || hex.startsWith("0X") ? "#" + hex.slice(2) : hex;
+  if (typeof hex !== "string") return undefined;
+  const v = /^0x/i.test(hex) ? "#" + hex.slice(2) : hex;
+  return HEX_COLOR.test(v) ? v : undefined;
 }
 
 export function parseColors(colorsJson) {
@@ -58,7 +64,10 @@ export function parseColors(colorsJson) {
   try {
     const raw = JSON.parse(colorsJson);
     const out = {};
-    for (const [k, v] of Object.entries(raw)) out[k] = cssHex(v);
+    for (const [k, v] of Object.entries(raw)) {
+      const c = cssHex(v);
+      if (c) out[k] = c;
+    }
     return out;
   } catch {
     return null;

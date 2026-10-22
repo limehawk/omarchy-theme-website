@@ -53,9 +53,24 @@ export function swatchHexFromImg(src = "", alt = "") {
   return null;
 }
 
+// Classes the renderer emits. README authors may use only these: Tailwind turns any
+// class-like token into site CSS, so an open class attribute let a README hide the
+// install box and security warning or cover the page.
+const CLS = {
+  pre: "bg-muted/30 rounded-lg p-4 overflow-x-auto max-h-50 text-xs subpixel-antialiased",
+  code: "block whitespace-pre",
+  codespan: "bg-muted/50 px-1.5 py-0.5 rounded font-mono text-xs",
+  swatch: "readme-swatch inline-block align-middle size-[1.125rem] rounded-md border border-white/15 shrink-0",
+  tableWrap: "overflow-x-auto",
+  table: "text-xs font-mono border-separate border-spacing-x-4 border-spacing-y-1",
+  th: "px-3 py-2 text-left text-muted-foreground font-medium align-middle whitespace-nowrap",
+  td: "px-3 py-2 align-middle",
+};
+const words = (...c) => c.join(" ").split(" ");
+
 function swatchChip(hex) {
   const h = cssHex(hex);
-  return `<span class="readme-swatch inline-block align-middle size-[1.125rem] rounded-md border border-white/15 shrink-0" style="background-color:${escapeHtml(h)}" title="${escapeHtml(h)}" aria-hidden="true"></span>`;
+  return `<span class="${CLS.swatch}" style="background-color:${escapeHtml(h)}" title="${escapeHtml(h)}" aria-hidden="true"></span>`;
 }
 
 const SANITIZE_OPTS = {
@@ -74,11 +89,17 @@ const SANITIZE_OPTS = {
     span: ["class", "style", "title"],
     div: ["class"],
     table: ["class"],
-    thead: ["class"],
-    tbody: ["class"],
-    tr: ["class"],
     th: ["align", "class"],
     td: ["align", "class"],
+  },
+  allowedClasses: {
+    pre: words(CLS.pre),
+    code: [...words(CLS.code, CLS.codespan), "language-*"],
+    span: words(CLS.swatch),
+    div: words(CLS.tableWrap),
+    table: words(CLS.table),
+    th: words(CLS.th),
+    td: words(CLS.td),
   },
   allowedStyles: {
     span: {
@@ -119,18 +140,18 @@ export function renderReadme(content, owner, repo, branch, pathPrefix = "") {
     return `<h${depth} class="${cls}">${text}</h${depth}>`;
   };
   renderer.code = function ({ text, lang }) {
-    return `<pre class="bg-muted/30 rounded-lg p-4 overflow-x-auto max-h-50 text-xs subpixel-antialiased"><code class="block whitespace-pre${lang ? ` language-${escapeHtml(lang)}` : ""}">${escapeHtml(text)}</code></pre>`;
+    return `<pre class="${CLS.pre}"><code class="${CLS.code}${lang ? ` language-${escapeHtml(lang)}` : ""}">${escapeHtml(text)}</code></pre>`;
   };
   renderer.codespan = function ({ text }) {
-    return `<code class="bg-muted/50 px-1.5 py-0.5 rounded font-mono text-xs">${text}</code>`;
+    return `<code class="${CLS.codespan}">${text}</code>`;
   };
   renderer.blockquote = function ({ tokens }) {
     return `<blockquote class="border-l-2 border-border/60 pl-4 italic text-muted-foreground/80">${this.parser.parse(tokens)}</blockquote>`;
   };
   renderer.table = function ({ header, rows }) {
-    const headHtml = header.map((cell) => `<th class="px-3 py-2 text-left text-muted-foreground font-medium align-middle whitespace-nowrap">${this.parser.parseInline(cell.tokens)}</th>`).join("");
-    const bodyHtml = rows.map((row) => `<tr>${row.map((cell) => `<td class="px-3 py-2 align-middle">${this.parser.parseInline(cell.tokens)}</td>`).join("")}</tr>`).join("");
-    return `<div class="overflow-x-auto"><table class="text-xs font-mono border-separate border-spacing-x-4 border-spacing-y-1">${headHtml ? `<thead><tr>${headHtml}</tr></thead>` : ""}<tbody>${bodyHtml}</tbody></table></div>`;
+    const headHtml = header.map((cell) => `<th class="${CLS.th}">${this.parser.parseInline(cell.tokens)}</th>`).join("");
+    const bodyHtml = rows.map((row) => `<tr>${row.map((cell) => `<td class="${CLS.td}">${this.parser.parseInline(cell.tokens)}</td>`).join("")}</tr>`).join("");
+    return `<div class="${CLS.tableWrap}"><table class="${CLS.table}">${headHtml ? `<thead><tr>${headHtml}</tr></thead>` : ""}<tbody>${bodyHtml}</tbody></table></div>`;
   };
 
   const rawHtml = marked.parse(content, { renderer, gfm: true, breaks: false });
@@ -155,7 +176,7 @@ export function renderReadme(content, owner, repo, branch, pathPrefix = "") {
           return {
             tagName: "span",
             attribs: {
-              class: "readme-swatch inline-block align-middle size-[1.125rem] rounded-md border border-white/15 shrink-0",
+              class: CLS.swatch,
               style: `background-color:${cssHex(hex)}`,
               title: cssHex(hex),
             },

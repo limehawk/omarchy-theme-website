@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
 
 @source "./**/*.{astro,js}";
 @source "../scripts/colors.js";
