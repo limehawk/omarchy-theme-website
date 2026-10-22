@@ -240,6 +240,7 @@
     },
     {
       "name": "Bocchi",
+      "dead": true,
       "url": "https://github.com/dinxsec/omarchy-bocchi-theme"
     },
     {
