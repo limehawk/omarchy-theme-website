@@ -877,6 +877,7 @@
     },
     {
       "name": "Leybound",
+      "dead": true,
       "url": "https://github.com/diangogav/omarchy-leybound-theme"
     },
     {
