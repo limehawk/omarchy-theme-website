@@ -174,7 +174,7 @@
     },
     {
       "name": "Bauhaus",
-      "url": "https://github.com/somerocketeer/omarchy-bauhaus-theme"
+      "url": "https://github.com/mwaltzer/omarchy-bauhaus-theme"
     },
     {
       "name": "BeachVan",
@@ -632,7 +632,7 @@
     },
     {
       "name": "Glory Antic",
-      "url": "https://github.com/clement-rtfm/glory-antic"
+      "url": "https://github.com/rpmn0ise/glory-antic"
     },
     {
       "name": "Gojira",
@@ -652,7 +652,7 @@
     },
     {
       "name": "Green City",
-      "url": "https://github.com/zillamtt/omarchy-green-city"
+      "url": "https://github.com/ww5zz/omarchy-green-city"
     },
     {
       "name": "Green Garden",
@@ -672,7 +672,7 @@
     },
     {
       "name": "Grudark",
-      "url": "https://github.com/zillamtt/omarchy-grudark"
+      "url": "https://github.com/ww5zz/omarchy-grudark"
     },
     {
       "name": "Gruvu",
@@ -1002,11 +1002,11 @@
     },
     {
       "name": "Nagai Poolside",
-      "url": "https://github.com/somerocketeer/omarchy-nagai-poolside-theme"
+      "url": "https://github.com/mwaltzer/omarchy-nagai-poolside-theme"
     },
     {
       "name": "Nagai Twilight",
-      "url": "https://github.com/somerocketeer/omarchy-nagai-twilight-theme"
+      "url": "https://github.com/mwaltzer/omarchy-nagai-twilight-theme"
     },
     {
       "name": "Nature Dark",
@@ -1192,7 +1192,7 @@
     },
     {
       "name": "Quattro Sunset",
-      "url": "https://github.com/thenailedone/omarchy-quattro-sunset-theme"
+      "url": "https://github.com/sthuizen/omarchy-quattro-sunset-theme"
     },
     {
       "name": "Railroad Visions",
@@ -1408,7 +1408,7 @@
     },
     {
       "name": "Synthwave 84",
-      "url": "https://github.com/omacom-io/omarchy-synthwave84-theme"
+      "url": "https://github.com/omacom/omarchy-synthwave84-theme"
     },
     {
       "name": "Taikami",
@@ -1586,87 +1586,87 @@
   ],
   "builtin": [
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/catppuccin",
       "name": "Catppuccin"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/catppuccin-latte",
       "name": "Catppuccin Latte"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/ethereal",
       "name": "Ethereal"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/everforest",
       "name": "Everforest"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/flexoki-light",
       "name": "Flexoki Light"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/gruvbox",
       "name": "Gruvbox"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/hackerman",
       "name": "Hackerman"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/kanagawa",
       "name": "Kanagawa"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/matte-black",
       "name": "Matte Black"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/miasma",
       "name": "Miasma"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/nord",
       "name": "Nord"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/osaka-jade",
       "name": "Osaka Jade"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/ristretto",
       "name": "Ristretto"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/rose-pine",
       "name": "Rose Pine"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/tokyo-night",
       "name": "Tokyo Night"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/vantablack",
       "name": "Vantablack"
     },
     {
-      "url": "https://github.com/basecamp/omarchy",
+      "url": "https://github.com/omacom/omarchy",
       "path": "themes/white",
       "name": "White"
     }

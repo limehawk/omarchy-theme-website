@@ -2,8 +2,13 @@
 // page, a static JSON API, its OpenAPI description, and llms.txt. All of it is
 // written at build time by the write-seo-files hook in astro.config.mjs.
 import { SITE_URL, DEFAULT_DESCRIPTION, installCmd } from "./site.js";
+import { parseColors } from "../../scripts/colors.js";
 
 const parse = (json, fallback) => (json ? JSON.parse(json) : fallback);
+
+// Descriptions and warnings carry text from theme authors' repos. One line, Markdown
+// escaped, so they can't add headings or a second install command to the mirror.
+const md = (s) => String(s).replace(/\s*[\r\n]+\s*/g, " ").replace(/([\\`*_[\]<>|#])/g, "\\$1");
 
 export function themeRecord(t) {
   return {
@@ -16,7 +21,7 @@ export function themeRecord(t) {
     primary_hue: t.primary_hue ?? null,
     builtin: t.is_builtin === 1,
     install_command: installCmd(t.github_url),
-    colors: parse(t.colors_json, {}),
+    colors: parseColors(t.colors_json) ?? {},
     apps: parse(t.apps_json, []),
     security_warnings: parse(t.security_warnings, []),
     preview_url: t.preview_url ?? null,
@@ -70,7 +75,7 @@ export function themeMarkdown(t) {
   const colors = Object.entries(r.colors);
   return `# ${r.name}
 
-${r.description ? `> ${r.description}\n\n` : ""}An Omarchy theme by [${r.author}](https://github.com/${r.author}).${r.builtin ? " It ships with Omarchy." : ""}
+${r.description ? `> ${md(r.description)}\n\n` : ""}An Omarchy theme by [${r.author}](https://github.com/${r.author}).${r.builtin ? " It ships with Omarchy." : ""}
 
 - Repository: ${r.repository}
 - Stars: ${r.stars}
@@ -81,7 +86,7 @@ ${r.apps.length ? `- Styles: ${r.apps.join(", ")}\n` : ""}
 \`\`\`bash
 ${r.install_command}
 \`\`\`
-${r.security_warnings.length ? `\n## Before you install\n\n${r.security_warnings.map((w) => `- ${w}`).join("\n")}\n` : ""}${colors.length ? `\n## Colors\n\n| Role | Hex |\n| --- | --- |\n${colors.map(([k, v]) => `| ${k} | \`${v}\` |`).join("\n")}\n` : ""}`;
+${r.security_warnings.length ? `\n## Before you install\n\n${r.security_warnings.map((w) => `- ${md(w)}`).join("\n")}\n` : ""}${colors.length ? `\n## Colors\n\n| Role | Hex |\n| --- | --- |\n${colors.map(([k, v]) => `| ${k} | \`${v}\` |`).join("\n")}\n` : ""}`;
 }
 
 export function llmsTxt(themes) {

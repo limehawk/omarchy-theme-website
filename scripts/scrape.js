@@ -344,17 +344,25 @@ async function scanVscodeExtension(files, owner, repo, pathPrefix) {
 
 async function scanLuaFiles(files, owner, repo, pathPrefix) {
   const warnings = [];
-  const dangerous = /os\.execute|io\.popen|vim\.fn\.system|vim\.fn\.systemlist|loadstring|dofile/;
   for (const file of files) {
     if (pathPrefix && !file.startsWith(pathPrefix)) continue;
     if (!file.endsWith(".lua")) continue;
     const content = await fetchFileContent(owner, repo, file);
-    if (content && dangerous.test(content)) {
-      const m = content.match(dangerous);
-      warnings.push(`dangerous lua code in ${file}: ${m?.[0]}`);
-    }
+    const w = luaWarning(file, content);
+    if (w) warnings.push(w);
   }
   return warnings;
+}
+
+// Neovim runs theme Lua, so flag anything that can spawn a process, run a shell
+// command or evaluate built code. A file we couldn't read is "not scanned", never clean.
+// ponytail: still a denylist; flagging every .lua file is the fallback if this keeps missing things.
+const DANGEROUS_LUA = /\bos\s*[.[]\s*["']?execute|\bio\s*[.[]\s*["']?popen|vim\.fn\.(?:system|systemlist|jobstart|termopen)\b|vim\.system\b|vim\.(?:uv|loop)\.spawn\b|vim\.cmd[\s([]*["'][^"']*!|vim\.api\.nvim_(?:command|exec2?)\b|(?<![.:\w])(?:load|loadstring|dofile|loadfile)\s*\(/;
+
+export function luaWarning(file, content) {
+  if (content === null) return `dangerous lua code in ${file}: not scanned`;
+  const m = content.match(DANGEROUS_LUA);
+  return m ? `dangerous lua code in ${file}: ${m[0]}` : null;
 }
 
 // ---------- GitHub API ----------
@@ -399,11 +407,13 @@ async function fetchRepoMeta(owner, repo) {
     default_branch: d.default_branch,
     pushed_at: d.pushed_at,
     full_name: d.full_name,
+    owner_id: d.owner?.id,
   };
 }
 
 async function fetchFileContent(owner, repo, path) {
-  const res = await githubFetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`);
+  const encoded = path.split("/").map(encodeURIComponent).join("/");
+  const res = await githubFetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encoded}`);
   if (!res.ok) return null;
   const data = await res.json();
   if (!data.content) return null;
@@ -411,9 +421,12 @@ async function fetchFileContent(owner, repo, path) {
 }
 
 async function fetchRepoTree(owner, repo, branch) {
-  const res = await githubFetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`);
-  if (!res.ok) return new Set();
+  // The branch name is the author's; unencoded, "clean#" or "x/%2e%2e/clean" would
+  // fetch a decoy branch's tree. A missing or partial tree must not read as "no warnings".
+  const res = await githubFetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${encodeURIComponent(branch)}?recursive=1`);
+  if (!res.ok) throw new Error(`GitHub API ${res.status}: tree for ${owner}/${repo}@${branch}`);
   const d = await res.json();
+  if (d.truncated) throw new Error(`GitHub tree truncated for ${owner}/${repo}; security scan would be partial`);
   return new Set(d.tree.filter((e) => e.type === "blob").map((e) => e.path));
 }
 
@@ -458,7 +471,7 @@ async function fetchTerminalStyle(owner, repo, pathPrefix) {
 
 // ---------- main per-theme scrape ----------
 
-async function scrapeTheme(entry, cachedBySlug) {
+export async function scrapeTheme(entry, cachedBySlug) {
   const { owner, repo } = parseOwnerRepo(entry.url);
   let slug = entry.is_builtin && entry.path ? deriveSlugFromPath(entry.path) : deriveSlugFromRepo(repo);
   const overlaysBuiltin = entry.overlays_builtin ?? null;
@@ -468,7 +481,13 @@ async function scrapeTheme(entry, cachedBySlug) {
   let canonicalGithubUrl = null;
   if (meta.full_name.toLowerCase() !== `${owner}/${repo}`.toLowerCase()) {
     canonicalGithubUrl = `https://github.com/${meta.full_name}`;
+    log(`[scrape] ${entry.url} moved to ${canonicalGithubUrl}; update themes.json`);
   }
+  // Install from where the repo lives now. The old name only redirects until
+  // someone registers it, and then the install command would fetch their code.
+  const [ghOwner, ghRepo] = meta.full_name.split("/");
+  const baseUrl = `https://github.com/${meta.full_name}`;
+  const githubUrl = entry.is_builtin ? `${baseUrl}/tree/${meta.default_branch}/${entry.path}` : baseUrl;
 
   // Skip-if-unchanged optimization: if the repo hasn't been pushed since we
   // last scraped, reuse the cached deep-scrape data (colors, README, tree,
@@ -478,15 +497,25 @@ async function scrapeTheme(entry, cachedBySlug) {
   // If preview_url is still missing, do a full scrape anyway so findPreviewImage
   // can pick up a backgrounds/ wallpaper (or a newly added preview.png).
   const cached = cachedBySlug?.get(slug);
-  if (cached && cached.github_pushed_at === meta.pushed_at && cached.colors_json !== undefined && cached.preview_url && cached.readme_text) {
+  // Same owner/repo name as last time but a different GitHub account: the old
+  // name was re-registered. Keep the last good record instead of trusting it.
+  const prev = (cached?.github_url ?? "").toLowerCase(), base = baseUrl.toLowerCase();
+  const sameName = prev === base || prev.startsWith(`${base}/`);
+  if (sameName && cached.github_owner_id && meta.owner_id !== cached.github_owner_id) {
+    throw new Error(`${baseUrl} now belongs to a different GitHub account (${cached.github_owner_id} -> ${meta.owner_id})`);
+  }
+  if (cached && cached.github_pushed_at === meta.pushed_at && cached.default_branch === meta.default_branch && cached.colors_json !== undefined && cached.preview_url && cached.readme_text) {
     const cachedColors = cached.colors_json ? JSON.parse(cached.colors_json) : null;
     return {
       ...cached,
       name: entry.name,                         // registry might rename
       stars: meta.stars,                        // refresh
       description: meta.description,            // refresh
-      default_branch: meta.default_branch,      // catch branch renames
-      canonical_github_url: canonicalGithubUrl, // catch repo renames
+      github_url: githubUrl,                    // catch owner and repo renames
+      github_owner: ghOwner,
+      github_repo: ghRepo,
+      github_owner_id: meta.owner_id,
+      canonical_github_url: canonicalGithubUrl,
       primary_hue: themeHues(cachedColors, cached.colors_source === "alacritty.toml")[0] ?? null,
       last_scraped_at: new Date().toISOString(),
       _from_cache: true,
@@ -497,29 +526,28 @@ async function scrapeTheme(entry, cachedBySlug) {
   const branch = meta.default_branch;
 
   let colors = null, colorsSource = "none";
-  const colorsToml = await fetchFileContent(owner, repo, `${pathPrefix}colors.toml`);
+  const colorsToml = await fetchFileContent(ghOwner, ghRepo, `${pathPrefix}colors.toml`);
   if (colorsToml) { colors = parseColors(colorsToml); if (colors) colorsSource = "colors.toml"; }
   if (!colors) {
-    const alacrittyToml = await fetchFileContent(owner, repo, `${pathPrefix}alacritty.toml`);
+    const alacrittyToml = await fetchFileContent(ghOwner, ghRepo, `${pathPrefix}alacritty.toml`);
     if (alacrittyToml) { colors = parseAlacrittyColors(alacrittyToml); if (colors) colorsSource = "alacritty.toml"; }
   }
 
   const primaryHue = themeHues(colors, colorsSource === "alacritty.toml")[0] ?? null;
-  const terminalStyle = await fetchTerminalStyle(owner, repo, pathPrefix);
-  const files = await fetchRepoTree(owner, repo, branch);
+  const terminalStyle = await fetchTerminalStyle(ghOwner, ghRepo, pathPrefix);
+  const files = await fetchRepoTree(ghOwner, ghRepo, branch);
   const apps = detectApps(files, pathPrefix.replace(/\/$/, ""));
 
   const fileWarnings = scanForSuspiciousFiles(files, pathPrefix);
-  const luaWarnings = await scanLuaFiles(files, owner, repo, pathPrefix.replace(/\/$/, ""));
-  const vscodeWarnings = await scanVscodeExtension(files, owner, repo, pathPrefix.replace(/\/$/, ""));
+  const luaWarnings = await scanLuaFiles(files, ghOwner, ghRepo, pathPrefix.replace(/\/$/, ""));
+  const vscodeWarnings = await scanVscodeExtension(files, ghOwner, ghRepo, pathPrefix.replace(/\/$/, ""));
   const allWarnings = [...fileWarnings, ...luaWarnings, ...vscodeWarnings];
 
   const readmePath = findReadmePath(files, pathPrefix);
-  const readme = readmePath ? await fetchFileContent(owner, repo, readmePath) : null;
+  const readme = readmePath ? await fetchFileContent(ghOwner, ghRepo, readmePath) : null;
 
-  const previewUrl = findPreviewImage(files, readme, owner, repo, branch, pathPrefix);
+  const previewUrl = findPreviewImage(files, readme, ghOwner, ghRepo, branch, pathPrefix);
 
-  const githubUrl = entry.is_builtin ? `${entry.url}/tree/${branch}/${entry.path}` : entry.url;
   const nowIso = new Date().toISOString();
 
   return {
@@ -527,8 +555,9 @@ async function scrapeTheme(entry, cachedBySlug) {
     name: entry.name,
     slug,
     github_url: githubUrl,
-    github_owner: owner,
-    github_repo: repo,
+    github_owner: ghOwner,
+    github_repo: ghRepo,
+    github_owner_id: meta.owner_id,
     description: meta.description,
     preview_url: previewUrl,
     colors_json: colors ? JSON.stringify(colors) : null,
@@ -849,4 +878,7 @@ async function main() {
   }
 }
 
-main().catch((err) => { console.error("[scrape] fatal:", err); process.exit(1); });
+// Run only as a script (node scripts/scrape.js), so tests can import the helpers.
+if (process.argv[1] && fs.realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((err) => { console.error("[scrape] fatal:", err); process.exit(1); });
+}
