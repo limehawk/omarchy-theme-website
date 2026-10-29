@@ -13,12 +13,12 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
-    "astro": "^7.4.1",
+    "astro": "^7.4.2",
     "marked": "^18.1.1",
     "sanitize-html": "^2.18.1",
     "sharp": "^0.35.5",
     "smol-toml": "^1.9.1",
     "tailwindcss": "^4.3.3",
-    "wrangler": "^4.151.2"
+    "wrangler": "^4.153.0"
   }
 }
