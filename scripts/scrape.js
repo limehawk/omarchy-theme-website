@@ -328,10 +328,10 @@ function scanForSuspiciousFiles(files, pathPrefix) {
   return warnings;
 }
 
-async function scanVscodeExtension(files, owner, repo, pathPrefix) {
+async function scanVscodeExtension(files, owner, repo, pathPrefix, ref) {
   const p = pathPrefix ? `${pathPrefix}/vscode.json` : "vscode.json";
   if (!files.has(p)) return [];
-  const content = await fetchFileContent(owner, repo, p);
+  const content = await fetchFileContent(owner, repo, p, ref);
   if (!content) return [];
   try {
     const parsed = JSON.parse(content);
@@ -342,12 +342,12 @@ async function scanVscodeExtension(files, owner, repo, pathPrefix) {
   return [];
 }
 
-async function scanLuaFiles(files, owner, repo, pathPrefix) {
+async function scanLuaFiles(files, owner, repo, pathPrefix, ref) {
   const warnings = [];
   for (const file of files) {
     if (pathPrefix && !file.startsWith(pathPrefix)) continue;
     if (!file.endsWith(".lua")) continue;
-    const content = await fetchFileContent(owner, repo, file);
+    const content = await fetchFileContent(owner, repo, file, ref);
     const w = luaWarning(file, content);
     if (w) warnings.push(w);
   }
@@ -411,13 +411,32 @@ async function fetchRepoMeta(owner, repo) {
   };
 }
 
-async function fetchFileContent(owner, repo, path) {
+async function fetchFileContent(owner, repo, path, ref) {
   const encoded = path.split("/").map(encodeURIComponent).join("/");
-  const res = await githubFetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encoded}`);
+  const query = ref ? `?ref=${encodeURIComponent(ref)}` : "";
+  const res = await githubFetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encoded}${query}`);
   if (!res.ok) return null;
   const data = await res.json();
   if (!data.content) return null;
   return Buffer.from(data.content.replace(/\n/g, ""), "base64").toString("utf8");
+}
+
+// Builtins are read from Omarchy's latest stable release, not its default branch,
+// so a theme renamed or removed on the dev branch keeps its folder and preview.
+// /releases/latest skips drafts and prereleases. One lookup per repo per run.
+const latestReleaseTags = new Map();
+function fetchLatestReleaseTag(owner, repo) {
+  const key = `${owner}/${repo}`.toLowerCase();
+  if (!latestReleaseTags.has(key)) {
+    latestReleaseTags.set(key, (async () => {
+      const res = await githubFetch(`https://api.github.com/repos/${owner}/${repo}/releases/latest`);
+      if (!res.ok) throw new Error(`GitHub API ${res.status}: latest release for ${owner}/${repo}`);
+      const d = await res.json();
+      if (!d.tag_name) throw new Error(`No tag on latest release for ${owner}/${repo}`);
+      return d.tag_name;
+    })());
+  }
+  return latestReleaseTags.get(key);
 }
 
 async function fetchRepoTree(owner, repo, branch) {
@@ -443,20 +462,20 @@ function findReadmePath(files, pathPrefix) {
   return hits[0] ?? null;
 }
 
-async function fetchTerminalStyle(owner, repo, pathPrefix) {
+async function fetchTerminalStyle(owner, repo, pathPrefix, ref) {
   let style = null, source;
-  const ghostty = await fetchFileContent(owner, repo, `${pathPrefix}ghostty.conf`);
+  const ghostty = await fetchFileContent(owner, repo, `${pathPrefix}ghostty.conf`, ref);
   if (ghostty) { style = parseGhosttyStyle(ghostty); source = "ghostty.conf"; }
   else {
-    const kitty = await fetchFileContent(owner, repo, `${pathPrefix}kitty.conf`);
+    const kitty = await fetchFileContent(owner, repo, `${pathPrefix}kitty.conf`, ref);
     if (kitty) { style = parseKittyStyle(kitty); source = "kitty.conf"; }
     else {
-      const alacritty = await fetchFileContent(owner, repo, `${pathPrefix}alacritty.toml`);
+      const alacritty = await fetchFileContent(owner, repo, `${pathPrefix}alacritty.toml`, ref);
       if (alacritty) { style = parseAlacrittyStyle(alacritty); if (style) source = "alacritty.toml"; }
     }
   }
   let rounding;
-  const hypr = await fetchFileContent(owner, repo, `${pathPrefix}hyprland.conf`);
+  const hypr = await fetchFileContent(owner, repo, `${pathPrefix}hyprland.conf`, ref);
   if (hypr) rounding = parseHyprlandRounding(hypr);
 
   if (!style && rounding === undefined) return null;
@@ -487,7 +506,8 @@ export async function scrapeTheme(entry, cachedBySlug) {
   // someone registers it, and then the install command would fetch their code.
   const [ghOwner, ghRepo] = meta.full_name.split("/");
   const baseUrl = `https://github.com/${meta.full_name}`;
-  const githubUrl = entry.is_builtin ? `${baseUrl}/tree/${meta.default_branch}/${entry.path}` : baseUrl;
+  const branch = entry.is_builtin ? await fetchLatestReleaseTag(ghOwner, ghRepo) : meta.default_branch;
+  const githubUrl = entry.is_builtin ? `${baseUrl}/tree/${branch}/${entry.path}` : baseUrl;
 
   // Skip-if-unchanged optimization: if the repo hasn't been pushed since we
   // last scraped, reuse the cached deep-scrape data (colors, README, tree,
@@ -504,7 +524,7 @@ export async function scrapeTheme(entry, cachedBySlug) {
   if (sameName && cached.github_owner_id && meta.owner_id !== cached.github_owner_id) {
     throw new Error(`${baseUrl} now belongs to a different GitHub account (${cached.github_owner_id} -> ${meta.owner_id})`);
   }
-  if (cached && cached.github_pushed_at === meta.pushed_at && cached.default_branch === meta.default_branch && cached.colors_json !== undefined && cached.preview_url && cached.readme_text) {
+  if (cached && cached.github_pushed_at === meta.pushed_at && cached.default_branch === branch && cached.colors_json !== undefined && cached.preview_url && cached.readme_text) {
     const cachedColors = cached.colors_json ? JSON.parse(cached.colors_json) : null;
     return {
       ...cached,
@@ -523,28 +543,27 @@ export async function scrapeTheme(entry, cachedBySlug) {
   }
 
   const pathPrefix = entry.path ? `${entry.path}/` : "";
-  const branch = meta.default_branch;
 
   let colors = null, colorsSource = "none";
-  const colorsToml = await fetchFileContent(ghOwner, ghRepo, `${pathPrefix}colors.toml`);
+  const colorsToml = await fetchFileContent(ghOwner, ghRepo, `${pathPrefix}colors.toml`, branch);
   if (colorsToml) { colors = parseColors(colorsToml); if (colors) colorsSource = "colors.toml"; }
   if (!colors) {
-    const alacrittyToml = await fetchFileContent(ghOwner, ghRepo, `${pathPrefix}alacritty.toml`);
+    const alacrittyToml = await fetchFileContent(ghOwner, ghRepo, `${pathPrefix}alacritty.toml`, branch);
     if (alacrittyToml) { colors = parseAlacrittyColors(alacrittyToml); if (colors) colorsSource = "alacritty.toml"; }
   }
 
   const primaryHue = themeHues(colors, colorsSource === "alacritty.toml")[0] ?? null;
-  const terminalStyle = await fetchTerminalStyle(ghOwner, ghRepo, pathPrefix);
+  const terminalStyle = await fetchTerminalStyle(ghOwner, ghRepo, pathPrefix, branch);
   const files = await fetchRepoTree(ghOwner, ghRepo, branch);
   const apps = detectApps(files, pathPrefix.replace(/\/$/, ""));
 
   const fileWarnings = scanForSuspiciousFiles(files, pathPrefix);
-  const luaWarnings = await scanLuaFiles(files, ghOwner, ghRepo, pathPrefix.replace(/\/$/, ""));
-  const vscodeWarnings = await scanVscodeExtension(files, ghOwner, ghRepo, pathPrefix.replace(/\/$/, ""));
+  const luaWarnings = await scanLuaFiles(files, ghOwner, ghRepo, pathPrefix.replace(/\/$/, ""), branch);
+  const vscodeWarnings = await scanVscodeExtension(files, ghOwner, ghRepo, pathPrefix.replace(/\/$/, ""), branch);
   const allWarnings = [...fileWarnings, ...luaWarnings, ...vscodeWarnings];
 
   const readmePath = findReadmePath(files, pathPrefix);
-  const readme = readmePath ? await fetchFileContent(ghOwner, ghRepo, readmePath) : null;
+  const readme = readmePath ? await fetchFileContent(ghOwner, ghRepo, readmePath, branch) : null;
 
   const previewUrl = findPreviewImage(files, readme, ghOwner, ghRepo, branch, pathPrefix);
 
