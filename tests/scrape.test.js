@@ -7,7 +7,7 @@ import { loadLiveThemes } from "../src/lib/themes.js";
 const realFetch = globalThis.fetch;
 afterEach(() => { globalThis.fetch = realFetch; });
 
-function fakeGitHub({ fullName = "author/theme", ownerId = 1, branch = "main", pushedAt = "2026-01-01T00:00:00Z", files = {}, treeStatus = 200 } = {}) {
+function fakeGitHub({ fullName = "author/theme", ownerId = 1, branch = "main", pushedAt = "2026-01-01T00:00:00Z", files = {}, treeStatus = 200, releaseTag = "v1.0.0" } = {}) {
   const asked = [];
   globalThis.fetch = async (url) => {
     asked.push(url);
@@ -16,6 +16,7 @@ function fakeGitHub({ fullName = "author/theme", ownerId = 1, branch = "main", p
     if (/^\/repos\/[^/]+\/[^/]+$/.test(u.pathname)) {
       return json({ full_name: fullName, owner: { id: ownerId }, default_branch: branch, pushed_at: pushedAt, stargazers_count: 1, description: "d" });
     }
+    if (u.pathname.endsWith("/releases/latest")) return json({ tag_name: releaseTag });
     if (u.pathname.includes("/git/trees/")) {
       return json({ tree: Object.keys(files).map((path) => ({ path, type: "blob" })), truncated: false }, treeStatus);
     }
@@ -63,6 +64,17 @@ test("a default-branch switch forces a fresh scan", async () => {
   const r = await scrapeTheme(entry, cached);
   expect(r._from_cache).toBeUndefined();
   expect(JSON.parse(r.security_warnings)).toContain("suspicious file: install.sh");
+});
+
+test("builtins are read from the latest stable release, not the default branch", async () => {
+  const asked = fakeGitHub({ fullName: "basecamp/omarchy", branch: "quattro", releaseTag: "v4.0.6", files: { "themes/osaka-jade/preview.png": "x" } });
+  const builtin = { url: "https://github.com/basecamp/omarchy", name: "Osaka Jade", path: "themes/osaka-jade", is_builtin: true, is_curated: false };
+  const r = await scrapeTheme(builtin, new Map());
+  expect(r.default_branch).toBe("v4.0.6");
+  expect(r.github_url).toBe("https://github.com/basecamp/omarchy/tree/v4.0.6/themes/osaka-jade");
+  expect(r.preview_url).toBe("https://raw.githubusercontent.com/basecamp/omarchy/v4.0.6/themes/osaka-jade/preview.png");
+  expect(asked.some((u) => u.includes("/git/trees/v4.0.6?recursive=1"))).toBe(true);
+  expect(asked.filter((u) => u.includes("/contents/")).every((u) => u.endsWith("?ref=v4.0.6"))).toBe(true);
 });
 
 test("Lua that runs commands is flagged, an unreadable file is not called clean", () => {
