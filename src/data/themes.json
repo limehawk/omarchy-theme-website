@@ -639,6 +639,10 @@
       "url": "https://github.com/rpmn0ise/glory-antic"
     },
     {
+      "name": "Glowing City",
+      "url": "https://github.com/ggregoro/omarchy-glowing-city-theme"
+    },
+    {
       "name": "Gojira",
       "url": "https://github.com/bjornramberg/omarchy-gojira-theme"
     },
@@ -1064,6 +1068,10 @@
     {
       "name": "Noctua",
       "url": "https://github.com/othavi0/omarchy-noctua-theme"
+    },
+    {
+      "name": "Nordic Nightfall",
+      "url": "https://github.com/Z1Z0R/omarchy-nordic-nightfall-theme"
     },
     {
       "name": "Nous",
