@@ -44,6 +44,38 @@ test("a re-registered owner name keeps the last good record", async () => {
   await expect(scrapeTheme(entry, cached)).rejects.toThrow("different GitHub account");
 });
 
+test("a freed repo name is caught after its record was dropped", async () => {
+  fakeGitHub({ ownerId: 666 });
+  const owners = { "https://github.com/author/theme": 1 };
+  const err = await scrapeTheme(entry, new Map(), owners).catch((e) => e);
+  expect(err.ownerChanged).toBe(true);
+});
+
+test("a repo that moved to another account is caught even under its new name", async () => {
+  fakeGitHub({ fullName: "someone-else/theme", ownerId: 666 });
+  const cached = new Map([["theme", { github_url: "https://github.com/author/theme", github_owner_id: 1 }]]);
+  await expect(scrapeTheme(entry, cached)).rejects.toThrow("different GitHub account");
+});
+
+test("a new listing records its owner, and the same owner passes", async () => {
+  fakeGitHub({ ownerId: 7 });
+  const owners = {};
+  await scrapeTheme(entry, new Map(), owners);
+  expect(owners["https://github.com/author/theme"]).toBe(7);
+  await expect(scrapeTheme(entry, new Map(), owners)).resolves.toBeDefined();
+});
+
+test("a README image on an author's own server is never the preview", async () => {
+  fakeGitHub({ files: { "README.md": "![screenshot](https://evil.example/preview.png)" } });
+  expect((await scrapeTheme(entry, new Map())).preview_url).toBeNull();
+});
+
+test("an AppImage is flagged whatever its case", async () => {
+  fakeGitHub({ files: { "Tool.AppImage": "x" } });
+  const r = await scrapeTheme(entry, new Map());
+  expect(JSON.parse(r.security_warnings)).toContain("suspicious file: Tool.AppImage");
+});
+
 test("the branch name is encoded in the tree URL", async () => {
   const asked = fakeGitHub({ branch: "clean#" });
   await scrapeTheme(entry, new Map());
@@ -81,6 +113,7 @@ test("Lua that runs commands is flagged, an unreadable file is not called clean"
   for (const code of [
     'os.execute("id")', 'vim.fn.jobstart({"sh"})', 'vim.system({"sh"})', "vim.uv.spawn('sh', {})",
     'vim.cmd("silent !id")', 'os["execute"]("id")', "load(string.char(111))()", 'vim.api.nvim_command("!id")',
+    '_G["o".."s"]["exe".."cute"]("id")', 'vim.fn["sys".."tem"]("id")', "getfenv(0).os.execute('id')",
   ]) expect(luaWarning("neovim.lua", code)).toStartWith("dangerous lua code in neovim.lua:");
   expect(luaWarning("neovim.lua", null)).toBe("dangerous lua code in neovim.lua: not scanned");
   for (const code of ['vim.cmd("colorscheme tokyonight")', 'return { "folke/tokyonight.nvim", opts = {} }', 'require("lazy").load({ plugins = {} })']) {
