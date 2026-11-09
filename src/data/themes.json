@@ -276,6 +276,10 @@
       "url": "https://github.com/shmall03/omarchy-castle-on-a-lake-theme"
     },
     {
+      "name": "Catch the Rainbow",
+      "url": "https://github.com/agriby-chaniago/omarchy-catch-the-rainbow-theme"
+    },
+    {
       "name": "Catppu Mocha",
       "dead": true,
       "url": "https://github.com/ankur311sudo/Catppu_Mocha"
@@ -1239,6 +1243,10 @@
       "url": "https://github.com/bjarneo/omarchy-reverie-theme"
     },
     {
+      "name": "Reze",
+      "url": "https://github.com/oz456/omarchy-reze-theme"
+    },
+    {
       "name": "RobCo",
       "url": "https://github.com/signaldirective/robco-theme"
     },
@@ -1490,6 +1498,7 @@
     },
     {
       "name": "Untitled",
+      "dead": true,
       "url": "https://github.com/niraletter/omarchy-untitled-theme"
     },
     {
