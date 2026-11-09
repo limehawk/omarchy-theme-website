@@ -12,13 +12,13 @@
     "deploy": "bun run build && bun x wrangler pages deploy out/ --project-name=omarchy-theme-website"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.3",
-    "astro": "^7.4.1",
-    "marked": "^18.1.1",
+    "@tailwindcss/vite": "^4.3.5",
+    "astro": "^7.4.7",
+    "marked": "^18.1.3",
     "sanitize-html": "^2.18.1",
     "sharp": "^0.35.5",
     "smol-toml": "^1.9.1",
-    "tailwindcss": "^4.3.3",
-    "wrangler": "^4.151.2"
+    "tailwindcss": "^4.3.5",
+    "wrangler": "^4.158.0"
   }
 }
