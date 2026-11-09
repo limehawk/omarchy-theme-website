@@ -14,40 +14,24 @@ import {
   save404Strikes,
 } from "./scrape-404s.js";
 import { themeHues, cssHex, withLegacyKeys } from "./colors.js";
+import { isAllowedPreviewUrl } from "./preview-hosts.js";
+import { entrySlug, listedUrls, parseOwnerRepo, registryEntries } from "./registry.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const REGISTRY_PATH = path.join(ROOT, "src/data/themes.json");
 const OUTPUT_PATH = path.join(ROOT, "src/data/themes-data.json");
+const OWNERS_PATH = path.join(ROOT, "src/data/theme-owners.json");
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const CONCURRENCY = 5;
 const LIMIT = process.env.LIMIT ? parseInt(process.env.LIMIT, 10) : 0;
 const THUMBS_DIR = path.join(ROOT, "public/thumbs");
 const THUMB_WIDTHS = [400, 800, 1200];
+const FETCH_TIMEOUT_MS = 30_000;
+const MAX_PREVIEW_BYTES = 25 * 1024 * 1024;
 
 const log = (...args) => console.log(...args);
-
-// ---------- slug + parse helpers ----------
-
-function slugify(name) {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-}
-
-function deriveSlugFromRepo(repoName) {
-  let s = repoName.toLowerCase().replace(/^omarchy-/, "").replace(/-theme$/, "");
-  return slugify(s);
-}
-
-function deriveSlugFromPath(p) {
-  return slugify(p.split("/").pop());
-}
-
-function parseOwnerRepo(url) {
-  const m = url.match(/github\.com\/([^/]+)\/([^/]+)/);
-  if (!m) throw new Error(`Invalid GitHub URL: ${url}`);
-  return { owner: m[1], repo: m[2] };
-}
 
 // ---------- color helpers ----------
 
@@ -244,9 +228,8 @@ function findPreviewImage(files, readme, owner, repo, branch, pathPrefix) {
     const imgs = extractReadmeImages(readme);
     for (const { alt, src } of imgs) {
       if (SKIP_KEYWORDS.test(src) || SKIP_KEYWORDS.test(alt) || SKIP_HOSTS.test(src) || !isImageUrl(src)) continue;
-      if (SCREENSHOT_KEYWORDS.test(src) || SCREENSHOT_KEYWORDS.test(alt)) {
-        return normalizeImageUrl(src, owner, repo, branch, pathPrefix);
-      }
+      const url = normalizeImageUrl(src, owner, repo, branch, pathPrefix);
+      if (isAllowedPreviewUrl(url) && (SCREENSHOT_KEYWORDS.test(src) || SCREENSHOT_KEYWORDS.test(alt))) return url;
     }
   }
 
@@ -263,7 +246,8 @@ function findPreviewImage(files, readme, owner, repo, branch, pathPrefix) {
     for (const { alt, src } of imgs) {
       if (SKIP_KEYWORDS.test(src) || SKIP_KEYWORDS.test(alt) || SKIP_HOSTS.test(src)) continue;
       if (src.endsWith(".svg") || !isImageUrl(src)) continue;
-      return normalizeImageUrl(src, owner, repo, branch, pathPrefix);
+      const url = normalizeImageUrl(src, owner, repo, branch, pathPrefix);
+      if (isAllowedPreviewUrl(url)) return url;
     }
   }
 
@@ -309,7 +293,7 @@ function detectApps(files, pathPrefix) {
 const SUSPICIOUS_EXTENSIONS = new Set([
   ".sh", ".bash", ".zsh", ".py", ".js", ".ts", ".rb", ".pl",
   ".exe", ".bin", ".elf", ".so", ".dll", ".dylib",
-  ".AppImage", ".deb", ".rpm",
+  ".appimage", ".deb", ".rpm",
 ]);
 
 function scanForSuspiciousFiles(files, pathPrefix) {
@@ -357,7 +341,7 @@ async function scanLuaFiles(files, owner, repo, pathPrefix, ref) {
 // Neovim runs theme Lua, so flag anything that can spawn a process, run a shell
 // command or evaluate built code. A file we couldn't read is "not scanned", never clean.
 // ponytail: still a denylist; flagging every .lua file is the fallback if this keeps missing things.
-const DANGEROUS_LUA = /\bos\s*[.[]\s*["']?execute|\bio\s*[.[]\s*["']?popen|vim\.fn\.(?:system|systemlist|jobstart|termopen)\b|vim\.system\b|vim\.(?:uv|loop)\.spawn\b|vim\.cmd[\s([]*["'][^"']*!|vim\.api\.nvim_(?:command|exec2?)\b|(?<![.:\w])(?:load|loadstring|dofile|loadfile)\s*\(/;
+const DANGEROUS_LUA = /\bos\s*[.[]\s*["']?execute|\bio\s*[.[]\s*["']?popen|vim\.fn\.(?:system|systemlist|jobstart|termopen)\b|vim\.system\b|vim\.(?:uv|loop)\.spawn\b|vim\.cmd[\s([]*["'][^"']*!|vim\.api\.nvim_(?:command|exec2?)\b|(?<![.:\w])(?:load|loadstring|dofile|loadfile)\s*\(|\b_G\s*\[|\b_ENV\b|\bgetfenv\b|\bvim\.fn\s*\[|\bvim\.api\s*\[|\bpackage\.loadlib\b/;
 
 export function luaWarning(file, content) {
   if (content === null) return `dangerous lua code in ${file}: not scanned`;
@@ -375,7 +359,7 @@ async function githubFetch(url, opts = {}) {
   };
   if (GITHUB_TOKEN) headers.Authorization = `Bearer ${GITHUB_TOKEN}`;
   if (opts.body) headers["Content-Type"] = "application/json";
-  const res = await fetch(url, { ...opts, headers });
+  const res = await fetch(url, { ...opts, headers, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
   if (res.status === 429) {
     const reset = res.headers.get("X-RateLimit-Reset");
     const at = reset ? new Date(parseInt(reset, 10) * 1000).toISOString() : "unknown";
@@ -445,7 +429,11 @@ async function fetchRepoTree(owner, repo, branch) {
   const res = await githubFetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${encodeURIComponent(branch)}?recursive=1`);
   if (!res.ok) throw new Error(`GitHub API ${res.status}: tree for ${owner}/${repo}@${branch}`);
   const d = await res.json();
-  if (d.truncated) throw new Error(`GitHub tree truncated for ${owner}/${repo}; security scan would be partial`);
+  if (d.truncated) {
+    const err = new Error(`GitHub tree truncated for ${owner}/${repo}; security scan would be partial`);
+    err.scanIncomplete = true;
+    throw err;
+  }
   return new Set(d.tree.filter((e) => e.type === "blob").map((e) => e.path));
 }
 
@@ -490,11 +478,10 @@ async function fetchTerminalStyle(owner, repo, pathPrefix, ref) {
 
 // ---------- main per-theme scrape ----------
 
-export async function scrapeTheme(entry, cachedBySlug) {
+export async function scrapeTheme(entry, cachedBySlug, owners = {}) {
   const { owner, repo } = parseOwnerRepo(entry.url);
-  let slug = entry.is_builtin && entry.path ? deriveSlugFromPath(entry.path) : deriveSlugFromRepo(repo);
+  const slug = entrySlug(entry);
   const overlaysBuiltin = entry.overlays_builtin ?? null;
-  if (overlaysBuiltin) slug = `${slug}-${owner.toLowerCase()}`;
 
   const meta = await fetchRepoMeta(owner, repo);
   let canonicalGithubUrl = null;
@@ -517,13 +504,16 @@ export async function scrapeTheme(entry, cachedBySlug) {
   // If preview_url is still missing, do a full scrape anyway so findPreviewImage
   // can pick up a backgrounds/ wallpaper (or a newly added preview.png).
   const cached = cachedBySlug?.get(slug);
-  // Same owner/repo name as last time but a different GitHub account: the old
-  // name was re-registered. Keep the last good record instead of trusting it.
-  const prev = (cached?.github_url ?? "").toLowerCase(), base = baseUrl.toLowerCase();
-  const sameName = prev === base || prev.startsWith(`${base}/`);
-  if (sameName && cached.github_owner_id && meta.owner_id !== cached.github_owner_id) {
-    throw new Error(`${baseUrl} now belongs to a different GitHub account (${cached.github_owner_id} -> ${meta.owner_id})`);
+  // The account is checked per listed URL and whatever the repo is called now,
+  // and survives the record being dropped, so a freed name can't return unreviewed.
+  const ownerKey = entry.url.toLowerCase();
+  const knownOwner = owners[ownerKey] ?? cached?.github_owner_id;
+  if (knownOwner && Number(meta.owner_id) !== Number(knownOwner)) {
+    const err = new Error(`${baseUrl} now belongs to a different GitHub account (${knownOwner} -> ${meta.owner_id})`);
+    err.ownerChanged = true;
+    throw err;
   }
+  owners[ownerKey] = Number(knownOwner ?? meta.owner_id);
   if (cached && cached.github_pushed_at === meta.pushed_at && cached.default_branch === branch && cached.colors_json !== undefined && cached.preview_url && cached.readme_text) {
     const cachedColors = cached.colors_json ? JSON.parse(cached.colors_json) : null;
     return {
@@ -623,15 +613,28 @@ async function runBatched(items, fn, concurrency) {
 // renderer can emit a truthful srcset.
 async function generateThumbnail(previewUrl, slug) {
   try {
+    if (!isAllowedPreviewUrl(previewUrl)) {
+      log(`[thumb] ${slug}: host not allowed — skipped`);
+      return null;
+    }
     const res = await fetch(previewUrl, {
       headers: { "User-Agent": "omarchy-theme-scraper" },
       redirect: "follow",
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
     if (!res.ok) {
       log(`[thumb] ${slug}: HTTP ${res.status} — skipped`);
       return null;
     }
+    if (Number(res.headers.get("content-length")) > MAX_PREVIEW_BYTES) {
+      log(`[thumb] ${slug}: too large — skipped`);
+      return null;
+    }
     const buffer = Buffer.from(await res.arrayBuffer());
+    if (buffer.length > MAX_PREVIEW_BYTES) {
+      log(`[thumb] ${slug}: too large — skipped`);
+      return null;
+    }
     const meta = await sharp(buffer).metadata();
     const widths = [];
     for (const target of THUMB_WIDTHS) {
@@ -689,96 +692,13 @@ async function generateThumbnails(rawRecords) {
   }
 }
 
-// ---------- dead-repo issue filing ----------
-
-const SITE_REPO = process.env.GITHUB_REPOSITORY || "limehawk/omarchy-theme-website";
-
-async function fileDeadRepoIssues(deadRepos) {
-  if (!GITHUB_TOKEN) {
-    log("[scrape] no GITHUB_TOKEN — skipping issue filing");
-    return;
-  }
-
-  // Ensure the dead-theme label exists
-  const labelRes = await githubFetch(`https://api.github.com/repos/${SITE_REPO}/labels/dead-theme`);
-  if (labelRes.status === 404) {
-    await githubFetch(`https://api.github.com/repos/${SITE_REPO}/labels`, {
-      method: "POST",
-      body: JSON.stringify({ name: "dead-theme", color: "B60205", description: "Theme repo is no longer accessible" }),
-    });
-  }
-
-  // Check existing open issues to avoid duplicates
-  const existingRes = await githubFetch(`https://api.github.com/repos/${SITE_REPO}/issues?labels=dead-theme&state=open&per_page=100`);
-  const existing = existingRes.ok ? await existingRes.json() : [];
-  const existingUrls = new Set(existing.map((i) => i.body).filter(Boolean).flatMap((b) => {
-    const m = b.match(/https:\/\/github\.com\/[^\s)]+/g);
-    return m || [];
-  }));
-
-  for (const dead of deadRepos) {
-    if (existingUrls.has(dead.url)) {
-      log(`[scrape] issue already open for ${dead.entry} — skipping`);
-      continue;
-    }
-
-    // Tag the author so they can weigh in — but only if the account still
-    // exists. A repo most often 404s because the account was deleted (renames
-    // 301-redirect and don't reach here), and @mentioning a deleted handle
-    // renders as dead text that notifies no one.
-    const { owner } = parseOwnerRepo(dead.url);
-    const userRes = await githubFetch(`https://api.github.com/users/${owner}`);
-    const authorLine = userRes.ok
-      ? `- **Author:** @${owner} — can you confirm whether this repo moved or was taken down?`
-      : `- **Author:** \`${owner}\` (GitHub account no longer exists)`;
-
-    const body = `The theme **${dead.entry}** returned HTTP 404 on ${DEAD_AFTER_404S} consecutive nightly scrapes.
-
-` +
-      `- **URL:** ${dead.url}
-` +
-      `- **Site:** omitted from the gallery after ${DEAD_AFTER_404S} consecutive 404s — will return if the repo is reachable again
-` +
-      `${authorLine}
-` +
-      `- **Action needed:** Check if the repo was renamed/moved. Update \`themes.json\` with the new URL, or mark as \`"dead": true\` if permanently gone.
-`;
-
-    const createRes = await githubFetch(`https://api.github.com/repos/${SITE_REPO}/issues`, {
-      method: "POST",
-      body: JSON.stringify({ title: `Dead theme repo: ${dead.entry}`, body, labels: ["dead-theme"] }),
-    });
-
-    if (createRes.ok) {
-      const issue = await createRes.json();
-      log(`[scrape] filed issue #${issue.number} for dead repo: ${dead.entry}`);
-    } else {
-      console.warn(`[scrape] failed to file issue for ${dead.entry}: ${createRes.status}`);
-    }
-  }
-}
-
 // ---------- main ----------
 
 async function main() {
   log(`[scrape] reading ${REGISTRY_PATH}`);
   const registry = JSON.parse(fs.readFileSync(REGISTRY_PATH, "utf8"));
 
-  const entries = [];
-  const builtinSlugs = new Set();
-  for (const t of registry.builtin) {
-    const url = t.url.replace(/\/$/, "");
-    entries.push({ url, name: t.name, path: t.path, is_builtin: true, is_curated: false });
-    builtinSlugs.add(deriveSlugFromPath(t.path));
-  }
-  for (const t of registry.curated) {
-    if (t.dead) continue;
-    const url = t.url.replace(/\/$/, "");
-    const { repo } = parseOwnerRepo(url);
-    const baseSlug = deriveSlugFromRepo(repo);
-    const overlaysBuiltin = builtinSlugs.has(baseSlug) ? baseSlug : undefined;
-    entries.push({ url, name: t.name, is_builtin: false, is_curated: true, overlays_builtin: overlaysBuiltin });
-  }
+  const entries = registryEntries(registry);
 
   // Load the existing scraped data so we can fall back to cached records
   // for any theme that fails to scrape (e.g. transient GitHub error or rate
@@ -801,10 +721,12 @@ async function main() {
     console.warn("[scrape] WARNING: no GITHUB_TOKEN set — anonymous rate limit is 60 req/hr");
   }
 
+  const owners = fs.existsSync(OWNERS_PATH) ? JSON.parse(fs.readFileSync(OWNERS_PATH, "utf8")) : {};
+
   let done = 0;
   let skipped = 0;
   const results = await runBatched(targets, async (entry) => {
-    const record = await scrapeTheme(entry, cachedBySlug);
+    const record = await scrapeTheme(entry, cachedBySlug, owners);
     done++;
     if (record._from_cache) skipped++;
     log(`[scrape] (${done}/${targets.length}) ${record.slug}${record._from_cache ? " [cached]" : ""}`);
@@ -815,6 +737,7 @@ async function main() {
   const errors = [];
   const reusedFromCache = [];
   const omittedSlugs = new Set();
+  const alerts = [];
   const strikes = load404Strikes();
   for (let i = 0; i < results.length; i++) {
     if (results[i].ok) {
@@ -823,13 +746,15 @@ async function main() {
       rawRecords.push(rec);
     } else {
       const entry = targets[i];
-      const { owner, repo } = parseOwnerRepo(entry.url);
-      const slug = entry.is_builtin && entry.path
-        ? deriveSlugFromPath(entry.path)
-        : (entry.overlays_builtin ? deriveSlugFromRepo(repo) + "-" + owner.toLowerCase() : deriveSlugFromRepo(repo));
+      const slug = entrySlug(entry);
       const cached = cachedBySlug.get(slug);
       const gone = results[i].error.httpStatus === 404;
-      if (gone) {
+      if (results[i].error.ownerChanged) {
+        // Not the account that was listed. Its install command must not stay up.
+        omittedSlugs.add(slug);
+        alerts.push({ url: entry.url, reason: "owner-changed" });
+        log(`[scrape] omitted ${slug} — repo changed owner`);
+      } else if (gone) {
         // Only consecutive 404s count. Cap at the threshold so nightly
         // re-checks don't rewrite scrape-404s.json forever.
         const count = bump404Strike(strikes[slug]);
@@ -844,7 +769,11 @@ async function main() {
         }
       } else if (cached) {
         // Transient failure (rate limit, 5xx): keep last-known data, no strike.
-        rawRecords.push({ ...cached, _from_cache: true });
+        // A scan that couldn't finish must not leave an old "no warnings" showing.
+        const scan = results[i].error.scanIncomplete
+          ? { security_warnings: JSON.stringify(["security scan incomplete: repo too large to list"]) }
+          : {};
+        rawRecords.push({ ...cached, ...scan, _from_cache: true });
         reusedFromCache.push(entry.name);
       }
       errors.push({ entry: entry.name, url: entry.url, slug, error: results[i].error.message, httpStatus: results[i].error.httpStatus });
@@ -873,6 +802,12 @@ async function main() {
   }
 
   save404Strikes(strikes);
+  // A URL that left themes.json takes its owner record with it.
+  const listed = listedUrls(registry);
+  const sortedOwners = Object.fromEntries(
+    Object.entries(owners).filter(([url]) => listed.has(url)).sort(([a], [b]) => a.localeCompare(b)),
+  );
+  fs.writeFileSync(OWNERS_PATH, JSON.stringify(sortedOwners, null, 2) + "\n");
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(records, null, 2));
   log(`[scrape] wrote ${records.length} themes → ${OUTPUT_PATH}`);
   if (skipped > 0) {
@@ -889,12 +824,12 @@ async function main() {
     for (const e of errors) console.warn(`  ${e.entry}: ${e.error}`);
   }
 
-  // File GitHub issues only after the consecutive-404 threshold.
-  const deadRepos = errors.filter((e) => e.httpStatus === 404 && isDeadBy404s(strikes[e.slug]));
-  if (deadRepos.length > 0) {
-    log(`[scrape] ${deadRepos.length} dead repo(s) detected — filing issues`);
-    await fileDeadRepoIssues(deadRepos);
+  // Issues are filed by the publish job, which holds the write token. Repos count
+  // as gone only after the consecutive-404 threshold.
+  for (const e of errors) {
+    if (e.httpStatus === 404 && isDeadBy404s(strikes[e.slug])) alerts.push({ url: e.url, reason: "gone" });
   }
+  if (process.env.REPO_ALERTS_PATH) fs.writeFileSync(process.env.REPO_ALERTS_PATH, JSON.stringify(alerts, null, 2));
 }
 
 // Run only as a script (node scripts/scrape.js), so tests can import the helpers.
