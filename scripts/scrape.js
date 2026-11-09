@@ -15,6 +15,7 @@ import {
 } from "./scrape-404s.js";
 import { themeHues, cssHex, withLegacyKeys } from "./colors.js";
 import { isAllowedPreviewUrl } from "./preview-hosts.js";
+import { entrySlug, listedUrls, parseOwnerRepo, registryEntries } from "./registry.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -31,27 +32,6 @@ const FETCH_TIMEOUT_MS = 30_000;
 const MAX_PREVIEW_BYTES = 25 * 1024 * 1024;
 
 const log = (...args) => console.log(...args);
-
-// ---------- slug + parse helpers ----------
-
-function slugify(name) {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-}
-
-function deriveSlugFromRepo(repoName) {
-  let s = repoName.toLowerCase().replace(/^omarchy-/, "").replace(/-theme$/, "");
-  return slugify(s);
-}
-
-function deriveSlugFromPath(p) {
-  return slugify(p.split("/").pop());
-}
-
-function parseOwnerRepo(url) {
-  const m = url.match(/github\.com\/([^/]+)\/([^/]+)/);
-  if (!m) throw new Error(`Invalid GitHub URL: ${url}`);
-  return { owner: m[1], repo: m[2] };
-}
 
 // ---------- color helpers ----------
 
@@ -500,9 +480,8 @@ async function fetchTerminalStyle(owner, repo, pathPrefix, ref) {
 
 export async function scrapeTheme(entry, cachedBySlug, owners = {}) {
   const { owner, repo } = parseOwnerRepo(entry.url);
-  let slug = entry.is_builtin && entry.path ? deriveSlugFromPath(entry.path) : deriveSlugFromRepo(repo);
+  const slug = entrySlug(entry);
   const overlaysBuiltin = entry.overlays_builtin ?? null;
-  if (overlaysBuiltin) slug = `${slug}-${owner.toLowerCase()}`;
 
   const meta = await fetchRepoMeta(owner, repo);
   let canonicalGithubUrl = null;
@@ -527,17 +506,14 @@ export async function scrapeTheme(entry, cachedBySlug, owners = {}) {
   const cached = cachedBySlug?.get(slug);
   // The account is checked per listed URL and whatever the repo is called now,
   // and survives the record being dropped, so a freed name can't return unreviewed.
-  // Builtins are exempt: themes.json names Omarchy itself, which has changed owner.
-  if (!entry.is_builtin) {
-    const key = entry.url.toLowerCase();
-    const knownOwner = owners[key] ?? cached?.github_owner_id;
-    if (knownOwner && Number(meta.owner_id) !== Number(knownOwner)) {
-      const err = new Error(`${baseUrl} now belongs to a different GitHub account (${knownOwner} -> ${meta.owner_id})`);
-      err.ownerChanged = true;
-      throw err;
-    }
-    owners[key] = knownOwner ?? meta.owner_id;
+  const ownerKey = entry.url.toLowerCase();
+  const knownOwner = owners[ownerKey] ?? cached?.github_owner_id;
+  if (knownOwner && Number(meta.owner_id) !== Number(knownOwner)) {
+    const err = new Error(`${baseUrl} now belongs to a different GitHub account (${knownOwner} -> ${meta.owner_id})`);
+    err.ownerChanged = true;
+    throw err;
   }
+  owners[ownerKey] = Number(knownOwner ?? meta.owner_id);
   if (cached && cached.github_pushed_at === meta.pushed_at && cached.default_branch === branch && cached.colors_json !== undefined && cached.preview_url && cached.readme_text) {
     const cachedColors = cached.colors_json ? JSON.parse(cached.colors_json) : null;
     return {
@@ -722,21 +698,7 @@ async function main() {
   log(`[scrape] reading ${REGISTRY_PATH}`);
   const registry = JSON.parse(fs.readFileSync(REGISTRY_PATH, "utf8"));
 
-  const entries = [];
-  const builtinSlugs = new Set();
-  for (const t of registry.builtin) {
-    const url = t.url.replace(/\/$/, "");
-    entries.push({ url, name: t.name, path: t.path, is_builtin: true, is_curated: false });
-    builtinSlugs.add(deriveSlugFromPath(t.path));
-  }
-  for (const t of registry.curated) {
-    if (t.dead) continue;
-    const url = t.url.replace(/\/$/, "");
-    const { repo } = parseOwnerRepo(url);
-    const baseSlug = deriveSlugFromRepo(repo);
-    const overlaysBuiltin = builtinSlugs.has(baseSlug) ? baseSlug : undefined;
-    entries.push({ url, name: t.name, is_builtin: false, is_curated: true, overlays_builtin: overlaysBuiltin });
-  }
+  const entries = registryEntries(registry);
 
   // Load the existing scraped data so we can fall back to cached records
   // for any theme that fails to scrape (e.g. transient GitHub error or rate
@@ -784,10 +746,7 @@ async function main() {
       rawRecords.push(rec);
     } else {
       const entry = targets[i];
-      const { owner, repo } = parseOwnerRepo(entry.url);
-      const slug = entry.is_builtin && entry.path
-        ? deriveSlugFromPath(entry.path)
-        : (entry.overlays_builtin ? deriveSlugFromRepo(repo) + "-" + owner.toLowerCase() : deriveSlugFromRepo(repo));
+      const slug = entrySlug(entry);
       const cached = cachedBySlug.get(slug);
       const gone = results[i].error.httpStatus === 404;
       if (results[i].error.ownerChanged) {
@@ -843,7 +802,11 @@ async function main() {
   }
 
   save404Strikes(strikes);
-  const sortedOwners = Object.fromEntries(Object.entries(owners).sort(([a], [b]) => a.localeCompare(b)));
+  // A URL that left themes.json takes its owner record with it.
+  const listed = listedUrls(registry);
+  const sortedOwners = Object.fromEntries(
+    Object.entries(owners).filter(([url]) => listed.has(url)).sort(([a], [b]) => a.localeCompare(b)),
+  );
   fs.writeFileSync(OWNERS_PATH, JSON.stringify(sortedOwners, null, 2) + "\n");
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(records, null, 2));
   log(`[scrape] wrote ${records.length} themes → ${OUTPUT_PATH}`);

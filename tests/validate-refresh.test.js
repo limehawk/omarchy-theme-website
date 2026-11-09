@@ -93,3 +93,27 @@ test("an alert for a repo that isn't listed is refused", async () => {
   put(dir, "repo-alerts.json", [{ url: "https://github.com/attacker/x", reason: "gone" }]);
   expect((await check()).join()).toContain("bad repo alert");
 });
+
+test("one theme can't carry another listed theme's install URL", async () => {
+  const other = "https://github.com/attacker/omarchy-two-theme";
+  put(path.join(root, "src/data"), "themes.json", { builtin: [], curated: [{ name: "One", url }, { name: "Two", url: other }] });
+  put(dir, "themes-data.json", [record({ github_url: other, github_owner: "attacker", github_repo: "omarchy-two-theme" })]);
+  expect((await check()).join()).toContain("is not where the listed repo lives");
+});
+
+test("a record for a theme that isn't listed is refused", async () => {
+  put(dir, "themes-data.json", [record(), record({ slug: "ghost", thumbnail_widths: [] })]);
+  expect(await check()).toContain("ghost: not a listed theme");
+});
+
+test("a renamed theme is refused", async () => {
+  put(dir, "themes-data.json", [record({ name: "Official Omarchy Installer" })]);
+  expect(await check()).toContain("one: name does not match themes.json");
+});
+
+test("an owner record goes away with a URL that left themes.json, but not otherwise", async () => {
+  put(path.join(root, "src/data"), "theme-owners.json", { [url]: 1, "https://github.com/gone/omarchy-old-theme": 2 });
+  expect(await check()).toEqual([]);
+  put(dir, "theme-owners.json", {});
+  expect((await check()).join()).toContain("recorded owner changed");
+});

@@ -7,6 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { isAllowedPreviewUrl } from "./preview-hosts.js";
+import { entrySlug, listedUrls, parseOwnerRepo, registryEntries } from "./registry.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ENTRIES = ["repo-alerts.json", "scrape-404s.json", "theme-owners.json", "themes-data.json", "thumbs"];
@@ -50,10 +51,9 @@ export async function validateRefresh(dir, { root = ROOT, repoName = githubRepoN
   if (!fs.lstatSync(path.join(dir, "thumbs")).isDirectory()) return ["thumbs is not a directory"];
 
   const registry = readJson(path.join(root, "src/data/themes.json"));
-  const listed = [...registry.builtin, ...registry.curated];
-  const listedUrls = new Set(listed.map((t) => t.url.toLowerCase().replace(/\/$/, "")));
-  const knownBases = new Set(listed.map((t) => repoBase(t.url)));
-  for (const r of readJson(path.join(root, "src/data/themes-data.json"))) knownBases.add(repoBase(r.github_url));
+  const listed = listedUrls(registry);
+  const entries = new Map(registryEntries(registry).map((e) => [entrySlug(e), e]));
+  const previous = new Map(readJson(path.join(root, "src/data/themes-data.json")).map((r) => [r.slug, r]));
 
   const records = readJson(path.join(dir, "themes-data.json"));
   if (!Array.isArray(records)) return ["themes-data.json is not a list"];
@@ -66,16 +66,23 @@ export async function validateRefresh(dir, { root = ROOT, repoName = githubRepoN
     if (seen.has(r.slug)) errors.push(`duplicate slug: ${label}`);
     seen.add(r.slug);
 
+    // Each record is tied to its own listing, so one theme can't carry another's install URL.
+    const entry = entries.get(r.slug);
+    if (!entry) { errors.push(`${label}: not a listed theme`); continue; }
+    if (r.name !== entry.name) errors.push(`${label}: name does not match themes.json`);
+
     const m = typeof r.github_url === "string" ? r.github_url.match(GITHUB_URL) : null;
     if (!m || m[1] !== r.github_owner || m[2] !== r.github_repo) {
       errors.push(`${label}: github_url does not match its owner and repo`);
-    } else if (!knownBases.has(repoBase(r.github_url))) {
-      // A repo that moved is the only reason for a new URL. Ask GitHub directly.
-      const entry = listed.find((t) => t.name === r.name);
-      const [, owner, repo] = entry ? entry.url.match(GITHUB_URL) ?? [] : [];
-      const actual = owner ? await repoName(owner, repo) : null;
-      if (actual?.toLowerCase() !== `${m[1]}/${m[2]}`.toLowerCase()) {
-        errors.push(`${label}: ${r.github_url} is not where the listed repo lives`);
+    } else {
+      const known = [entry.url, previous.get(r.slug)?.github_url].filter(Boolean).map(repoBase);
+      if (!known.includes(repoBase(r.github_url))) {
+        // A repo that moved is the only reason for a new URL. Ask GitHub directly.
+        const { owner, repo } = parseOwnerRepo(entry.url);
+        const actual = await repoName(owner, repo);
+        if (actual?.toLowerCase() !== `${m[1]}/${m[2]}`.toLowerCase()) {
+          errors.push(`${label}: ${r.github_url} is not where the listed repo lives`);
+        }
       }
     }
 
@@ -110,16 +117,16 @@ export async function validateRefresh(dir, { root = ROOT, repoName = githubRepoN
   const before = fs.existsSync(ownersFile) ? readJson(ownersFile) : {};
   const owners = readJson(path.join(dir, "theme-owners.json"));
   for (const [url, id] of Object.entries(before)) {
-    if (owners[url] !== id) errors.push(`recorded owner changed for ${url}`);
+    if (listed.has(url) && owners[url] !== id) errors.push(`recorded owner changed for ${url}`);
   }
   for (const [url, id] of Object.entries(owners)) {
-    if (!listedUrls.has(url) || !Number.isInteger(id)) errors.push(`bad owner entry: ${url}`);
+    if (!listed.has(url) || !Number.isInteger(id)) errors.push(`bad owner entry: ${url}`);
   }
 
   const alerts = readJson(path.join(dir, "repo-alerts.json"));
   if (!Array.isArray(alerts)) return [...errors, "repo-alerts.json is not a list"];
   for (const a of alerts) {
-    if (!listedUrls.has(String(a?.url).toLowerCase()) || !["gone", "owner-changed"].includes(a?.reason)) {
+    if (!listed.has(String(a?.url).toLowerCase()) || !["gone", "owner-changed"].includes(a?.reason)) {
       errors.push(`bad repo alert: ${String(a?.url)}`);
     }
   }

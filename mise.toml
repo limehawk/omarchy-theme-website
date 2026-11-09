@@ -1,3 +1,6 @@
+# Tool versions for CI (jdx/mise-action). Dependabot does not update this file.
+# Pinned so a new Bun release cannot change the scrape job unreviewed.
+# Recheck when bun.lock is next upgraded; keep node in step with .node-version.
 [tools]
 node = "24"
 bun = "1.4.2"

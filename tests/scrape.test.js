@@ -38,7 +38,7 @@ test("install URL follows a repo that moved to a new owner", async () => {
   expect(r.slug).toBe("theme");
 });
 
-test("a re-registered owner name keeps the last good record", async () => {
+test("a re-registered owner name is refused", async () => {
   fakeGitHub({ ownerId: 666 });
   const cached = new Map([["theme", { github_url: "https://github.com/author/theme", github_owner_id: 1 }]]);
   await expect(scrapeTheme(entry, cached)).rejects.toThrow("different GitHub account");
@@ -55,6 +55,13 @@ test("a repo that moved to another account is caught even under its new name", a
   fakeGitHub({ fullName: "someone-else/theme", ownerId: 666 });
   const cached = new Map([["theme", { github_url: "https://github.com/author/theme", github_owner_id: 1 }]]);
   await expect(scrapeTheme(entry, cached)).rejects.toThrow("different GitHub account");
+});
+
+test("a builtin whose account changed is refused too", async () => {
+  fakeGitHub({ fullName: "upstream/desktop", ownerId: 666, files: { "themes/osaka-jade/preview.png": "x" } });
+  const builtin = { url: "https://github.com/upstream/desktop", name: "Osaka Jade", path: "themes/osaka-jade", is_builtin: true, is_curated: false };
+  const cached = new Map([["osaka-jade", { github_url: "https://github.com/upstream/desktop/tree/v1/themes/osaka-jade", github_owner_id: 1 }]]);
+  await expect(scrapeTheme(builtin, cached)).rejects.toThrow("different GitHub account");
 });
 
 test("a new listing records its owner, and the same owner passes", async () => {
