@@ -1,0 +1,14 @@
+{
+  "name": "omarchytheme",
+  "version": "1.0.0",
+  "description": "Search and install Omarchy desktop themes from omarchytheme.com",
+  "type": "module",
+  "bin": { "omarchytheme": "omarchytheme.js" },
+  "files": ["omarchytheme.js", "README.md"],
+  "engines": { "node": ">=18" },
+  "keywords": ["omarchy", "themes", "hyprland", "cli"],
+  "homepage": "https://omarchytheme.com/docs/#cli",
+  "repository": { "type": "git", "url": "git+https://github.com/limehawk/omarchy-theme-website.git", "directory": "cli" },
+  "author": "Limehawk <help@omarchytheme.com>",
+  "license": "MIT"
+}
