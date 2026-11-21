@@ -180,3 +180,39 @@ test("every page's og:image is a built 1200x630 image", async () => {
     expect(existsSync(path.join(OUT, "og", `${t.slug}.jpg`))).toBe(true);
   }
 });
+
+test("the API middleware filters themes and answers errors as JSON", async () => {
+  const { onRequest } = await import("../functions/_middleware.js");
+  // Serves out/ the way Cloudflare Pages' ASSETS binding does.
+  const env = {
+    ASSETS: {
+      fetch: async (u) => {
+        const file = path.join(OUT, new URL(u).pathname);
+        return existsSync(file) ? new Response(readFileSync(file)) : new Response("", { status: 404 });
+      },
+    },
+  };
+  const call = (p, headers = {}) =>
+    onRequest({ request: new Request(`${SITE_URL}${p}`, { headers }), env, next: () => env.ASSETS.fetch(`${SITE_URL}${p}`) });
+
+  const nord = await (await call("/api/v1/themes.json?q=NORD&limit=2")).json();
+  expect(nord.themes.length).toBeGreaterThan(0);
+  expect(nord.themes.length).toBeLessThanOrEqual(2);
+  for (const t of nord.themes) expect(`${t.name} ${t.slug} ${t.author}`.toLowerCase()).toContain("nord");
+
+  const blue = await (await call("/api/v1/themes.json?hue=blue")).json();
+  expect(blue.count).toBeGreaterThan(0);
+  expect(blue.themes.every((t) => t.primary_hue === "blue")).toBe(true);
+
+  const bad = await call("/api/v1/themes.json?limit=0");
+  expect(bad.status).toBe(400);
+  expect((await bad.json()).code).toBe("invalid_limit");
+
+  const missing = await call("/api/v1/themes/nope.json");
+  expect(missing.status).toBe(404);
+  expect(missing.headers.get("Content-Type")).toBe("application/problem+json");
+
+  const md = await call("/", { Accept: "text/markdown" });
+  expect(md.headers.get("Content-Type")).toStartWith("text/markdown");
+  expect(md.headers.get("Vary")).toBe("Accept");
+});
