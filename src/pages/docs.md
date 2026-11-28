@@ -1,6 +1,6 @@
 ---
 layout: ../layouts/Prose.astro
-title: API docs
+title: Omarchy Themes API
 description: Free, read-only JSON API for the Omarchy Themes catalog. No key needed.
 ---
 
@@ -12,13 +12,14 @@ The Omarchy Themes API is a free, read-only JSON copy of the theme catalog. Use 
 - **Authentication:** none. There are no keys and no sign-up.
 - **Format:** JSON. Errors are `application/problem+json`.
 - **OpenAPI:** [/openapi.json](/openapi.json)
+- **CLI:** [`omarchytheme`](#cli) on npm
 - **For agents:** [/llms.txt](/llms.txt)
 
 ## Endpoints
 
 | Method | Path | Operation | Returns |
 | --- | --- | --- | --- |
-| GET | `/api/v1/themes.json` | `listThemes` | Every theme, most stars first |
+| GET | `/api/v1/themes.json` | `listThemes` | Every theme, or a search, most stars first |
 | GET | `/api/v1/themes/{slug}.json` | `getTheme` | One theme |
 
 ### List every theme
@@ -45,6 +46,23 @@ curl https://omarchytheme.com/api/v1/themes.json
 ```
 
 Each theme has `slug`, `name`, `description`, `author`, `repository`, `stars`, `primary_hue`, `builtin`, `install_command`, `colors`, `apps`, `security_warnings`, `preview_url`, `page_url`, `markdown_url`, `api_url`, and `updated_at`. The [OpenAPI description](/openapi.json) types every field.
+
+### Search themes
+
+Add any of these query parameters to `/api/v1/themes.json`. They combine.
+
+| Parameter | Type | Matches |
+| --- | --- | --- |
+| `q` | string | Text in the theme name, slug, or author, ignoring case |
+| `hue` | string | The theme's `primary_hue`, such as `blue`, `red`, `green`, `purple`, or `grey` |
+| `limit` | integer, 1 to 500 | At most this many themes |
+
+```bash
+curl 'https://omarchytheme.com/api/v1/themes.json?q=nord&limit=5'
+curl 'https://omarchytheme.com/api/v1/themes.json?hue=purple'
+```
+
+An out-of-range `limit` returns status `400` with code `invalid_limit`.
 
 ### Get one theme
 
@@ -82,6 +100,18 @@ When a version is deprecated, every response from it carries a `Deprecation` hea
 ## Rate limits
 
 The API is static files on a CDN, so we do not count your requests. Please keep to the fair-use limit that every API response states in its `RateLimit-Policy` and `X-RateLimit-Limit` headers: 60 requests a minute. The data changes once a day, so caching `/api/v1/themes.json` for an hour is plenty. If we ever do throttle you, you will get status `429` with a `Retry-After` header.
+
+## CLI
+
+The `omarchytheme` command searches the catalog and installs themes on an Omarchy machine. It needs Bun or Node.js 18 or later.
+
+```bash
+bun x omarchytheme search nord
+bun x omarchytheme show catppuccin
+bun x omarchytheme install catppuccin
+```
+
+`search` takes `--hue` and `--limit`, and every command takes `--json`. `install` shows a theme's security warnings, then runs `omarchy-theme-install`. The source is in [the site's repository](https://github.com/limehawk/omarchy-theme-website/tree/main/cli).
 
 ## Markdown pages
 
